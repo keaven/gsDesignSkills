@@ -10,12 +10,34 @@ description: >
 
 # Graphical Multiple Comparison Procedures with graphicalMCP
 
-TODO: Add skill content covering:
-- `graph_create()` for building multiplicity graphs
-- `graph_test_shortcut()` for shortcut testing
-- `graph_test_closure()` for full closure testing
-- `graph_update()` for graph update sequences
-- Transition matrix specification
-- Alpha weight allocation strategies
-- Plotting graphs with custom layouts and labels
-- Power simulation with `graph_calculate_power()`
+## API reference
+
+For full function documentation (arguments, return values, examples), read `references/llms.txt`.
+Source: https://openpharma.github.io/graphicalMCP/
+
+## Key functions
+
+### Graph creation and manipulation
+- `graph_create()` - Create a multiplicity graph (hypotheses, weights, transitions)
+- `graph_update()` - Update graph by deleting rejected hypotheses
+- `as_graph()` - Convert from gMCP, igraph, or matrix objects
+
+### Testing
+- `graph_test_shortcut()` - Shortcut (Bonferroni-based) graphical testing
+- `graph_test_closure()` - Full closure-based testing (supports Simes, parametric)
+- `graph_rejection_orderings()` - Enumerate all valid rejection orderings
+
+### Adjusted p-values and weights
+- `adjust_p()` - Adjusted p-values (Bonferroni, Simes, parametric)
+- `adjust_weights()` - Adjusted significance levels (Bonferroni, Simes, parametric)
+- `graph_generate_weights()` - Generate weights for all intersection hypotheses
+
+### Power
+- `graph_calculate_power()` - Power simulation via multivariate normal
+
+### Plotting
+- `plot.initial_graph()` - Plot multiplicity graph
+- `plot.updated_graph()` - Plot updated graph sequence
+
+### Example graphs
+- `example_graphs()` - Pre-built example graphs (Bonferroni-Holm, fixed sequence, etc.)

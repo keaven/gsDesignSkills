@@ -1,0 +1,922 @@
+---
+# FUNCTION: calc_seq_p
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/wpgsd/man/calc_seq_p.Rd', out=stdout())
+_C_a_l_c_u_l_a_t_e _s_e_q_u_e_n_t_i_a_l _p-_v_a_l_u_e_s _f_o_r _i_n_t_e_r_a_c_t_i_o_n/_e_l_e_m_e_n_t_a_r_y _h_y_p_o_t_h_e_s_i_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Calculate sequential p-values for interaction/elementary
+     hypothesis
+
+_U_s_a_g_e:
+
+     calc_seq_p(
+       test_analysis = 2,
+       test_hypothesis = "H1, H2, H3",
+       p_obs = tibble::tibble(analysis = 1:2, H1 = c(0.02, 0.0015), H2 = c(0.01, 0.01), H3 =
+         c(0.01, 0.004)),
+       alpha_spending_type = 2,
+       n_analysis = 2,
+       initial_weight = c(0.3, 0.3, 0.4),
+       transition_mat = matrix(c(0, 0.4285714, 0.5714286, 0.4285714, 0, 0.5714286, 0.5, 0.5,
+         0), nrow = 3, byrow = TRUE),
+       z_corr = matrix(c(1, 0.7627701, 0.6666667, 0.7071068, 0.5393599, 0.4714045, 0.7627701,
+         1, 0.6992059, 0.5393599, 0.7071068, 0.4944132, 0.6666667, 0.6992059, 1, 0.4714045,
+         0.4944132, 0.7071068, 0.7071068, 0.5393599, 0.4714045, 1, 0.7627701, 0.6666667,
+         0.5393599, 0.7071068, 0.4944132, 0.7627701, 1, 0.6992059, 0.4714045, 0.4944132,
+         0.7071068, 0.6666667, 0.6992059, 1), nrow = 6, byrow = TRUE),
+       spending_fun = gsDesign::sfHSD,
+       spending_fun_par = -4,
+       info_frac = c(0.5, 1),
+       interval = c(1e-04, 0.2)
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+test_analysis: The index of the analysis to be tested, such as 1, 2,
+          ...
+
+test_hypothesis: A character of the tested interaction/elementary
+          hypothesis, such as ‘"H1, H2, H3"’, H1, H2, ‘"H1"’.
+
+   p_obs: Observed p-values up to ‘test_analysis’.
+
+alpha_spending_type: Type Boundary type.
+
+            • ‘0’ - Bonferroni. Separate alpha spending for each
+              hypotheses.
+
+            • ‘1’ - Fixed alpha spending for all hypotheses. Method 3a
+              in the manuscript.
+
+            • ‘2’ - Overall alpha spending for all hypotheses. Method
+              3b in the manuscript.
+
+            • ‘3’ - Separate alpha spending for each hypotheses. Method
+              3c in the manuscript.
+
+n_analysis: Total number of analysis.
+
+initial_weight: Initial weight assigned to the elementary hypothesis.
+
+transition_mat: Transition matrix.
+
+  z_corr: Correlation matrix of the Z statistics.
+
+spending_fun: Spending function.
+
+spending_fun_par: Parameter of the spending function.
+
+info_frac: Information fractions.
+
+interval: Interval to search the uniroot.
+
+_V_a_l_u_e:
+
+     The sequential p-values of the ‘test_hypothesis’ at the
+     ‘test_analysis’.
+
+_E_x_a_m_p_l_e_s:
+
+     calc_seq_p(
+       test_analysis = 2,
+       test_hypothesis = "H1, H2, H3",
+       p_obs = tibble::tibble(
+         analysis = 1:2,
+         H1 = c(0.02, 0.0015),
+         H2 = c(0.01, 0.01),
+         H3 = c(0.01, 0.004)
+       ),
+       alpha_spending_type = 2,
+       n_analysis = 2,
+       initial_weight = c(0.3, 0.3, 0.4),
+       transition_mat = matrix(c(
+         0.0000000, 0.4285714, 0.5714286,
+         0.4285714, 0.0000000, 0.5714286,
+         0.5000000, 0.5000000, 0.0000000
+       ), nrow = 3, byrow = TRUE),
+       z_corr = matrix(
+         c(
+           1.0000000, 0.7627701, 0.6666667, 0.7071068, 0.5393599, 0.4714045,
+           0.7627701, 1.0000000, 0.6992059, 0.5393599, 0.7071068, 0.4944132,
+           0.6666667, 0.6992059, 1.0000000, 0.4714045, 0.4944132, 0.7071068,
+           0.7071068, 0.5393599, 0.4714045, 1.0000000, 0.7627701, 0.6666667,
+           0.5393599, 0.7071068, 0.4944132, 0.7627701, 1.0000000, 0.6992059,
+           0.4714045, 0.4944132, 0.7071068, 0.6666667, 0.6992059, 1.0000000
+         ),
+         nrow = 6, byrow = TRUE
+       ),
+       spending_fun = gsDesign::sfHSD,
+       spending_fun_par = -4,
+       info_frac = c(0.5, 1),
+       interval = c(1e-4, 0.2)
+     )
+     
+> 
+
+---
+# FUNCTION: closed_test
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/wpgsd/man/closed_test.Rd', out=stdout())
+_P_e_r_f_o_r_m _c_l_o_s_e_d _t_e_s_t_i_n_g _p_r_o_c_e_d_u_r_e
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Perform closed testing procedure
+
+_U_s_a_g_e:
+
+     closed_test(bounds, p_obs)
+     
+_A_r_g_u_m_e_n_t_s:
+
+  bounds: A tibble of nominal p-value boundaries from
+          ‘generate_bounds()’ containing columns ‘Analysis’,
+          ‘Hypotheses’, ‘H1’, ‘H2’, etc.
+
+   p_obs: A tibble of observed p-values containing columns ‘Analysis’,
+          ‘H1’, ‘H2’, etc.
+
+_V_a_l_u_e:
+
+     An outcome matrix summarizing the testing results.
+
+_E_x_a_m_p_l_e_s:
+
+     p_obs <- dplyr::bind_rows(
+       tibble::tibble(Analysis = 1, H1 = 0.001, H2 = 0.001),
+       tibble::tibble(Analysis = 2, H1 = 0.001, H2 = 0.001)
+     )
+     bound <- tibble::tribble(
+       ~Analysis, ~Hypotheses, ~H1, ~H2,
+       1, "H1", 0.02, NA,
+       1, "H1, H2", 0.0001, 0.00001,
+       1, "H2", NA, 0.003,
+       2, "H1", 0.02, NA,
+       2, "H1, H2", 0.02, 0.00001,
+       2, "H2", NA, 0.003
+     )
+     
+     closed_test <- closed_test(bound, p_obs)
+     
+> 
+
+---
+# FUNCTION: find_astar
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/wpgsd/man/find_astar.Rd', out=stdout())
+_U_t_i_l_i_t_y _f_u_n_c_t_i_o_n _f_o_r _r_o_o_t-_f_i_n_d_i_n_g _t_o _c_o_m_p_u_t_e _c_r_o_s_s_i_n_g _p_r_o_b_a_b_i_l_i_t_i_e_s
+_w_i_t_h _t_h_e _o_v_e_r_a_l_l _a_l_p_h_a _s_p_e_n_d_i_n_g _a_p_p_r_o_a_c_h
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Utility function for root-finding to compute crossing
+     probabilities with the overall alpha spending approach
+
+_U_s_a_g_e:
+
+     find_astar(
+       a,
+       alpha_prev = NULL,
+       astar,
+       w,
+       sig,
+       maxpts = 50000,
+       abseps = 1e-05,
+       ...
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+       a: Cumulative overall alpha spending up to current analysis.
+
+alpha_prev: alpha boundary at previous interim analyses using the WPGSD
+          approach.
+
+   astar: Total nominal alpha level at current analysis from the WPGSD
+          approach.
+
+       w: Vector of alpha weights at current analysis.
+
+     sig: Correlation matrix of previous and current analyses test
+          statistics.
+
+  maxpts: GenzBretz function maximum number of function values as
+          integer.
+
+  abseps: GenzBretz function absolute error tolerance.
+
+     ...: Additional arguments.
+
+_V_a_l_u_e:
+
+     Difference. Should be 0 with ‘a’ and ‘astar’ identified.
+
+_E_x_a_m_p_l_e_s:
+
+     # Input event count of intersection of paired hypotheses - Table 2
+     my_event <- tibble::tribble(
+       ~H1, ~H2, ~Analysis, ~Event,
+       1, 1, 1, 155,
+       2, 2, 1, 160,
+       3, 3, 1, 165,
+       1, 2, 1, 85,
+       1, 3, 1, 85,
+       2, 3, 1, 85,
+       1, 1, 2, 305,
+       2, 2, 2, 320,
+       3, 3, 2, 335,
+       1, 2, 2, 170,
+       1, 3, 2, 170,
+       2, 3, 2, 170
+     )
+     
+     # Generate correlation from events
+     my_corr <- generate_corr(my_event)
+     
+     # Find the inflation factor for H1, H2 at analysis 1
+     find_astar(
+       a = 0.0008708433,
+       alpha_prev = NULL,
+       aprime = c(0.0004588644, 0.0004119789),
+       astar = 1,
+       w = c(0.5, 0.5),
+       sig = my_corr[
+         colnames(my_corr) %in% c("H1_A1", "H2_A1"),
+         colnames(my_corr) %in% c("H1_A1", "H2_A1")
+       ]
+     )
+     
+> 
+
+---
+# FUNCTION: find_xi
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/wpgsd/man/find_xi.Rd', out=stdout())
+_U_t_i_l_i_t_y _f_u_n_c_t_i_o_n _f_o_r _r_o_o_t-_f_i_n_d_i_n_g _t_o _c_o_m_p_u_t_e _i_n_f_l_a_t_i_o_n _f_a_c_t_o_r _x_i _w_i_t_h
+_t_h_e _s_e_p_a_r_a_t_e _a_l_p_h_a _s_p_e_n_d_i_n_g _a_p_p_r_o_a_c_h
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Utility function for root-finding to compute inflation factor xi
+     with the separate alpha spending approach
+
+_U_s_a_g_e:
+
+     find_xi(
+       a,
+       alpha_prev = NULL,
+       aprime,
+       xi,
+       sig,
+       maxpts = 50000,
+       abseps = 1e-05,
+       ...
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+       a: Sum of cumulative alpha spending from the Bonferroni
+          approach.
+
+alpha_prev: alpha boundary at previous interim analyses using the MTP
+          approach.
+
+  aprime: Nominal alpha boundary from the Bonferroni approach.
+
+      xi: Inflation factor.
+
+     sig: Correlation matrix of previous and current analyses test
+          statistics.
+
+  maxpts: GenzBretz function maximum number of function values as
+          integer.
+
+  abseps: GenzBretz function absolute error tolerance.
+
+     ...: Additional arguments.
+
+_V_a_l_u_e:
+
+     Difference. Should be 0 with ‘xi’ identified.
+
+_E_x_a_m_p_l_e_s:
+
+     # Input event count of intersection of paired hypotheses - Table 2
+     my_event <- tibble::tribble(
+       ~H1, ~H2, ~Analysis, ~Event,
+       1, 1, 1, 155,
+       2, 2, 1, 160,
+       3, 3, 1, 165,
+       1, 2, 1, 85,
+       1, 3, 1, 85,
+       2, 3, 1, 85,
+       1, 1, 2, 305,
+       2, 2, 2, 320,
+       3, 3, 2, 335,
+       1, 2, 2, 170,
+       1, 3, 2, 170,
+       2, 3, 2, 170
+     )
+     
+     # Generate correlation from events
+     my_corr <- generate_corr(my_event)
+     
+     # Find the inflation factor for H1, H2 at analysis 1
+     find_xi(
+       a = 0.0008708433,
+       alpha_prev = NULL,
+       aprime = c(0.0004588644, 0.0004119789),
+       xi = 1,
+       sig = my_corr[
+         colnames(my_corr) %in% c("H1_A1", "H2_A1"),
+         colnames(my_corr) %in% c("H1_A1", "H2_A1")
+       ]
+     )
+     
+> 
+
+---
+# FUNCTION: generate_bounds
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/wpgsd/man/generate_bounds.Rd', out=stdout())
+_C_o_m_p_u_t_e _p-_v_a_l_u_e _b_o_u_n_d_a_r_i_e_s _o_f _t_h_e _p_a_r_a_m_e_t_r_i_c _M_T_P _m_e_t_h_o_d _w_i_t_h _o_v_e_r_a_l_l
+_a_l_p_h_a _s_p_e_n_d_i_n_g _f_o_r _a_l_l _h_y_p_o_t_h_e_s_e_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Compute p-value boundaries of the parametric MTP method with
+     overall alpha spending for all hypotheses
+
+_U_s_a_g_e:
+
+     generate_bounds(
+       type = 1,
+       k = 2,
+       w = w,
+       m = m,
+       corr = corr,
+       alpha = 0.025,
+       cum_alpha = NULL,
+       maxpts = 50000,
+       abseps = 1e-05,
+       tol = 1e-10,
+       sf = gsDesign::sfHSD,
+       sfparm = -4,
+       t = c(0.5, 1),
+       ...
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+    type: Boundary type.
+
+            • ‘0’ = Bonferroni. Separate alpha spending for each
+              hypotheses.
+
+            • ‘1’ = Fixed alpha spending for all hypotheses. Method 3a
+              in the manuscript.
+
+            • ‘2’ = Overall alpha spending for all hypotheses. Method
+              3b in the manuscript.
+
+            • ‘3’ = Separate alpha spending for each hypotheses. Method
+              3c in the manuscript.
+
+       k: Number of analyses up to the current analysis.
+
+       w: Initial weights.
+
+       m: Transition matrix.
+
+    corr: Correlation matrix of all test statistics up to the current
+          analysis. dim = k * length(w).
+
+   alpha: Overall alpha.
+
+cum_alpha: Cumulative alpha spent at each analysis. Only required for
+          ‘type = 1’.
+
+  maxpts: GenzBretz function maximum number of function values as
+          integer.
+
+  abseps: GenzBretz function absolute error tolerance.
+
+     tol: Find root tolerance.
+
+      sf: A list of alpha spending functions to spend alpha for each
+          hypotheses.
+
+            • If ‘type = 0’ or ‘3’ then length equals to number of
+              hypotheses.
+
+            • If ‘type = 1’ then ‘sf’ is not needed.
+
+            • If ‘type = 2’ then only the first component is used.
+
+  sfparm: A list of parameters to be supplied to sfs.
+
+            • If ‘type = 0’ or ‘3’ then length equals to number of
+              hypotheses.
+
+            • If ‘type = 1’ then ‘sfparm’ is not needed.
+
+            • If ‘type = 2’ then only the first component is used.
+
+       t: A list of information fraction used for alpha spending, may
+          be different from the actual information fraction. Each
+          component corresponds to a hypothesis.
+
+            • If ‘type = 0’ or ‘3’ then length equals to number of
+              hypotheses.
+
+            • If ‘type = 1’ then ‘t’ is not needed.
+
+            • If ‘type = 2’ then only the first component is used.
+
+     ...: Additional arguments.
+
+_V_a_l_u_e:
+
+     A tibble with ‘k * (2^(n_hypotheses - 1))’ rows of p-value
+     boundaries. Inflation factor is also provided if ‘type = 3’.
+
+_E_x_a_m_p_l_e_s:
+
+     # Build the transition matrix
+     m <- matrix(c(
+       0, 0.5, 0.5,
+       0.5, 0, 0.5,
+       0.5, 0.5, 0
+     ), nrow = 3, byrow = TRUE)
+     
+     # Initialize weights
+     w <- c(1 / 3, 1 / 3, 1 / 3)
+     
+     # Input information fraction
+     IF_IA <- c(155 / 305, 160 / 320, 165 / 335)
+     
+     # Input event count of intersection of paired hypotheses - Table 2
+     event <- tibble::tribble(
+       ~H1, ~H2, ~Analysis, ~Event,
+       1, 1, 1, 155,
+       2, 2, 1, 160,
+       3, 3, 1, 165,
+       1, 2, 1, 85,
+       1, 3, 1, 85,
+       2, 3, 1, 85,
+       1, 1, 2, 305,
+       2, 2, 2, 320,
+       3, 3, 2, 335,
+       1, 2, 2, 170,
+       1, 3, 2, 170,
+       2, 3, 2, 170
+     )
+     
+     # Generate correlation from events
+     gs_corr <- generate_corr(event)
+     
+     # Generate bounds
+     generate_bounds(
+       type = 3,
+       k = 2,
+       w = w,
+       m = m,
+       corr = gs_corr,
+       alpha = 0.025,
+       sf = list(gsDesign::sfLDOF, gsDesign::sfLDOF, gsDesign::sfLDOF),
+       sfparm = list(0, 0, 0),
+       t = list(c(IF_IA[1], 1), c(IF_IA[2], 1), c(IF_IA[3], 1))
+     )
+     
+> 
+
+---
+# FUNCTION: generate_corr
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/wpgsd/man/generate_corr.Rd', out=stdout())
+_G_e_n_e_r_a_t_e _c_o_r_r_e_l_a_t_i_o_n _m_a_t_r_i_x _b_a_s_e_d _o_n _e_v_e_n_t _c_o_u_n_t_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Generate correlation matrix based on event counts
+
+_U_s_a_g_e:
+
+     generate_corr(event)
+     
+_A_r_g_u_m_e_n_t_s:
+
+   event: Event count of each hypothesis at each analysis, including
+          event count of the intersection of hypotheses. It contains 4
+          columns: ‘H1’, ‘H2’, ‘Analysis’, ‘Event’. ‘H1’ needs to be
+          listed as 1, 2, 3, etc. as numbers.
+
+_V_a_l_u_e:
+
+     A correlation matrix.
+
+_E_x_a_m_p_l_e_s:
+
+     # Build the transition matrix
+     m <- matrix(c(
+       0, 0.5, 0.5,
+       0.5, 0, 0.5,
+       0.5, 0.5, 0
+     ), nrow = 3, byrow = TRUE)
+     # initialize weights
+     w <- c(1 / 3, 1 / 3, 1 / 3)
+     
+     # Input event count of intersection of paired hypotheses - Table 2
+     event <- tibble::tribble(
+       ~H1, ~H2, ~Analysis, ~Event,
+       1, 1, 1, 155,
+       2, 2, 1, 160,
+       3, 3, 1, 165,
+       1, 2, 1, 85,
+       1, 3, 1, 85,
+       2, 3, 1, 85,
+       1, 1, 2, 305,
+       2, 2, 2, 320,
+       3, 3, 2, 335,
+       1, 2, 2, 170,
+       1, 3, 2, 170,
+       2, 3, 2, 170
+     )
+     
+     # Generate correlation from events
+     gs_corr <- generate_corr(event)
+     
+> 
+
+---
+# FUNCTION: generate_event_table
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/wpgsd/man/generate_event_table.Rd', out=stdout())
+_G_e_n_e_r_a_t_e _t_a_b_l_e _o_f _e_v_e_n_t _c_o_u_n_t_s _f_r_o_m _A_D_S_L _a_n_d _A_D_T_T_E _d_a_t_a_s_e_t_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Generate table of event counts from ADSL and ADTTE datasets
+
+_U_s_a_g_e:
+
+     generate_event_table(paths, h_select, adsl_name, adtte_name, key_var, cnsr_var)
+     
+_A_r_g_u_m_e_n_t_s:
+
+   paths: A vector of paths for analysis datasets. Length should be
+          equal to the number of analyses completed.
+
+h_select: Selection criterion for each hypothesis. Should be a tibble
+          containing 2 columns: ‘Hypothesis’ and ‘Crit’.
+
+adsl_name: SAS dataset name for subject-level analysis data. Usually it
+          is ‘"adsl"’.
+
+adtte_name: SAS dataset name for time-to-event analysis data. Usually
+          it is ‘"adtte"’.
+
+ key_var: Key variable to join the ‘adsl’ and ‘adtte’ datasets. For
+          example, ‘"USUBJID"’ or ‘"SUBJID"’.
+
+cnsr_var: Variable to indicate censoring (‘1’ = censor; ‘0’ = event).
+          For example, ‘"CNSR"’.
+
+_V_a_l_u_e:
+
+     A list with two components:
+
+        • ‘event’: an event count table as input for
+          ‘generate_bounds()’.
+
+        • ‘dsets’: analysis datasets of each hypothesis.
+
+_E_x_a_m_p_l_e_s:
+
+     library(dplyr)
+     
+     paths <- system.file("extdata/", package = "wpgsd")
+     
+     # Selection criteria for each hypothesis
+     h_select <- tibble::tribble(
+       ~Hypothesis, ~Crit,
+       1, "PARAMCD == 'OS' & TRT01P %in% c('Xanomeline High Dose', 'Placebo')",
+       2, "PARAMCD == 'OS' & TRT01P %in% c('Xanomeline Low Dose', 'Placebo')"
+     )
+     
+     event <- generate_event_table(paths, h_select,
+       adsl_name = "adsl", adtte_name = "adtte",
+       key_var = "USUBJID", cnsr_var = "CNSR"
+     )$event
+     
+     event %>%
+       gt::gt() %>%
+       gt::tab_header(title = "Event Count - Computed from SAS Datasets Example")
+     
+> 
+
+---
+# FUNCTION: tidyeval
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/wpgsd/man/tidyeval.Rd', out=stdout())
+_T_i_d_y _e_v_a_l _h_e_l_p_e_r_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     This page lists the tidy eval tools reexported in this package
+     from rlang. To learn about using tidy eval in scripts and packages
+     at a high level, see the dplyr programming vignette and the
+     ggplot2 in packages vignette. The Metaprogramming section of
+     Advanced R may also be useful for a deeper dive.
+
+        • The tidy eval operators {{, !!, and !!! are syntactic
+          constructs which are specially interpreted by tidy eval
+          functions. You will mostly need {{, as !! and !!! are more
+          advanced operators which you should not have to use in simple
+          cases.
+
+          The curly-curly operator {{ allows you to tunnel
+          data-variables passed from function arguments inside other
+          tidy eval functions. {{ is designed for individual arguments.
+          To pass multiple arguments contained in dots, use ‘...’ in
+          the normal way.
+
+          my_function <- function(data, var, ...) {
+            data %>%
+              group_by(...) %>%
+              summarise(mean = mean({{ var }}))
+          }
+          
+        • ‘enquo()’ and ‘enquos()’ delay the execution of one or
+          several function arguments. The former returns a single
+          expression, the latter returns a list of expressions. Once
+          defused, expressions will no longer evaluate on their own.
+          They must be injected back into an evaluation context with !!
+          (for a single expression) and !!! (for a list of
+          expressions).
+
+          my_function <- function(data, var, ...) {
+            # Defuse
+            var <- enquo(var)
+            dots <- enquos(...)
+          
+            # Inject
+            data %>%
+              group_by(!!!dots) %>%
+              summarise(mean = mean(!!var))
+          }
+          
+          In this simple case, the code is equivalent to the usage of
+          {{ and ‘...’ above. Defusing with ‘enquo()’ or ‘enquos()’ is
+          only needed in more complex cases, for instance if you need
+          to inspect or modify the expressions in some way.
+
+        • The ‘.data’ pronoun is an object that represents the current
+          slice of data. If you have a variable name in a string, use
+          the ‘.data’ pronoun to subset that variable with ‘[[’.
+
+          my_var <- "disp"
+          mtcars %>% summarise(mean = mean(.data[[my_var]]))
+          
+        • Another tidy eval operator is :=. It makes it possible to use
+          glue and curly-curly syntax on the LHS of ‘=’. For technical
+          reasons, the R language doesn't support complex expressions
+          on the left of ‘=’, so we use := as a workaround.
+
+          my_function <- function(data, var, suffix = "foo") {
+            # Use `{{` to tunnel function arguments and the usual glue
+            # operator `{` to interpolate plain strings.
+            data %>%
+              summarise("{{ var }}_mean_{suffix}" := mean({{ var }}))
+          }
+          
+        • Many tidy eval functions like ‘dplyr::mutate()’ or
+          ‘dplyr::summarise()’ give an automatic name to unnamed
+          inputs. If you need to create the same sort of automatic
+          names by yourself, use ‘as_label()’. For instance, the
+          glue-tunnelling syntax above can be reproduced manually with:
+
+          my_function <- function(data, var, suffix = "foo") {
+            var <- enquo(var)
+            prefix <- as_label(var)
+            data %>%
+              summarise("{prefix}_mean_{suffix}" := mean(!!var))
+          }
+          
+          Expressions defused with ‘enquo()’ (or tunnelled with {{)
+          need not be simple column names, they can be arbitrarily
+          complex. ‘as_label()’ handles those cases gracefully. If your
+          code assumes a simple column name, use ‘as_name()’ instead.
+          This is safer because it throws an error if the input is not
+          a name as expected.
+
+> 
+
+---
+# FUNCTION: wpgsd-package
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/wpgsd/man/wpgsd-package.Rd', out=stdout())
+_w_p_g_s_d: _W_e_i_g_h_t_e_d _P_a_r_a_m_e_t_r_i_c _G_r_o_u_p _S_e_q_u_e_n_t_i_a_l _D_e_s_i_g_n
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Adjusted inference for weighted parametric group sequential
+     design. Weighted parametric group sequential design (WPGSD) by
+     Anderson et al. (2022)
+     \Sexpr[results=rd]{tools:::Rd_expr_doi("10.1002/bimj.202100085")}
+     allows one to take advantage of the known correlation structure in
+     constructing efficacy bounds to control family-wise error rate
+     (FWER) for a group sequential design. Here, correlation may be due
+     to common observations in nested populations, due to common
+     observations in overlapping populations, or due to common
+     observations in the control arm.
+
+_A_u_t_h_o_r(_s):
+
+     *Maintainer*: Yujie Zhao <mailto:yujie.zhao@merck.com>
+
+     Authors:
+
+        • Keaven Anderson <mailto:keaven_anderson@merck.com>
+
+        • Zifang Guo <mailto:zifang.guo@merck.com>
+
+        • Jing Zhao <mailto:jing_zhaox@merck.com>
+
+        • Linda Sun <mailto:linda_sun@merck.com>
+
+        • Yi Cui <mailto:yi.cui@merck.com>
+
+        • Larry Leon <mailto:larry.leon2@merck.com>
+
+     Other contributors:
+
+        • Merck Sharp & Dohme Corp [copyright holder]
+
+_S_e_e _A_l_s_o:
+
+     Useful links:
+
+        • <https://merck.github.io/wpgsd/>
+
+        • <https://github.com/Merck/wpgsd>
+
+        • Report bugs at <https://github.com/Merck/wpgsd/issues>
+
+> 
+

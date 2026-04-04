@@ -1,0 +1,2882 @@
+---
+# FUNCTION: bdiagNA
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/bdiagNA.Rd', out=stdout())
+_C_r_e_a_t_e _a _B_l_o_c_k _D_i_a_g_o_n_a_l _M_a_t_r_i_x _w_i_t_h _N_A _o_u_t_s_i_d_e _t_h_e _d_i_a_g_o_n_a_l
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Build a block diagonal matrix with NA values outside the diagonal
+     given several building block matrices.
+
+_U_s_a_g_e:
+
+     bdiagNA(...)
+     
+_A_r_g_u_m_e_n_t_s:
+
+     ...: individual matrices or a ‘list’ of matrices.
+
+_D_e_t_a_i_l_s:
+
+     This function is useful to build the correlation matrices, when
+     only partial knowledge of the correlation exists.
+
+_V_a_l_u_e:
+
+     A block diagonal matrix with NA values outside the diagonal.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_S_e_e _A_l_s_o:
+
+     ‘gMCP’
+
+_E_x_a_m_p_l_e_s:
+
+     bdiagNA(diag(3), matrix(1/2,nr=3,nc=3), diag(2))
+     
+> 
+
+---
+# FUNCTION: bonferroni.test
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/bonferroni.test.Rd', out=stdout())
+_W_e_i_g_h_t_e_d _B_o_n_f_e_r_r_o_n_i-_t_e_s_t
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Weighted Bonferroni-test
+
+_U_s_a_g_e:
+
+     bonferroni.test(
+       pvalues,
+       weights,
+       alpha = 0.05,
+       adjPValues = TRUE,
+       verbose = FALSE,
+       ...
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+ pvalues: A numeric vector specifying the p-values.
+
+ weights: A numeric vector of weights.
+
+   alpha: A numeric specifying the maximal allowed type one error rate.
+          If ‘adjPValues==TRUE’ (default) the parameter ‘alpha’ is not
+          used.
+
+adjPValues: Logical scalar. If ‘TRUE’ (the default) an adjusted p-value
+          for the weighted Bonferroni-test is returned. Otherwise if
+          ‘adjPValues==FALSE’ a logical value is returned whether the
+          null hypothesis can be rejected.
+
+ verbose: Logical scalar. If ‘TRUE’ verbose output is generated.
+
+     ...: Further arguments possibly passed by ‘gMCP’ which will be
+          used by other test procedures but not this one.
+
+_V_a_l_u_e:
+
+     adjusted p-value or decision of rejection
+
+_E_x_a_m_p_l_e_s:
+
+     bonferroni.test(pvalues=c(0.1,0.2,0.05), weights=c(0.5,0.5,0))
+     bonferroni.test(pvalues=c(0.1,0.2,0.05), weights=c(0.5,0.5,0), adjPValues=FALSE)
+     
+> 
+
+---
+# FUNCTION: bonferroni.trimmed.simes.test
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/bonferroni.trimmed.simes.test.Rd', out=stdout())
+_T_r_i_m_m_e_d _S_i_m_e_s _t_e_s_t _f_o_r _i_n_t_e_r_s_e_c_t_i_o_n_s _o_f _t_w_o _h_y_p_o_t_h_e_s_e_s _a_n_d _o_t_h_e_r_w_i_s_e
+_w_e_i_g_h_t_e_d _B_o_n_f_e_r_r_o_n_i-_t_e_s_t
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Trimmed Simes test for intersections of two hypotheses and
+     otherwise weighted Bonferroni-test
+
+_U_s_a_g_e:
+
+     bonferroni.trimmed.simes.test(
+       pvalues,
+       weights,
+       alpha = 0.05,
+       adjPValues = FALSE,
+       verbose = FALSE,
+       ...
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+ pvalues: A numeric vector specifying the p-values.
+
+ weights: A numeric vector of weights.
+
+   alpha: A numeric specifying the maximal allowed type one error rate.
+          If ‘adjPValues==TRUE’ (default) the parameter ‘alpha’ is not
+          used.
+
+adjPValues: Logical scalar. If ‘TRUE’ (the default) an adjusted p-value
+          for the weighted test is returned. Otherwise if
+          ‘adjPValues==FALSE’ a logical value is returned whether the
+          null hypothesis can be rejected.
+
+ verbose: Logical scalar. If ‘TRUE’ verbose output is generated.
+
+     ...: Further arguments possibly passed by ‘gMCP’ which will be
+          used by other test procedures but not this one.
+
+_V_a_l_u_e:
+
+     adjusted p-value or decision of rejection
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Brannath, W., Bretz, F., Maurer, W., & Sarkar, S. (2009). Trimmed
+     Weighted Simes Test for Two One-Sided Hypotheses With Arbitrarily
+     Correlated Test Statistics. Biometrical Journal, 51(6), 885-898.
+
+_E_x_a_m_p_l_e_s:
+
+     bonferroni.trimmed.simes.test(pvalues=c(0.1,0.2,0.05), weights=c(0.5,0.5,0))
+     bonferroni.trimmed.simes.test(pvalues=c(0.1,0.2,0.05), weights=c(0.5,0.5,0), adjPValues=FALSE)
+     
+> 
+
+---
+# FUNCTION: checkCorrelation
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/checkCorrelation.Rd', out=stdout())
+_C_h_e_c_k _c_o_r_r_e_l_a_t_i_o_n _m_a_t_r_i_x
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Sanity checks for the correlation matrix.
+
+_U_s_a_g_e:
+
+     checkCorrelation(m, returnMessage = FALSE, na.allowed = TRUE)
+     
+_A_r_g_u_m_e_n_t_s:
+
+       m: TBA
+
+returnMessage: TBA
+
+na.allowed: TBA
+
+_D_e_t_a_i_l_s:
+
+     Checks the following properties:
+
+        • Values must be between -1 and 1.
+
+        • Diagonal must be equal to 1.
+
+        • Matrix must be symmetric.
+
+_V_a_l_u_e:
+
+     Logical
+
+_E_x_a_m_p_l_e_s:
+
+     NULL
+     
+> 
+
+---
+# FUNCTION: entangledMCP-class
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/entangledMCP-class.Rd', out=stdout())
+_C_l_a_s_s _e_n_t_a_n_g_l_e_d_M_C_P
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     A entangledMCP object describes ... TODO
+
+_S_l_o_t_s:
+
+     ‘subgraphs’ A list of graphs of class graphMCP.
+
+     ‘weights’ A numeric.
+
+     ‘graphAttr’ A list for graph attributes like color, etc.
+
+_M_e_t_h_o_d_s:
+
+     print ‘signature(object = "entangledMCP")’: A method for printing
+          the data of the entangled graph to the R console.
+
+     getMatrices ‘signature(object = "entangledMCP")’: A method for
+          getting the list of transition matrices of the entangled
+          graph.
+
+     getWeights ‘signature(object = "entangledMCP")’: A method for
+          getting the matrix of weights of the entangled graph.
+
+     getRejected ‘signature(object = "entangledMCP")’: A method for
+          getting the information whether the hypotheses are marked in
+          the graph as already rejected.  If a second optional argument
+          ‘node’ is specified, only for these nodes the boolean vector
+          will be returned.
+
+     getXCoordinates ‘signature(object = "entangledMCP")’: A method for
+          getting the x coordinates of the graph.  If a second optional
+          argument ‘node’ is specified, only for these nodes the x
+          coordinates will be returned.  If x coordinates are not yet
+          set, ‘NULL’ is returned.
+
+     getYCoordinates ‘signature(object = "entangledMCP")’: A method for
+          getting the y coordinates of the graph If a second optional
+          argument ‘node’ is specified, only for these nodes the x
+          coordinates will be returned.  If y coordinates are not yet
+          set, ‘NULL’ is returned.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_S_e_e _A_l_s_o:
+
+     ‘graphMCP’
+
+_E_x_a_m_p_l_e_s:
+
+     g1 <- BonferroniHolm(2)
+     g2 <- BonferroniHolm(2)
+     
+     graph <- new("entangledMCP", subgraphs=list(g1,g2), weights=c(0.5,0.5))
+     
+     getMatrices(graph)
+     getWeights(graph)
+     
+> 
+
+---
+# FUNCTION: exampleGraphs
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/exampleGraphs.Rd', out=stdout())
+_F_u_n_c_t_i_o_n_s _t_h_a_t _c_r_e_a_t_e _d_i_f_f_e_r_e_n_t _e_x_a_m_p_l_e _g_r_a_p_h_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Functions that creates example graphs, e.g. graphs that represents
+     a Bonferroni-Holm adjustment, parallel gatekeeping or special
+     procedures from selected papers.
+
+_U_s_a_g_e:
+
+     BonferroniHolm(n, weights = rep(1/n, n))
+     
+     BretzEtAl2011()
+     
+     BauerEtAl2001()
+     
+     BretzEtAl2009a()
+     
+     BretzEtAl2009b()
+     
+     BretzEtAl2009c()
+     
+     HommelEtAl2007()
+     
+     HommelEtAl2007Simple()
+     
+     parallelGatekeeping()
+     
+     improvedParallelGatekeeping()
+     
+     fallback(weights)
+     
+     fixedSequence(n)
+     
+     simpleSuccessiveI()
+     
+     simpleSuccessiveII()
+     
+     truncatedHolm(gamma)
+     
+     generalSuccessive(weights = c(1/2, 1/2), gamma, delta)
+     
+     HuqueAloshEtBhore2011()
+     
+     HungEtWang2010(nu, tau, omega)
+     
+     MaurerEtAl1995()
+     
+     cycleGraph(nodes, weights)
+     
+     improvedFallbackI(weights = rep(1/3, 3))
+     
+     improvedFallbackII(weights = rep(1/3, 3))
+     
+     FerberTimeDose2011(times, doses, w = "\\nu")
+     
+     Ferber2011(w)
+     
+     Entangled1Maurer2012()
+     
+     Entangled2Maurer2012()
+     
+     WangTing2014(nu, tau)
+     
+_A_r_g_u_m_e_n_t_s:
+
+       n: Number of hypotheses.
+
+ weights: Numeric vector of node weights.
+
+   gamma: An optional number in [0,1] specifying the value for variable
+          gamma.
+
+   delta: An optional number in [0,1] specifying the value for variable
+          delta.
+
+      nu: An optional number in [0,1] specifying the value for variable
+          nu.
+
+     tau: An optional number in [0,1] specifying the value for variable
+          tau.
+
+   omega: An optional number in [0,1] specifying the value for variable
+          omega.
+
+   nodes: Character vector of node names.
+
+   times: Number of time points.
+
+   doses: Number of dose levels.
+
+       w: Further variable weight(s) in graph.
+
+_D_e_t_a_i_l_s:
+
+     We are providing functions and not the resulting graphs directly
+     because this way you have additional examples: You can look at the
+     function body with ‘body’ and see how the graph is built.
+
+     list("BonferroniHolm") Returns a graph that represents a
+          Bonferroni-Holm adjustment.  The result is a complete graph,
+          where all nodes have the same weights and each edge weight is
+          1/(n-1).
+
+     list("BretzEtAl2011") Graph in figure 2 from Bretz et al. See
+          references (Bretz et al. 2011).
+
+     list("HommelEtAl2007") Graph from Hommel et al. See references
+          (Hommel et al. 2007).
+
+     list("parallelGatekeeping") Graph for parallel gatekeeping. See
+          references (Dmitrienko et al. 2003).
+
+     list("improvedParallelGatekeeping") Graph for improved parallel
+          gatekeeping. See references (Hommel et al. 2007).
+
+     list("HungEtWang2010") Graph from Hung et Wang. See references
+          (Hung et Wang 2010).
+
+     list("MaurerEtAl1995") Graph from Maurer et al. See references
+          (Maurer et al. 1995).
+
+     list("cycleGraph") Cycle graph. The weight ‘weights[i]’ specifies
+          the edge weight from node i to node i+1 for i=1,...,n-1 and
+          ‘weight[n]’ from node n to node 1.
+
+     list("improvedFallbackI") Graph for the improved Fallback
+          Procedure by Wiens & Dmitrienko. See references (Wiens et
+          Dmitrienko 2005).
+
+     list("improvedFallbackII") Graph for the improved Fallback
+          Procedure by Hommel & Bretz. See references (Hommel et Bretz
+          2008).
+
+     list("Ferber2011") Graph from Ferber et al. See references (Ferber
+          et al. 2011).
+
+     list("FerberTimeDose2011") Graph from Ferber et al. See references
+          (Ferber et al. 2011).
+
+     list("Entangled1Maurer2012") Entangled graph from Maurer et al.
+          TODO: Add references as soon as they are available.
+
+_V_a_l_u_e:
+
+     A graph of class ‘graphMCP’ that represents a sequentially
+     rejective multiple test procedure.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Holm, S. (1979). A simple sequentially rejective multiple test
+     procedure. Scandinavian Journal of Statistics 6, 65-70.
+
+     Dmitrienko, A., Offen, W., Westfall, P.H. (2003). Gatekeeping
+     strategies for clinical trials that do not require all primary
+     effects to be significant. Statistics in Medicine. 22, 2387-2400.
+
+     Bretz, F., Maurer, W., Brannath, W., Posch, M.: A graphical
+     approach to sequentially rejective multiple test procedures.
+     Statistics in Medicine 2009 vol. 28 issue 4 page 586-604.
+
+     Bretz, F., Maurer, W. and Hommel, G. (2011), Test and power
+     considerations for multiple endpoint analyses using sequentially
+     rejective graphical procedures. Statistics in Medicine, 30:
+     1489-1501.
+
+     Hommel, G., Bretz, F. und Maurer, W. (2007). Powerful short-cuts
+     for multiple testing procedures with special reference to
+     gatekeeping strategies. Statistics in Medicine, 26(22), 4063-4073.
+
+     Hommel, G., Bretz, F. (2008): Aesthetics and power considerations
+     in multiple testing - a contradiction? Biometrical Journal
+     50:657-666.
+
+     Hung H.M.J., Wang S.-J. (2010). Challenges to multiple testing in
+     clinical trials. Biometrical Journal 52, 747-756.
+
+     W. Maurer, L. Hothorn, W. Lehmacher: Multiple comparisons in drug
+     clinical trials and preclinical assays: a-priori ordered
+     hypotheses. In Biometrie in der chemisch-pharmazeutischen
+     Industrie, Vollmar J (ed.). Fischer Verlag: Stuttgart, 1995; 3-18.
+
+     Maurer, W., & Bretz, F. (2013). Memory and other properties of
+     multiple test procedures generated by entangled graphs. Statistics
+     in medicine, 32 (10), 1739-1753.
+
+     Wiens, B.L., Dmitrienko, A. (2005): The fallback procedure for
+     evaluating a single family of hypotheses. Journal of
+     Biopharmaceutical Statistics 15:929-942.
+
+     Wang, B., Ting, N. (2014). An Application of Graphical Approach to
+     Construct Multiple Testing Procedures in a Hypothetical Phase III
+     Design. Frontiers in public health, 1 (75).
+
+     Ferber, G. Staner, L. and Boeijinga, P. (2011): Structured
+     multiplicity and confirmatory statistical analyses in
+     pharmacodynamic studies using the quantitative
+     electroencephalogram, Journal of neuroscience methods, Volume 201,
+     Issue 1, Pages 204-212.
+
+_E_x_a_m_p_l_e_s:
+
+     g <- BonferroniHolm(5)
+     
+     gMCP(g, pvalues=c(0.1, 0.2, 0.4, 0.4, 0.7))
+     
+     HungEtWang2010()
+     HungEtWang2010(nu=1)
+     
+> 
+
+---
+# FUNCTION: gMCP
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/gMCP.Rd', out=stdout())
+_G_r_a_p_h _b_a_s_e_d _M_u_l_t_i_p_l_e _C_o_m_p_a_r_i_s_o_n _P_r_o_c_e_d_u_r_e_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Performs a graph based multiple test procedure for a given graph
+     and unadjusted p-values.
+
+_U_s_a_g_e:
+
+     gMCP(
+       graph,
+       pvalues,
+       test,
+       correlation,
+       alpha = 0.05,
+       approxEps = TRUE,
+       eps = 10^(-3),
+       ...,
+       upscale = ifelse(missing(test) && !missing(correlation) || !missing(test) && test ==
+         "Bretz2011", TRUE, FALSE),
+       useC = FALSE,
+       verbose = FALSE,
+       keepWeights = FALSE,
+       adjPValues = TRUE
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+   graph: A graph of class ‘graphMCP’.
+
+ pvalues: A numeric vector specifying the p-values for the graph based
+          MCP. Note the assumptions in the details section for the
+          parametric tests, when a correlation is specified.
+
+    test: Should be either ‘"Bonferroni"’, ‘"Simes"’ or ‘"parametric"’.
+          If not specified by default the Bonferroni-based test
+          procedure is used if no correlation is specified or the
+          algorithm from Bretz et al. 2011 if a correlation is
+          specified. If ‘test’ is set to ‘"Simes"’ the weighted Simes
+          test will be performed for each subset of hypotheses.
+
+correlation: Optional correlation matrix.  If the weighted Simes test
+          is performed, it is checked whether type I error rate can be
+          ensured and a warning is given if this is not the case.  For
+          parametric tests the p-values must arise from one-sided tests
+          with multivariate normal distributed test statistics for
+          which the correlation is (partially) known. In that case a
+          weighted parametric closed test is performed (also see
+          ‘generatePvals’). Unknown values can be set to NA. (See
+          details for more information)
+
+   alpha: A numeric specifying the maximal allowed type one error rate.
+
+approxEps: A boolean specifying whether epsilon values should be
+          substituted with the value given in the parameter ‘eps’.
+
+     eps: A numeric scalar specifying a value for epsilon edges.
+
+     ...: Test specific arguments can be given here.
+
+ upscale: Logical. If ‘upscale=FALSE’ then for each intersection of
+          hypotheses (i.e. each subgraph) a weighted test is performed
+          at the possibly reduced level alpha of sum(w)*alpha, where
+          sum(w) is the sum of all node weights in this subset. If
+          ‘upscale=TRUE’ all weights are upscaled, so that sum(w)=1.
+
+          For backward compatibility the default value is TRUE if a the
+          parameter ‘test’ is missing, but parameter ‘correlation’ is
+          specified or if ‘test=="Bretz2011"’.
+
+    useC: Logical scalar. If ‘TRUE’ neither adjusted p-values nor
+          intermediate graphs are returned, but the calculation is sped
+          up by using code written in C. THIS CODE IS NOT FOR
+          PRODUCTIVE USE YET!  If approxEps is ‘FALSE’ and the graph
+          contains epsilon edges, a warning is thrown and ‘useC’ will
+          be ignored.
+
+ verbose: Logical scalar. If ‘TRUE’ verbose output is generated.
+
+keepWeights: Logical scalar. If ‘FALSE’ the weight of a node without
+          outgoing edges is set to 0 if it is removed.  Otherwise it
+          keeps its weight.
+
+adjPValues: Logical scalar. If ‘FALSE’ no adjusted p-values will be
+          calculated.  Especially for the weighted Simes test this will
+          result in significantly less calculations in most cases.
+
+_D_e_t_a_i_l_s:
+
+     For the Bonferroni procedure the p-values can arise from any
+     statistical test, but if you improve the test by specifying a
+     correlation matrix, the following assumptions apply:
+
+     It is assumed that under the global null hypothesis
+     (Phi^{-1}(1-p_1),...,Phi^{-1}(1-p_m)) follow a multivariate normal
+     distribution with correlation matrix ‘correlation’ where Phi^{-1}
+     denotes the inverse of the standard normal distribution function.
+
+     For example, this is the case if p_1,..., p_m are the raw p-values
+     from one-sided z-tests for each of the elementary hypotheses where
+     the correlation between z-test statistics is generated by an
+     overlap in the observations (e.g. comparison with a common
+     control, group-sequential analyses etc.). An application of the
+     transformation Phi^{-1}(1-p_i) to raw p-values from a two-sided
+     test will not in general lead to a multivariate normal
+     distribution. Partial knowledge of the correlation matrix is
+     supported. The correlation matrix has to be passed as a numeric
+     matrix with elements of the form: correlation[i,i] = 1 for
+     diagonal elements, correlation[i,j] = rho_{ij}, where rho_{ij} is
+     the known value of the correlation between Phi^{-1}(1-p_i) and
+     Phi^{-1}(1-p_j) or ‘NA’ if the corresponding correlation is
+     unknown. For example correlation[1,2]=0 indicates that the first
+     and second test statistic are uncorrelated, whereas
+     correlation[2,3] = NA means that the true correlation between
+     statistics two and three is unknown and may take values between -1
+     and 1. The correlation has to be specified for complete blocks
+     (ie.: if cor(i,j), and cor(i,j') for i!=j!=j' are specified then
+     cor(j,j') has to be specified as well) otherwise the corresponding
+     intersection null hypotheses tests are not uniquely defined and an
+     error is returned.
+
+     For further details see the given references.
+
+_V_a_l_u_e:
+
+     An object of class ‘gMCPResult’, more specifically a list with
+     elements
+
+     ‘graphs’ list of graphs
+
+     ‘pvalues’ p-values
+
+     ‘rejected’ logical whether hypotheses could be rejected
+
+     ‘adjPValues’ adjusted p-values
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Frank Bretz, Willi Maurer, Werner Brannath, Martin Posch: A
+     graphical approach to sequentially rejective multiple test
+     procedures. Statistics in Medicine 2009 vol. 28 issue 4 page
+     586-604.
+
+     Bretz F., Posch M., Glimm E., Klinglmueller F., Maurer W.,
+     Rohmeyer K. (2011): Graphical approaches for multiple endpoint
+     problems using weighted Bonferroni, Simes or parametric tests.
+     Biometrical Journal 53 (6), pages 894-913, Wiley.
+     \Sexpr[results=rd]{tools:::Rd_expr_doi("10.1002/bimj.201000239")}
+
+     Strassburger K., Bretz F.: Compatible simultaneous lower
+     confidence bounds for the Holm procedure and other Bonferroni
+     based closed tests. Statistics in Medicine 2008; 27:4914-4927.
+
+     Hommel G., Bretz F., Maurer W.: Powerful short-cuts for multiple
+     testing procedures with special reference to gatekeeping
+     strategies. Statistics in Medicine 2007; 26:4063-4073.
+
+     Guilbaud O.: Simultaneous confidence regions corresponding to
+     Holm's stepdown procedure and other closed-testing procedures.
+     Biometrical Journal 2008; 50:678-692.
+
+_S_e_e _A_l_s_o:
+
+     ‘graphMCP’ ‘multcomp::contrMat()’
+
+_E_x_a_m_p_l_e_s:
+
+     g <- BonferroniHolm(5)
+     gMCP(g, pvalues=c(0.01, 0.02, 0.04, 0.04, 0.7))
+     # Simple Bonferroni with empty graph:
+     g2 <- matrix2graph(matrix(0, nrow=5, ncol=5))
+     gMCP(g2, pvalues=c(0.01, 0.02, 0.04, 0.04, 0.7))
+     # With 'upscale=TRUE' equal to BonferroniHolm:
+     gMCP(g2, pvalues=c(0.01, 0.02, 0.04, 0.04, 0.7), upscale=TRUE)
+     
+> 
+
+---
+# FUNCTION: gMCP.extended
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/gMCP.extended.Rd', out=stdout())
+_G_r_a_p_h _b_a_s_e_d _M_u_l_t_i_p_l_e _C_o_m_p_a_r_i_s_o_n _P_r_o_c_e_d_u_r_e_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Performs a graph based multiple test procedure for a given graph
+     and unadjusted p-values.
+
+_U_s_a_g_e:
+
+     gMCP.extended(
+       graph,
+       pvalues,
+       test,
+       alpha = 0.05,
+       eps = 10^(-3),
+       upscale = FALSE,
+       verbose = FALSE,
+       adjPValues = TRUE,
+       ...
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+   graph: A graph of class ‘graphMCP’.
+
+ pvalues: A numeric vector specifying the p-values for the graph based
+          MCP. Note the assumptions in the description of the selected
+          test (if there are any - for example ‘test=bonferroni.test’
+          has no further assumptions, but ‘test=parametric.test’
+          assumes p-values from a multivariate normal distribution).
+
+    test: A weighted test function.
+
+          The package gMCP provides the following weighted test
+          functions:
+
+          bonferroni.test Bonferroni test - see ‘?bonferroni.test’ for
+              details.
+
+          parametric.test Parametric test - see ‘?parametric.test’ for
+              details.
+
+          simes.test Simes test - see ‘?simes.test’ for details.
+
+          bonferroni.trimmed.simes.test Trimmed Simes test for
+              intersections of two hypotheses and otherwise Bonferroni
+              - see ‘?bonferroni.trimmed.simes.test’ for details.
+
+          simes.on.subsets.test Simes test for intersections of
+              hypotheses from certain sets and otherwise Bonferroni -
+              see ‘?simes.on.subsets.test’ for details.
+
+          To provide your own test function see
+          ‘?weighted.test.function’.
+
+   alpha: A numeric specifying the maximal allowed type one error rate.
+
+     eps: A numeric scalar specifying a value for epsilon edges.
+
+ upscale: Logical. If ‘upscale=FALSE’ then for each intersection of
+          hypotheses (i.e. each subgraph) a weighted test is performed
+          at the possibly reduced level alpha of sum(w)*alpha, where
+          sum(w) is the sum of all node weights in this subset. If
+          ‘upscale=TRUE’ all weights are upscaled, so that sum(w)=1.
+
+ verbose: Logical scalar. If ‘TRUE’ verbose output is generated during
+          sequentially rejection steps.
+
+adjPValues: Logical scalar. If ‘FALSE’ no adjusted p-values will be
+          calculated. Especially for the weighted Simes test this will
+          result in significantly less calculations in most cases.
+
+     ...: Test specific arguments can be given here.
+
+_V_a_l_u_e:
+
+     An object of class ‘gMCPResult’, more specifically a list with
+     elements
+
+     ‘graphs’ list of graphs
+
+     ‘pvalues’ p-values
+
+     ‘rejected’ logical whether hypotheses could be rejected
+
+     ‘adjPValues’ adjusted p-values
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Frank Bretz, Willi Maurer, Werner Brannath, Martin Posch: A
+     graphical approach to sequentially rejective multiple test
+     procedures. Statistics in Medicine 2009 vol. 28 issue 4 page
+     586-604.
+
+     Bretz F., Posch M., Glimm E., Klinglmueller F., Maurer W.,
+     Rohmeyer K. (2011): Graphical approaches for multiple endpoint
+     problems using weighted Bonferroni, Simes or parametric tests.
+     Biometrical Journal 53 (6), pages 894-913, Wiley.
+     \Sexpr[results=rd]{tools:::Rd_expr_doi("10.1002/bimj.201000239")}
+
+     Strassburger K., Bretz F.: Compatible simultaneous lower
+     confidence bounds for the Holm procedure and other Bonferroni
+     based closed tests. Statistics in Medicine 2008; 27:4914-4927.
+
+     Hommel G., Bretz F., Maurer W.: Powerful short-cuts for multiple
+     testing procedures with special reference to gatekeeping
+     strategies. Statistics in Medicine 2007; 26:4063-4073.
+
+     Guilbaud O.: Simultaneous confidence regions corresponding to
+     Holm's stepdown procedure and other closed-testing procedures.
+     Biometrical Journal 2008; 50:678-692.
+
+_S_e_e _A_l_s_o:
+
+     ‘graphMCP’ ‘multcomp::contrMat()’
+
+_E_x_a_m_p_l_e_s:
+
+     g <- BonferroniHolm(5)
+     gMCP(g, pvalues=c(0.01, 0.02, 0.04, 0.04, 0.7))
+     # Simple Bonferroni with empty graph:
+     g2 <- matrix2graph(matrix(0, nrow=5, ncol=5))
+     gMCP(g2, pvalues=c(0.01, 0.02, 0.04, 0.04, 0.7))
+     # With 'upscale=TRUE' equal to BonferroniHolm:
+     gMCP(g2, pvalues=c(0.01, 0.02, 0.04, 0.04, 0.7), upscale=TRUE)
+     
+     # Entangled graphs:
+     g3 <- Entangled2Maurer2012()
+     gMCP(g3, pvalues=c(0.01, 0.02, 0.04, 0.04, 0.7), correlation=diag(5))
+     
+> 
+
+---
+# FUNCTION: gMCPLite-package
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/gMCPLite-package.Rd', out=stdout())
+_g_M_C_P_L_i_t_e: _L_i_g_h_t_w_e_i_g_h_t _G_r_a_p_h _B_a_s_e_d _M_u_l_t_i_p_l_e _C_o_m_p_a_r_i_s_o_n _P_r_o_c_e_d_u_r_e_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     A lightweight fork of 'gMCP' with functions for graphical
+     described multiple test procedures introduced in Bretz et al.
+     (2009) \Sexpr[results=rd]{tools:::Rd_expr_doi("10.1002/sim.3495")}
+     and Bretz et al. (2011)
+     \Sexpr[results=rd]{tools:::Rd_expr_doi("10.1002/bimj.201000239")}.
+     Implements a flexible function using 'ggplot2' to create
+     multiplicity graph visualizations. Contains instructions of
+     multiplicity graph and graphical testing for group sequential
+     design, described in Maurer and Bretz (2013)
+     \Sexpr[results=rd]{tools:::Rd_expr_doi("10.1080/19466315.2013.807748")},
+     with necessary unit testing using 'testthat'.
+
+_A_u_t_h_o_r(_s):
+
+     *Maintainer*: Keaven Anderson <mailto:keaven_anderson@merck.com>
+
+     Authors:
+
+        • Yalin Zhu <mailto:yalin.zhu@outlook.com> (ORCID)
+
+        • Yilong Zhang <mailto:elong0527@gmail.com>
+
+        • Xuan Deng <mailto:xuan.deng@merck.com>
+
+        • Nan Xiao (ORCID)
+
+     Other contributors:
+
+        • Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de> (gMCP
+          author) [contributor]
+
+        • Florian Klinglmueller <mailto:float@lefant.net> (gMCP author)
+          [contributor]
+
+        • gMCP project contributors (gMCP package) [copyright holder]
+
+        • Merck & Co., Inc., Rahway, NJ, USA and its affiliates
+          [copyright holder]
+
+_S_e_e _A_l_s_o:
+
+     Useful links:
+
+        • <https://merck.github.io/gMCPLite/>
+
+        • <https://github.com/Merck/gMCPLite>
+
+        • Report bugs at <https://github.com/Merck/gMCPLite/issues>
+
+> 
+
+---
+# FUNCTION: gMCPResult-class
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/gMCPResult-class.Rd', out=stdout())
+_C_l_a_s_s _g_M_C_P_R_e_s_u_l_t
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     A gMCPResult object describes an evaluated sequentially rejective
+     multiple test procedure.
+
+_S_l_o_t_s:
+
+     ‘graphs’ Object of class ‘list’.
+
+     ‘alpha’ A ‘numeric’ specifying the maximal type I error rate.
+
+     ‘pvalues’ The ‘numeric’ vector of p-values.
+
+     ‘rejected’ The ‘logical’ vector of rejected null hypotheses.
+
+     ‘adjPValues’ The ‘numeric’ vector of adjusted p-values.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_S_e_e _A_l_s_o:
+
+     ‘gMCP’
+
+> 
+
+---
+# FUNCTION: gPADInterim-class
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/gPADInterim-class.Rd', out=stdout())
+_C_l_a_s_s _g_P_A_D_I_n_t_e_r_i_m
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     A gPADInterim object describes an object holding interim
+     information for an adaptive procedure that is based on a
+     preplanned graphical procedure.
+
+_S_l_o_t_s:
+
+     ‘Aj’ Object of class ‘numeric’. Giving partial conditional errors
+          (PCEs) for all elementary hypotheses in each intersection
+          hypothesis
+
+     ‘BJ’ A ‘numeric’ specifying the sum of PCEs per intersection
+          hypothesis.
+
+     ‘z1’ The ‘numeric’ vector of first stage z-scores.
+
+     ‘v’ A ‘numeric’ specifying the proportion of measurements
+          collected up to interim
+
+     ‘preplanned’ Object of class ‘graphMCP’ specifying the preplanned
+          graphical procedure.
+
+     ‘alpha’ A ‘numeric’ giving the alpha level of the pre-planned test
+
+_A_u_t_h_o_r(_s):
+
+     Florian Klinglmueller <mailto:float@lefant.net>
+
+_S_e_e _A_l_s_o:
+
+     ‘gMCP’
+
+> 
+
+---
+# FUNCTION: generatePvals
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/generatePvals.Rd', out=stdout())
+_g_e_n_e_r_a_t_e_P_v_a_l_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     compute adjusted p-values either for the closed test defined by
+     the graph or for each elementary hypotheses within each
+     intersection hypotheses
+
+_U_s_a_g_e:
+
+     generatePvals(
+       g,
+       w,
+       cr,
+       p,
+       adjusted = TRUE,
+       hint = generateWeights(g, w),
+       upscale = FALSE
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+       g: graph defined as a matrix, each element defines how much of
+          the local alpha reserved for the hypothesis corresponding to
+          its row index is passed on to the hypothesis corresponding to
+          its column index
+
+       w: vector of weights, defines how much of the overall alpha is
+          initially reserved for each elementary hypothesis
+
+      cr: correlation matrix if p-values arise from one-sided tests
+          with multivariate normal distributed test statistics for
+          which the correlation is partially known. Unknown values can
+          be set to NA. (See details for more information)
+
+       p: vector of observed unadjusted p-values, that belong to
+          test-statistics with a joint multivariate normal null
+          distribution with (partially) known correlation matrix ‘cr’
+
+adjusted: logical, if TRUE (default) adjusted p-values for the closed
+          test are returned, else a matrix of p-values adjusted only
+          for each intersection hypothesis is returned
+
+    hint: if intersection hypotheses weights have already been computed
+          (output of ‘generateWeights’) can be passed here otherwise
+          will be computed during execution
+
+ upscale: if ‘FALSE’ (default) the p-values are additionally adjusted
+          for the case that non-exhaustive weights are specified. (See
+          details)
+
+_D_e_t_a_i_l_s:
+
+     It is assumed that under the global null hypothesis
+     (Phi^{-1}(1-p_1),...,Phi^{-1}(1-p_m)) follow a multivariate normal
+     distribution with correlation matrix ‘cr’ where Phi^{-1} denotes
+     the inverse of the standard normal distribution function.
+
+     For example, this is the case if p_1,..., p_m are the raw p-values
+     from one-sided z-tests for each of the elementary hypotheses where
+     the correlation between z-test statistics is generated by an
+     overlap in the observations (e.g. comparison with a common
+     control, group-sequential analyses etc.). An application of the
+     transformation Phi^{-1}(1-p_i) to raw p-values from a two-sided
+     test will not in general lead to a multivariate normal
+     distribution. Partial knowledge of the correlation matrix is
+     supported. The correlation matrix has to be passed as a numeric
+     matrix with elements of the form: cr[i,i] = 1 for diagonal
+     elements, cr[i,j] = rho_{ij}, where rho_{ij} is the known value of
+     the correlation between Phi^{-1}(1-p_i) and Phi^{-1}(1-p_j) or
+     ‘NA’ if the corresponding correlation is unknown. For example
+     cr[1,2]=0 indicates that the first and second test statistic are
+     uncorrelated, whereas cr[2,3] = NA means that the true correlation
+     between statistics two and three is unknown and may take values
+     between -1 and 1. The correlation has to be specified for complete
+     blocks (ie.: if cor(i,j), and cor(i,k) for i!=j!=k are specified
+     then cor(j,k) has to be specified as well) otherwise the
+     corresponding intersection null hypotheses tests are not uniquely
+     defined and an error is returned.
+
+     The parametric tests in (Bretz et al. (2011)) are defined such
+     that the tests of intersection null hypotheses always exhaust the
+     full alpha level even if the sum of weights is strictly smaller
+     than one. This has the consequence that certain test procedures
+     that do not test each intersection null hypothesis at the full
+     level alpha may not be implemented (e.g., a single step Dunnett
+     test). If ‘upscale’ is set to ‘FALSE’ (default) the parametric
+     tests are performed at a reduced level alpha of sum(w) * alpha and
+     p-values adjusted accordingly such that test procedures with
+     non-exhaustive weighting strategies may be implemented. If set to
+     ‘TRUE’ the tests are performed as defined in Equation (3) of
+     (Bretz et al. (2011)).
+
+_V_a_l_u_e:
+
+     If adjusted is set to true returns a vector of adjusted p-values.
+     Any elementary null hypothesis is rejected if its corresponding
+     adjusted p-value is below the predetermined alpha level. For
+     adjusted set to false a matrix with p-values adjusted only within
+     each intersection hypotheses is returned.  The intersection
+     corresponding to each line is given by conversion of the line
+     number into binary (eg. 13 is binary 1101 and corresponds to
+     (H1,H2,H4)). If any adjusted p-value within a given line falls
+     below alpha, then the corresponding intersection hypotheses can be
+     rejected.
+
+_A_u_t_h_o_r(_s):
+
+     Florian Klinglmueller
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Bretz F, Maurer W, Brannath W, Posch M; (2008) - A graphical
+     approach to sequentially rejective multiple testing procedures. -
+     Stat Med - 28/4, 586-604 Bretz F, Posch M, Glimm E, Klinglmueller
+     F, Maurer W, Rohmeyer K; (2011) - Graphical approaches for
+     multiple endpoint problems using weighted Bonferroni, Simes or
+     parametric tests - to appear
+
+_E_x_a_m_p_l_e_s:
+
+     ## Define some graph as matrix
+     g <- matrix(c(0,0,1,0, 0,0,0,1, 0,1,0,0, 1,0,0,0), nrow = 4, byrow=TRUE)
+     ## Choose weights
+     w <- c(.5,.5,0,0)
+     ## Some correlation (upper and lower first diagonal 1/2)
+     c <- diag(4)
+     c[1:2,3:4] <- NA
+     c[3:4,1:2] <- NA
+     c[1,2] <- 1/2
+     c[2,1] <- 1/2
+     c[3,4] <- 1/2
+     c[4,3] <- 1/2
+     ## p-values as Section 3 of Bretz et al. (2011),
+     p <- c(0.0121,0.0337,0.0084,0.0160)
+     
+     ## Boundaries for correlated test statistics at alpha level .05:
+     generatePvals(g,w,c,p)
+     
+     g <- Entangled2Maurer2012()
+     generatePvals(g=g, cr=diag(5), p=rep(0.1,5))
+     
+> 
+
+---
+# FUNCTION: generateWeights
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/generateWeights.Rd', out=stdout())
+_g_e_n_e_r_a_t_e_W_e_i_g_h_t_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     compute Weights for each intersection Hypotheses in the closure of
+     a graph based multiple testing procedure
+
+_U_s_a_g_e:
+
+     generateWeights(g, w)
+     
+_A_r_g_u_m_e_n_t_s:
+
+       g: Graph either defined as a matrix (each element defines how
+          much of the local alpha reserved for the hypothesis
+          corresponding to its row index is passed on to the hypothesis
+          corresponding to its column index), as ‘graphMCP’ object or
+          as ‘entangledMCP’ object.
+
+       w: Vector of weights, defines how much of the overall alpha is
+          initially reserved for each elementary hypothesis. Can be
+          missing if ‘g’ is a ‘graphMCP’ object (in which case the
+          weights from the graph object are used). Will be ignored if
+          ‘g’ is an ‘entangledMCP’ object (since then the matrix of
+          weights from this object is used).
+
+_V_a_l_u_e:
+
+     Returns matrix with each row corresponding to one intersection
+     hypothesis in the closure of the multiple testing problem. The
+     first half of elements indicate whether an elementary hypotheses
+     is in the intersection (1) or not (0). The second half of each row
+     gives the weights allocated to each elementary hypotheses in the
+     intersection.
+
+_A_u_t_h_o_r(_s):
+
+     Florian Klinglmueller <float@lefant.net>, Kornelius Rohmeyer
+     <mailto:rohmeyer@small-projects.de>
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Bretz F, Maurer W, Brannath W, Posch M; (2008) - A graphical
+     approach to sequentially rejective multiple testing procedures. -
+     Stat Med - 28/4, 586-604 Bretz F, Posch M, Glimm E, Klinglmueller
+     F, Maurer W, Rohmeyer K; (2011) - Graphical approaches for
+     multiple endpoint problems using weighted Bonferroni, Simes or
+     parametric tests - to appear
+
+_E_x_a_m_p_l_e_s:
+
+      g <- matrix(c(0,0,1,0,
+                    0,0,0,1,
+                    0,1,0,0,
+                    1,0,0,0), nrow = 4,byrow=TRUE)
+      ## Choose weights
+      w <- c(.5,.5,0,0)
+      ## Weights of conventional gMCP test:
+      generateWeights(g,w)
+     
+     g <- Entangled2Maurer2012()
+     generateWeights(g)
+     
+> 
+
+---
+# FUNCTION: graphMCP-class
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/graphMCP-class.Rd', out=stdout())
+_C_l_a_s_s _g_r_a_p_h_M_C_P
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     A graphMCP object describes a sequentially rejective multiple test
+     procedure.
+
+_S_l_o_t_s:
+
+     ‘m’ A transition matrix. Can be either ‘numerical’ or ‘character’
+          depending whether the matrix contains variables or not.  Row
+          and column names will be the names of the nodes.
+
+     ‘weights’ A numeric.
+
+     ‘edgeAttr’ A list for edge attributes.
+
+     ‘nodeAttr’ A list for node attributes.
+
+_M_e_t_h_o_d_s:
+
+     getMatrix ‘signature(object = "graphMCP")’: A method for getting
+          the transition matrix of the graph.
+
+     getWeights ‘signature(object = "graphMCP")’: A method for getting
+          the weights.  If a third optional argument ‘node’ is
+          specified, only for these nodes the weight will be returned.
+
+     setWeights ‘signature(object = "graphMCP")’: A method for setting
+          the weights.  If a third optional argument ‘node’ is
+          specified, only for these nodes the weight will be set.
+
+     getRejected ‘signature(object = "graphMCP")’: A method for getting
+          the information whether the hypotheses are marked in the
+          graph as already rejected.  If a second optional argument
+          ‘node’ is specified, only for these nodes the boolean vector
+          will be returned.
+
+     getXCoordinates ‘signature(object = "graphMCP")’: A method for
+          getting the x coordinates of the graph.  If a second optional
+          argument ‘node’ is specified, only for these nodes the x
+          coordinates will be returned.  If x coordinates are not set
+          yet ‘NULL’ is returned.
+
+     getYCoordinates ‘signature(object = "graphMCP")’: A method for
+          getting the y coordinates of the graph If a second optional
+          argument ‘node’ is specified, only for these nodes the x
+          coordinates will be returned.  If y coordinates are not set
+          yet ‘NULL’ is returned.
+
+     setEdge ‘signature(from="character", to="character",
+          graph="graphNEL", weights="numeric")’: A method for adding
+          new edges with the given weights.
+
+     setEdge ‘signature(from="character", to="character",
+          graph="graphMCP", weights="character")’: A method for adding
+          new edges with the given weights.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_E_x_a_m_p_l_e_s:
+
+     m <- rbind(H11=c(0,   0.5, 0,   0.5, 0,   0  ),
+                             H21=c(1/3, 0,   1/3, 0,   1/3, 0  ),
+                             H31=c(0,   0.5, 0,   0,   0,   0.5),
+                             H12=c(0,   1,   0,   0,   0,   0  ),
+                             H22=c(0.5, 0,   0.5, 0,   0,   0  ),
+                             H32=c(0,   1,   0,   0,   0,   0  ))
+     
+     weights <- c(1/3, 1/3, 1/3, 0, 0, 0)
+     
+     # Graph creation
+     graph <- new("graphMCP", m=m, weights=weights)
+     
+     # Visualization settings
+     nodeX <- rep(c(100, 300, 500), 2)
+     nodeY <- rep(c(100, 300), each=3)
+     graph@nodeAttr$X <- nodeX
+     graph@nodeAttr$Y <- nodeY
+     
+     getWeights(graph)
+     
+     getRejected(graph)
+     
+     pvalues <- c(0.1, 0.008, 0.005, 0.15, 0.04, 0.006)
+     result <- gMCP(graph, pvalues)
+     
+     getWeights(result@graphs[[4]])
+     getRejected(result@graphs[[4]])
+     
+> 
+
+---
+# FUNCTION: graphTest
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/graphTest.Rd', out=stdout())
+_M_u_l_t_i_p_l_e _t_e_s_t_i_n_g _u_s_i_n_g _g_r_a_p_h_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Implements the graphical test procedure described in Bretz et al.
+     (2009). Note that the gMCP function in the gMCP package performs
+     the same task.
+
+_U_s_a_g_e:
+
+     graphTest(
+       pvalues,
+       weights = NULL,
+       alpha = 0.05,
+       G = NULL,
+       cr = NULL,
+       graph = NULL,
+       verbose = FALSE,
+       test,
+       upscale = FALSE
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+ pvalues: Either a vector or a matrix containing the local p-values for
+          the hypotheses in the rows.
+
+ weights: Initial weight levels for the test procedure, in case of
+          multiple graphs this needs to be a matrix.
+
+   alpha: Overall alpha level of the procedure. For entangled graphs
+          ‘alpha’ should be a numeric vector of length equal to the
+          number of graphs, each element specifying the partial alpha
+          for the respective graph. The overall alpha level equals
+          ‘sum(alpha)’.
+
+       G: For simple graphs ‘G’ should be a numeric matrix determining
+          the graph underlying the test procedure. Note that the
+          diagonal need to contain only 0s, while the rows need to sum
+          to 1.  For entangled graphs it needs to be a list containing
+          the different graph matrices as elements.
+
+      cr: Correlation matrix that should be used for the parametric
+          test. If ‘cr==NULL’ the Bonferroni based test procedure is
+          used.
+
+   graph: As an alternative to the specification via ‘weights’ and ‘G’
+          one can also hand over a ‘graphMCP’ object to the code.
+          ‘graphMCP’ objects can be created for example with the
+          ‘graphGUI’ function.
+
+ verbose: If verbose is TRUE, additional information about the
+          graphical rejection procedure is displayed.
+
+    test: In the parametric case there is more than one way to handle
+          subgraphs with less than the full alpha. If the parameter
+          ‘test’ is missing, the tests are performed as described by
+          Bretz et al. (2011), i.e. tests of intersection null
+          hypotheses always exhaust the full alpha level even if the
+          sum of weights is strictly smaller than one. If
+          ‘test="simple-parametric"’ the tests are performed as defined
+          in Equation (3) of Bretz et al. (2011).
+
+ upscale: Logical. If ‘upscale=FALSE’ then for each intersection of
+          hypotheses (i.e. each subgraph) a weighted test is performed
+          at the possibly reduced level alpha of sum(w)*alpha, where
+          sum(w) is the sum of all node weights in this subset. If
+          ‘upscale=TRUE’ all weights are upscaled, so that sum(w)=1.
+
+_V_a_l_u_e:
+
+     A vector or a matrix containing the test results for the
+     hypotheses under consideration. Significant tests are denoted by a
+     1, non-significant results by a 0.
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Bretz, F., Maurer, W., Brannath, W. and Posch, M. (2009) A
+     graphical approach to sequentially rejective multiple test
+     procedures. Statistics in Medicine, 28, 586-604
+
+     Bretz, F., Maurer, W. and Hommel, G. (2010) Test and power
+     considerations for multiple endpoint analyses using sequentially
+     rejective graphical procedures, to appear in Statistics in
+     Medicine
+
+_E_x_a_m_p_l_e_s:
+
+     #### example from Bretz et al. (2010)
+     weights <- c(1/3, 1/3, 1/3, 0, 0, 0)
+     graph <- rbind(c(0,       0.5, 0,     0.5, 0,      0),
+                    c(1/3,     0,   1/3,    0,   1/3,    0),
+                    c(0,       0.5, 0,     0,   0,      0.5),
+                    c(0,       1,   0,     0,   0,      0),
+                    c(0.5,     0,   0.5,   0,   0,      0),
+                    c(0,       1,   0,     0,   0,      0))
+     pvals <- c(0.1, 0.008, 0.005, 0.15, 0.04, 0.006)
+     graphTest(pvals, weights, alpha=0.025, graph)
+     
+     ## observe graphical procedure in detail
+     graphTest(pvals, weights, alpha=0.025, graph, verbose = TRUE)
+     
+     ## now use many p-values (useful for power simulations)
+     pvals <- matrix(rbeta(6e4, 1, 30), ncol = 6)
+     out <- graphTest(pvals, weights, alpha=0.025, graph)
+     head(out)
+     # example using multiple graphs (instead of 1)
+     G1 <- rbind(c(0,0.5,0.5,0,0), c(0,0,1,0,0),
+                 c(0, 0, 0, 1-0.01, 0.01), c(0, 1, 0, 0, 0),
+                 c(0, 0, 0, 0, 0))
+     G2 <- rbind(c(0,0,1,0,0), c(0.5,0,0.5,0,0),
+                 c(0, 0, 0, 0.01, 1-0.01), c(0, 0, 0, 0, 0),
+                 c(1, 0, 0, 0, 0))
+     weights <- rbind(c(1, 0, 0, 0, 0), c(0, 1, 0, 0, 0))
+     pvals <- c(0.012, 0.025, 0.005, 0.0015, 0.0045)
+     out <- graphTest(pvals, weights, alpha=c(0.0125, 0.0125), G=list(G1, G2), verbose = TRUE)
+     
+     ## now again with many p-values
+     pvals <- matrix(rbeta(5e4, 1, 30), ncol = 5)
+     out <- graphTest(pvals, weights, alpha=c(0.0125, 0.0125), G=list(G1, G2))
+     head(out)
+     
+> 
+
+---
+# FUNCTION: hGraph
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/hGraph.Rd', out=stdout())
+_C_r_e_a_t_e _m_u_l_t_i_p_l_i_c_i_t_y _g_r_a_p_h_s _u_s_i_n_g _g_g_p_l_o_t_2
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Plots a multiplicity graph defined by user inputs. The graph can
+     also be used with the gMCP package to evaluate a set of nominal
+     p-values for the tests of the hypotheses in the graph.
+
+_U_s_a_g_e:
+
+     hGraph(
+       nHypotheses = 4,
+       nameHypotheses = paste("H", (1:nHypotheses), sep = ""),
+       alphaHypotheses = 0.025/nHypotheses,
+       m = matrix(array(1/(nHypotheses - 1), nHypotheses^2), nrow = nHypotheses) -
+         diag(1/(nHypotheses - 1), nHypotheses),
+       fill = 1,
+       palette = grDevices::gray.colors(length(unique(fill)), start = 0.5, end = 0.8),
+       labels = LETTERS[1:length(unique(fill))],
+       legend.name = " ",
+       legend.position = "none",
+       halfWid = 0.5,
+       halfHgt = 0.5,
+       trhw = 0.1,
+       trhh = 0.075,
+       trprop = 1/3,
+       digits = 5,
+       trdigits = 2,
+       size = 6,
+       boxtextsize = 4,
+       legend.textsize = size * 2.5,
+       arrowsize = 0.02,
+       radianStart = if ((nHypotheses)%%2 != 0) {
+          pi * (1/2 + 1/nHypotheses)
+      } else
+         {
+          pi * (1 + 2/nHypotheses)/2
+      },
+       offset = pi/4/nHypotheses,
+       xradius = 2,
+       yradius = xradius,
+       x = NULL,
+       y = NULL,
+       wchar = "\u03b1"
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+nHypotheses: number of hypotheses in graph
+
+nameHypotheses: hypothesis names
+
+alphaHypotheses: alpha-levels or weights for ellipses
+
+       m: square transition matrix of dimension `nHypotheses`
+
+    fill: grouping variable for hypotheses
+
+ palette: colors for groups
+
+  labels: text labels for groups
+
+legend.name: text for legend header
+
+legend.position: text string or x,y coordinates for legend
+
+ halfWid: half width of ellipses
+
+ halfHgt: half height of ellipses
+
+    trhw: transition box width
+
+    trhh: transition box height
+
+  trprop: proportion of transition arrow length where transition box is
+          placed
+
+  digits: number of digits to show for alphaHypotheses
+
+trdigits: digits displayed for transition weights
+
+    size: text size in ellipses
+
+boxtextsize: transition text size
+
+legend.textsize: legend text size
+
+arrowsize: size of arrowhead for transition arrows
+
+radianStart: radians from origin for first ellipse; nodes spaced
+          equally in clockwise order with centers on an ellipse by
+          default
+
+  offset: rotational offset in radians for transition weight arrows
+
+ xradius: horizontal ellipse diameter on which ellipses are drawn
+
+ yradius: vertical ellipse diameter on which ellipses are drawn
+
+       x: x coordinates for hypothesis ellipses if elliptical
+          arrangement is not wanted
+
+       y: y coordinates for hypothesis ellipses if elliptical
+          arrangement is not wanted
+
+   wchar: character for alphaHypotheses in ellipses; defaults to the
+          Unicode escape sequence ‘\u03b1’ (Greek letter alpha). See
+          list of Unicode characters for a more comprehensive character
+          list.
+
+_D_e_t_a_i_l_s:
+
+     See vignette **Multiplicity graphs formatting using ggplot2** for
+     explanation of formatting.
+
+_V_a_l_u_e:
+
+     A `ggplot` object with a multi-layer multiplicity graph
+
+_E_x_a_m_p_l_e_s:
+
+     # Use Cairo PDF device for better Unicode character support
+     # when checking the package. Needed for R >= 4.4.0.
+     if (names(dev.cur()) == "pdf") {
+       fn <- attr(.Device, "filepath")
+       fn0 <- "gMCPLite-Ex.pdf"
+       if (!is.null(fn) && fn == fn0) {
+         dv <- cairo_pdf(fn0)
+         on.exit(dev.off(dv), add = TRUE)
+       }
+     }
+     
+     # Defaults: note clockwise ordering
+     hGraph(5)
+     # Add colors (default is 3 gray shades)
+     hGraph(3,fill=1:3)
+     # Colorblind palette
+     cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
+                    "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+     hGraph(6,fill=as.factor(1:6),palette=cbPalette)
+     # Use a hue palette
+     hGraph(4,fill=factor(1:4),palette=scales::hue_pal(l=75)(4))
+     # different alpha allocation, hypothesis names and transitions
+     alphaHypotheses <- c(.005,.007,.013)
+     nameHypotheses <- c("ORR","PFS","OS")
+     m <- matrix(c(0,1,0,
+                   0,0,1,
+                   1,0,0),nrow=3,byrow=TRUE)
+     hGraph(3,alphaHypotheses=alphaHypotheses,nameHypotheses=nameHypotheses,m=m)
+     # Custom position and size of ellipses, change text to multi-line text
+     # Adjust box width
+     # add legend in middle of plot
+     hGraph(3,x=sqrt(0:2),y=c(1,3,1.5),size=6,halfWid=.3,halfHgt=.3, trhw=0.6,
+            palette=cbPalette[2:4], fill = c(1, 2, 2),
+            legend.position = c(.6,.5), legend.name = "Legend:", labels = c("Group 1", "Group 2"),
+            nameHypotheses=c("H1:\n Long name","H2:\n Longer name","H3:\n Longest name"))
+     
+> 
+
+---
+# FUNCTION: joinGraphs
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/joinGraphs.Rd', out=stdout())
+_J_o_i_n_s _t_w_o _g_r_a_p_h_M_C_P _o_b_j_e_c_t_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Creates a new graphMCP object by joining two given graphMCP
+     objects.
+
+_U_s_a_g_e:
+
+     joinGraphs(graph1, graph2, xOffset = 0, yOffset = 200)
+     
+_A_r_g_u_m_e_n_t_s:
+
+  graph1: A graph of class ‘graphMCP’.
+
+  graph2: A graph of class ‘graphMCP’.
+
+ xOffset: A numeric specifying an offset (on the x-axis) for placing
+          the nodes and edge labels of the second graph.
+
+ yOffset: A numeric specifying an offset (on the y-axis) for placing
+          the nodes and edge labels of the second graph.
+
+_D_e_t_a_i_l_s:
+
+     If ‘graph1’ and ‘graph2’ have duplicates in the node names, the
+     nodes of the second graph will be renamed.
+
+     If and only if the sum of the weights of graph1 and graph2 exceeds
+     1, the weights are scaled so that the sum equals 1.
+
+     A description attribute of either graph will be discarded.
+
+_V_a_l_u_e:
+
+     A graphMCP object that represents a graph that consists of the two
+     given graphs.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_S_e_e _A_l_s_o:
+
+     ‘graphMCP’
+
+_E_x_a_m_p_l_e_s:
+
+     g1 <- BonferroniHolm(2)
+     g2 <- BonferroniHolm(3)
+     
+     suppressWarnings(joinGraphs(g1, g2))
+     
+> 
+
+---
+# FUNCTION: matrix2graph
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/matrix2graph.Rd', out=stdout())
+_M_a_t_r_i_x_2_G_r_a_p_h _a_n_d _G_r_a_p_h_2_M_a_t_r_i_x
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Creates a graph of class ‘graphMCP’ from a given transition matrix
+     or vice versa.
+
+_U_s_a_g_e:
+
+     matrix2graph(m, weights = rep(1/dim(m)[1], dim(m)[1]))
+     
+     graph2matrix(graph)
+     
+_A_r_g_u_m_e_n_t_s:
+
+       m: A transition matrix.
+
+ weights: A numeric for the initial weights.
+
+   graph: A graph of class ‘graphMCP’.
+
+_D_e_t_a_i_l_s:
+
+     The hypotheses names are the row names or if these are ‘NULL’, the
+     column names or if these are also ‘NULL’ of type H1, H2, H3, ...
+
+     If the diagonal of the matrix is unequal zero, the values are
+     ignored and a warning is given.
+
+_V_a_l_u_e:
+
+     A graph of class ‘graphMCP’ with the given transition matrix for
+     matrix2graph.  The transition matrix of a ‘graphMCP’ graph for
+     graph2matrix.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_E_x_a_m_p_l_e_s:
+
+     # Bonferroni-Holm:
+     m <- matrix(rep(1/3, 16), nrow=4)
+     diag(m) <- c(0, 0, 0, 0)
+     graph <- matrix2graph(m)
+     print(graph)
+     graph2matrix(graph)
+     
+> 
+
+---
+# FUNCTION: parametric.test
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/parametric.test.Rd', out=stdout())
+_W_e_i_g_h_t_e_d _p_a_r_a_m_e_t_r_i_c _t_e_s_t
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     It is assumed that under the global null hypothesis
+     (Phi^{-1}(1-p_1),...,Phi^{-1}(1-p_m)) follow a multivariate normal
+     distribution with correlation matrix ‘correlation’ where Phi^{-1}
+     denotes the inverse of the standard normal distribution function.
+
+_U_s_a_g_e:
+
+     parametric.test(
+       pvalues,
+       weights,
+       alpha = 0.05,
+       adjPValues = TRUE,
+       verbose = FALSE,
+       correlation,
+       ...
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+ pvalues: A numeric vector specifying the p-values.
+
+ weights: A numeric vector of weights.
+
+   alpha: A numeric specifying the maximal allowed type one error rate.
+          If ‘adjPValues==TRUE’ (default) the parameter ‘alpha’ is not
+          used.
+
+adjPValues: Logical scalar. If ‘TRUE’ (the default) an adjusted p-value
+          for the weighted parametric test is returned. Otherwise if
+          ‘adjPValues==FALSE’ a logical value is returned whether the
+          null hypothesis can be rejected.
+
+ verbose: Logical scalar. If ‘TRUE’ verbose output is generated.
+
+correlation: Correlation matrix. For parametric tests the p-values must
+          arise from one-sided tests with multivariate normal
+          distributed test statistics for which the correlation is
+          (partially) known. In that case a weighted parametric closed
+          test is performed (also see ‘generatePvals’). Unknown values
+          can be set to NA. (See details for more information)
+
+     ...: Further arguments possibly passed by ‘gMCP’ which will be
+          used by other test procedures but not this one.
+
+_D_e_t_a_i_l_s:
+
+     For example, this is the case if p_1,..., p_m are the raw p-values
+     from one-sided z-tests for each of the elementary hypotheses where
+     the correlation between z-test statistics is generated by an
+     overlap in the observations (e.g. comparison with a common
+     control, group-sequential analyses etc.). An application of the
+     transformation Phi^{-1}(1-p_i) to raw p-values from a two-sided
+     test will not in general lead to a multivariate normal
+     distribution. Partial knowledge of the correlation matrix is
+     supported. The correlation matrix has to be passed as a numeric
+     matrix with elements of the form: correlation[i,i] = 1 for
+     diagonal elements, correlation[i,j] = rho_{ij}, where rho_{ij} is
+     the known value of the correlation between Phi^{-1}(1-p_i) and
+     Phi^{-1}(1-p_j) or ‘NA’ if the corresponding correlation is
+     unknown. For example correlation[1,2]=0 indicates that the first
+     and second test statistic are uncorrelated, whereas
+     correlation[2,3] = NA means that the true correlation between
+     statistics two and three is unknown and may take values between -1
+     and 1. The correlation has to be specified for complete blocks
+     (ie.: if cor(i,j), and cor(i,j') for i!=j!=j' are specified then
+     cor(j,j') has to be specified as well) otherwise the corresponding
+     intersection null hypotheses tests are not uniquely defined and an
+     error is returned.
+
+     For further details see the given references.
+
+_V_a_l_u_e:
+
+     adjusted p-value or decision of rejection
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Bretz F., Posch M., Glimm E., Klinglmueller F., Maurer W.,
+     Rohmeyer K. (2011): Graphical approaches for multiple endpoint
+     problems using weighted Bonferroni, Simes or parametric tests.
+     Biometrical Journal 53 (6), pages 894-913, Wiley.
+     \Sexpr[results=rd]{tools:::Rd_expr_doi("10.1002/bimj.201000239")}
+
+_E_x_a_m_p_l_e_s:
+
+     parametric.test(pvalues=c(0.1,0.2,0.05), weights=c(0.5,0.5,0), correlation = diag(3))
+     parametric.test(pvalues=c(0.1,0.2,0.05), weights=c(0.5,0.5,0), correlation = diag(3),
+     adjPValues = FALSE)
+     
+> 
+
+---
+# FUNCTION: permutations
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/permutations.Rd', out=stdout())
+_P_e_r_m_u_t_a_t_i_o_n _f_o_r _a _d_e_s_i_g_n _m_a_t_r_i_x
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Permutation for a design matrix
+
+_U_s_a_g_e:
+
+     permutations(n)
+     
+_A_r_g_u_m_e_n_t_s:
+
+       n: dimension of the matrix
+
+_V_a_l_u_e:
+
+     a n*(2^n) dimensional matrix
+
+_E_x_a_m_p_l_e_s:
+
+     permutations(3)
+     
+> 
+
+---
+# FUNCTION: placeNodes
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/placeNodes.Rd', out=stdout())
+_P_l_a_c_e_m_e_n_t _o_f _g_r_a_p_h _n_o_d_e_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Places the nodes of a graph according to a specified layout.
+
+_U_s_a_g_e:
+
+     placeNodes(graph, nrow, ncol, byrow = TRUE, topdown = TRUE, force = FALSE)
+     
+_A_r_g_u_m_e_n_t_s:
+
+   graph: A graph of class ‘graphMCP’ or class ‘entangledMCP’.
+
+    nrow: The desired number of rows.
+
+    ncol: The desired number of columns.
+
+   byrow: Logical whether the graph is filled by rows (otherwise by
+          columns).
+
+ topdown: Logical whether the rows are filled top-down or bottom-up.
+
+   force: Logical whether a graph that has already a layout should be
+          given the specified new layout.
+
+_D_e_t_a_i_l_s:
+
+     If one of ‘nrow’ or ‘ncol’ is not given, an attempt is made to
+     infer it from the number of nodes of the ‘graph’ and the other
+     parameter.  If neither is given, the graph is placed as a circle.
+
+_V_a_l_u_e:
+
+     The graph with nodes placed according to the specified layout.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_S_e_e _A_l_s_o:
+
+     ‘graphMCP’, ‘entangledMCP’
+
+_E_x_a_m_p_l_e_s:
+
+     g <- matrix2graph(matrix(0, nrow=6, ncol=6))
+     
+     g <- placeNodes(g, nrow=2, force=TRUE)
+     
+> 
+
+---
+# FUNCTION: rejectNode
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/rejectNode.Rd', out=stdout())
+_R_e_j_e_c_t_s _a _n_o_d_e/_h_y_p_o_t_h_e_s_i_s _a_n_d _u_p_d_a_t_e_s _t_h_e _g_r_a_p_h _a_c_c_o_r_d_i_n_g_l_y.
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Rejects a node/hypothesis and updates the graph accordingly.
+
+_U_s_a_g_e:
+
+     rejectNode(graph, node, upscale = FALSE, verbose = FALSE, keepWeights = FALSE)
+     
+_A_r_g_u_m_e_n_t_s:
+
+   graph: A graph of class ‘graphMCP’ or ‘entangledMCP’.
+
+    node: A character string specifying the node to reject.
+
+ upscale: Logical. If ‘upscale=TRUE’ then the weights of all
+          non-rejected nodes are scaled so that the sum is equal to 1.
+          This forces ‘keepWeights=FALSE’ to reduce confusion, since
+          otherwise the sum of weights could become bigger than 1.
+
+ verbose: Logical scalar.  If ‘TRUE’ verbose output is generated during
+          sequentially rejection steps.
+
+keepWeights: Logical scalar. If ‘FALSE’ the weight of a node without
+          outgoing edges is set to 0 if it is removed.  Otherwise it
+          keeps its weight.
+
+_D_e_t_a_i_l_s:
+
+     For details see the given references.
+
+_V_a_l_u_e:
+
+     An updated graph of class ‘graphMCP’ or ‘entangledMCP’.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Frank Bretz, Willi Maurer, Werner Brannath, Martin Posch: A
+     graphical approach to sequentially rejective multiple test
+     procedures. Statistics in Medicine 2009 vol. 28 issue 4 page
+     586-604.
+
+_S_e_e _A_l_s_o:
+
+     ‘graphMCP’
+
+_E_x_a_m_p_l_e_s:
+
+     m <- matrix(0, nrow = 4, ncol = 4)
+     m[1,3] <- m[2,4] <- m[3,2] <- m[4,1] <- 1
+     p1 <- c(0.01, 0.005, 0.01, 0.5)
+     a <- 0.05
+     w <- c(1/2, 1/2, 0, 0)
+     g <- matrix2graph(m, w)
+     gMCP(g, pvalues=p1, alpha=a)
+     rejectNode(graph = g, node = 4)
+     
+> 
+
+---
+# FUNCTION: replaceVariables
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/replaceVariables.Rd', out=stdout())
+_R_e_p_l_a_c_e_s _v_a_r_i_a_b_l_e_s _i_n _a _g_e_n_e_r_a_l _g_r_a_p_h _w_i_t_h _s_p_e_c_i_f_i_e_d _n_u_m_e_r_i_c _v_a_l_u_e_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Given a list of variables and real values a general graph is
+     processed and each variable replaced with the specified numeric
+     value.
+
+_U_s_a_g_e:
+
+     replaceVariables(
+       graph,
+       variables = list(),
+       ask = TRUE,
+       partial = FALSE,
+       expand = TRUE,
+       list = FALSE
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+   graph: A graph of class ‘graphMCP’ or class ‘entangledMCP’.
+
+variables: A named list with one or more specified real values, for
+          example ‘list(a=0.5, b=0.8, "tau"=0.5)’ or ‘list(a=c(0.5,
+          0.8), b=0.8, "tau"=0.5)’. If ‘ask=TRUE’ and this list is
+          missing at all or single variables are missing from the list,
+          the user is asked for the values (if the session is not
+          interactive an error is thrown). For interactively entered
+          values only single numbers are supported.
+
+     ask: If ‘FALSE’ all variables that are not specified are not
+          replaced.
+
+ partial: IF ‘TRUE’ only specified variables are replaced and parameter
+          ‘ask’ is ignored.
+
+  expand: Used internally. Don't use yourself.
+
+    list: If ‘TRUE’ the result will always be a list, even if only one
+          graph is returned in this list.
+
+_V_a_l_u_e:
+
+     A graph or a matrix with variables replaced by the specified
+     numeric values. Or a list of theses graphs and matrices if a
+     variable had more than one value.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_S_e_e _A_l_s_o:
+
+     ‘graphMCP’, ‘entangledMCP’
+
+_E_x_a_m_p_l_e_s:
+
+     graph <- HungEtWang2010()
+     replaceVariables(graph, list("tau"=0.5,"omega"=0.5, "nu"=0.5))
+     replaceVariables(graph, list("tau"=c(0.1, 0.5, 0.9),"omega"=c(0.2, 0.8), "nu"=0.4))
+     
+> 
+
+---
+# FUNCTION: simConfint
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/simConfint.Rd', out=stdout())
+_S_i_m_u_l_t_a_n_e_o_u_s _c_o_n_f_i_d_e_n_c_e _i_n_t_e_r_v_a_l_s _f_o_r _s_e_q_u_e_n_t_i_a_l_l_y _r_e_j_e_c_t_i_v_e _m_u_l_t_i_p_l_e
+_t_e_s_t _p_r_o_c_e_d_u_r_e_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Calculates simultaneous confidence intervals for sequentially
+     rejective multiple test procedures.
+
+_U_s_a_g_e:
+
+     simConfint(
+       object,
+       pvalues,
+       confint,
+       alternative = c("less", "greater"),
+       estimates,
+       df,
+       alpha = 0.05,
+       mu = 0
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+  object: A graph of class ‘graphMCP’.
+
+ pvalues: A numeric vector specifying the p-values for the sequentially
+          rejective MTP.
+
+ confint: One of the following: A character string ‘"normal"’, ‘"t"’ or
+          a function that calculates the confidence intervals.  If
+          ‘confint=="t"’ the parameter ‘df’ must be specified.  If
+          ‘confint’ is a function it must be of signature
+          ‘("character", "numeric")’, where the first parameter is the
+          hypothesis name and the second the marginal confidence level
+          (see examples).
+
+alternative: A character string specifying the alternative hypothesis,
+          must be "greater" or "less".
+
+estimates: Point estimates for the parameters of interest.
+
+      df: Degree of freedom as numeric.
+
+   alpha: The overall alpha level as numeric scalar.
+
+      mu: The numerical parameter vector under null hypothesis.
+
+_D_e_t_a_i_l_s:
+
+     For details see the given references.
+
+_V_a_l_u_e:
+
+     A matrix with columns giving lower confidence limits, point
+     estimates and upper confidence limits for each parameter. These
+     will be labeled as "lower bound", "estimate" and "upper bound".
+     (1-level)/2 in % (by default 2.5% and 97.5%).
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Frank Bretz, Willi Maurer, Werner Brannath, Martin Posch: A
+     graphical approach to sequentially rejective multiple test
+     procedures. Statistics in Medicine 2009 vol. 28 issue 4 page
+     586-604.
+
+_S_e_e _A_l_s_o:
+
+     ‘graphMCP’
+
+_E_x_a_m_p_l_e_s:
+
+     est <- c("H1"=0.860382, "H2"=0.9161474, "H3"=0.9732953)
+     # Sample standard deviations:
+     ssd <- c("H1"=0.8759528, "H2"=1.291310, "H3"=0.8570892)
+     
+     pval <- c(0.01260, 0.05154, 0.02124)/2
+     
+     simConfint(BonferroniHolm(3), pvalues=pval,
+                     confint=function(node, alpha) {
+                             c(est[node]-qt(1-alpha,df=9)*ssd[node]/sqrt(10), Inf)
+                     }, estimates=est, alpha=0.025, mu=0, alternative="greater")
+     
+     # Note that the sample standard deviations in the following call
+     # will be calculated from the pvalues and estimates.
+     ci <- simConfint(BonferroniHolm(3), pvalues=pval,
+                     confint="t", df=9, estimates=est, alpha=0.025, alternative="greater")
+     ci
+     
+     # plotSimCI(ci)
+     
+> 
+
+---
+# FUNCTION: simes.on.subsets.test
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/simes.on.subsets.test.Rd', out=stdout())
+_S_i_m_e_s _o_n _s_u_b_s_e_t_s, _o_t_h_e_r_w_i_s_e _B_o_n_f_e_r_r_o_n_i
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Weighted Simes test introduced by Benjamini and Hochberg (1997)
+
+_U_s_a_g_e:
+
+     simes.on.subsets.test(
+       pvalues,
+       weights,
+       alpha = 0.05,
+       adjPValues = TRUE,
+       verbose = FALSE,
+       subsets,
+       subset,
+       ...
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+ pvalues: A numeric vector specifying the p-values.
+
+ weights: A numeric vector of weights.
+
+   alpha: A numeric specifying the maximal allowed type one error rate.
+          If ‘adjPValues==TRUE’ (default) the parameter ‘alpha’ is not
+          used.
+
+adjPValues: Logical scalar. If ‘TRUE’ (the default) an adjusted p-value
+          for the weighted test is returned. Otherwise if
+          ‘adjPValues==FALSE’ a logical value is returned whether the
+          null hypothesis can be rejected.
+
+ verbose: Logical scalar. If ‘TRUE’ verbose output is generated.
+
+ subsets: A list of subsets given by numeric vectors containing the
+          indices of the elementary hypotheses for which the weighted
+          Simes test is applicable.
+
+  subset: A numeric vector containing the numbers of the indices of the
+          currently tested elementary hypotheses.
+
+     ...: Further arguments possibly passed by ‘gMCP’ which will be
+          used by other test procedures but not this one.
+
+_D_e_t_a_i_l_s:
+
+     As an additional argument a list of subsets must be provided, that
+     states in which cases a Simes test is applicable (i.e. if all
+     hypotheses to test belong to one of these subsets), e.g. subsets
+     <- list(c("H1", "H2", "H3"), c("H4", "H5", "H6")) Trimmed Simes
+     test for intersections of two hypotheses and otherwise weighted
+     Bonferroni-test
+
+_V_a_l_u_e:
+
+     adjusted p-value or decision of rejection
+
+_E_x_a_m_p_l_e_s:
+
+     simes.on.subsets.test(pvalues=c(0.1,0.2,0.05), weights=c(0.5,0.5,0))
+     simes.on.subsets.test(pvalues=c(0.1,0.2,0.05), weights=c(0.5,0.5,0), adjPValues=FALSE)
+     
+     graph <- BonferroniHolm(4)
+     pvalues <- c(0.01, 0.05, 0.03, 0.02)
+     
+     gMCP.extended(graph=graph, pvalues=pvalues, test=simes.on.subsets.test, subsets=list(1:2, 3:4))
+     
+> 
+
+---
+# FUNCTION: simes.test
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/simes.test.Rd', out=stdout())
+_W_e_i_g_h_t_e_d _S_i_m_e_s _t_e_s_t
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Weighted Simes test introduced by Benjamini and Hochberg (1997)
+
+_U_s_a_g_e:
+
+     simes.test(
+       pvalues,
+       weights,
+       alpha = 0.05,
+       adjPValues = TRUE,
+       verbose = FALSE,
+       ...
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+ pvalues: A numeric vector specifying the p-values.
+
+ weights: A numeric vector of weights.
+
+   alpha: A numeric specifying the maximal allowed type one error rate.
+          If ‘adjPValues==TRUE’ (default) the parameter ‘alpha’ is not
+          used.
+
+adjPValues: Logical scalar. If ‘TRUE’ (the default) an adjusted p-value
+          for the weighted Simes test is returned. Otherwise if
+          ‘adjPValues==FALSE’ a logical value is returned whether the
+          null hypothesis can be rejected.
+
+ verbose: Logical scalar. If ‘TRUE’ verbose output is generated.
+
+     ...: Further arguments possibly passed by ‘gMCP’ which will be
+          used by other test procedures but not this one.
+
+_V_a_l_u_e:
+
+     adjusted p-value or decision of rejection
+
+_E_x_a_m_p_l_e_s:
+
+     simes.test(pvalues=c(0.1,0.2,0.05), weights=c(0.5,0.5,0))
+     simes.test(pvalues=c(0.1,0.2,0.05), weights=c(0.5,0.5,0), adjPValues=FALSE)
+     
+> 
+
+---
+# FUNCTION: subgraph
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/subgraph.Rd', out=stdout())
+_G_e_t _a _s_u_b_g_r_a_p_h
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Given a set of nodes and a graph this function creates the
+     subgraph containing only the specified nodes.
+
+_U_s_a_g_e:
+
+     subgraph(graph, subset)
+     
+_A_r_g_u_m_e_n_t_s:
+
+   graph: A graph of class ‘graphMCP’.
+
+  subset: A logical or character vector specifying the nodes in the
+          subgraph.
+
+_V_a_l_u_e:
+
+     A subgraph containing only the specified nodes.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_S_e_e _A_l_s_o:
+
+     ‘graphMCP’
+
+_E_x_a_m_p_l_e_s:
+
+     graph <- improvedParallelGatekeeping()
+     subgraph(graph, c(TRUE, FALSE, TRUE, FALSE))
+     subgraph(graph, c("H1", "H3"))
+     
+> 
+
+---
+# FUNCTION: substituteEps
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/substituteEps.Rd', out=stdout())
+_S_u_b_s_t_i_t_u_t_e _E_p_s_i_l_o_n
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Substitute Epsilon with a given value.
+
+_U_s_a_g_e:
+
+     substituteEps(graph, eps = 10^(-3))
+     
+_A_r_g_u_m_e_n_t_s:
+
+   graph: A graph of class ‘graphMCP’ or class ‘entangledMCP’.
+
+     eps: A numeric scalar specifying a value for epsilon edges.
+
+_D_e_t_a_i_l_s:
+
+     For details see the given references.
+
+_V_a_l_u_e:
+
+     A graph where all epsilons have been replaced with the given
+     value.
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_S_e_e _A_l_s_o:
+
+     ‘graphMCP’, ‘entangledMCP’
+
+_E_x_a_m_p_l_e_s:
+
+     graph <- improvedParallelGatekeeping()
+     graph
+     substituteEps(graph, eps=0.01)
+     
+> 
+
+---
+# FUNCTION: weighted.test.functions
+---
+
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> tools::Rd2txt('/Users/Anderkea/Documents/GitHub/gMCPLite/man/weighted.test.functions.Rd', out=stdout())
+_W_e_i_g_h_t_e_d _T_e_s_t _F_u_n_c_t_i_o_n_s _f_o_r _u_s_e _w_i_t_h _g_M_C_P
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     The package gMCP provides the following weighted test functions:
+
+     bonferroni.test Bonferroni test - see ‘?bonferroni.test’ for
+          details.
+
+     parametric.test Parametric test - see ‘?parametric.test’ for
+          details.
+
+     simes.test Simes test - see ‘?simes.test’ for details.
+
+     bonferroni.trimmed.simes.test Trimmed Simes test for intersections
+          of two hypotheses and otherwise Bonferroni - see
+          ‘?bonferroni.trimmed.simes.test’ for details.
+
+     simes.on.subsets.test Simes test for intersections of hypotheses
+          from certain sets and otherwise Bonferroni - see
+          ‘?simes.on.subsets.test’ for details.
+
+_D_e_t_a_i_l_s:
+
+     Depending on whether ‘adjPValues==TRUE’ these test functions
+     return different values:
+
+        • If ‘adjPValues==TRUE’ the minimal value for alpha is returned
+          for which the null hypothesis can be rejected. If that's not
+          possible (for example in case of the trimmed Simes test
+          adjusted p-values can not be calculated), the test function
+          may throw an error.
+
+        • If ‘adjPValues==FALSE’ a logical value is returned whether
+          the null hypothesis can be rejected.
+
+     To provide your own test function write a function that takes at
+     least the following arguments:
+
+     pvalues A numeric vector specifying the p-values.
+
+     weights A numeric vector of weights.
+
+     alpha A numeric specifying the maximal allowed type one error
+          rate. If ‘adjPValues==TRUE’ (default) the parameter ‘alpha’
+          should not be used.
+
+     adjPValues Logical scalar. If ‘TRUE’ an adjusted p-value for the
+          weighted test is returned (if possible - if not the function
+          should call ‘stop’). Otherwise if ‘adjPValues==FALSE’ a
+          logical value is returned whether the null hypothesis can be
+          rejected.
+
+     ...  Further arguments possibly passed by ‘gMCP’ which will be
+          used by other test procedures but not this one.
+
+     Further the following parameters have a predefined meaning:
+
+     verbose Logical scalar. If ‘TRUE’ verbose output should be
+          generated and printed to the standard output
+
+     subset
+
+     correlation
+
+_A_u_t_h_o_r(_s):
+
+     Kornelius Rohmeyer <mailto:rohmeyer@small-projects.de>
+
+_E_x_a_m_p_l_e_s:
+
+     # The test function 'bonferroni.test' is used in by gMCP in the following call:
+     graph <- BonferroniHolm(4)
+     pvalues <- c(0.01, 0.05, 0.03, 0.02)
+     alpha <- 0.05
+     r <- gMCP.extended(graph=graph, pvalues=pvalues, test=bonferroni.test, verbose=TRUE)
+     
+     # For the intersection of all four elementary hypotheses this results in a call
+     bonferroni.test(pvalues=pvalues, weights=getWeights(graph))
+     bonferroni.test(pvalues=pvalues, weights=getWeights(graph), adjPValues=FALSE)
+     
+     # bonferroni.test function:
+     bonferroni.test <- function(pvalues, weights, alpha=0.05, adjPValues=TRUE, verbose=FALSE, ...) {
+       if (adjPValues) {
+         return(min(pvalues/weights))
+       } else {
+         return(any(pvalues<=alpha*weights))
+       }
+     }
+     
+> 
+

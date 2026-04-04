@@ -10,11 +10,26 @@ description: >
 
 # Weighted Parametric Group Sequential Design with wpgsd
 
-TODO: Add skill content covering:
-- `generate_bounds()` for computing bounds with correlations
-- `closed_test()` for closed testing procedure
-- `generate_corr()` for correlation matrix construction
-- Correlation structure for nested populations (subgroup within overall)
-- Event-count-based correlation matrices
-- Integration with gsDesign spending functions
-- Known limitations (`generate_corr()` for k > 2)
+## API reference
+
+For full function documentation (arguments, return values, examples), read `references/llms.txt`.
+Source: https://merck.github.io/wpgsd/
+
+## Key functions
+
+### Bounds and testing
+- `generate_bounds()` - Compute group sequential bounds accounting for correlations across hypotheses
+- `closed_test()` - Closed testing procedure using weighted parametric tests
+- `calc_seq_p()` - Calculate sequential p-values
+
+### Correlation structure
+- `generate_corr()` - Generate correlation matrix from event counts (for nested populations)
+- `generate_event_table()` - Build event count table for correlation computation
+
+### Internal utilities
+- `find_astar()` - Find adjusted alpha for spending function
+- `find_xi()` - Find xi parameter for bounds
+
+## Known limitations
+
+- `generate_corr()` has a bug for k > 2 analyses: it incorrectly computes within-hypothesis cross-analysis entries for non-adjacent analyses. For k > 2, build the event-count matrix D manually and compute `corr = diag(1/sqrt(diag(D))) %*% D %*% diag(1/sqrt(diag(D)))`.
