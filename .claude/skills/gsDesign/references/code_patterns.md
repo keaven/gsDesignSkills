@@ -1,20 +1,25 @@
 # Code Patterns for gsDesign
 
+**Note**: These patterns target gsDesign >= 3.9.0 (development version at
+github.com/keaven/gsDesign). Features marked **(dev)** may not be on CRAN yet.
+
 ## Table of Contents
 1. [One-sided efficacy-only design](#one-sided-efficacy)
 2. [Two-sided asymmetric design with non-binding futility](#two-sided-nonbinding)
-3. [Time-to-event design with gsSurv](#time-to-event-gssurv)
-4. [Calendar-based timing with gsSurvCalendar](#calendar-timing)
-5. [Normal endpoint design](#normal-endpoint)
-6. [Binomial endpoint design](#binomial-endpoint)
-7. [Integer sample size rounding](#integer-rounding)
-8. [Bound summary and reporting](#bound-summary)
-9. [Plotting designs](#plotting)
-10. [Spending functions](#spending-functions)
-11. [Sequential p-values](#sequential-p-values)
-12. [Conditional power and sample size re-estimation](#conditional-power)
-13. [Updating bounds at analysis](#updating-bounds)
-14. [Multiplicity graph with hGraph](#hgraph)
+3. [Harm bounds (test.type 7/8)](#harm-bounds) **(dev)**
+4. [Time-to-event design with gsSurv](#time-to-event-gssurv)
+5. [Calendar-based timing with gsSurvCalendar](#calendar-timing)
+6. [Power computation with gsSurvPower](#gsssurvpower) **(dev)**
+7. [Normal endpoint design](#normal-endpoint)
+8. [Binomial endpoint design](#binomial-endpoint)
+9. [Integer sample size rounding](#integer-rounding)
+10. [Bound summary and reporting](#bound-summary)
+11. [Plotting designs](#plotting)
+12. [Spending functions](#spending-functions)
+13. [Sequential p-values](#sequential-p-values)
+14. [Conditional power and sample size re-estimation](#conditional-power)
+15. [Updating bounds at analysis](#updating-bounds)
+16. [Multiplicity graph with hGraph](#hgraph)
 
 ---
 
@@ -48,6 +53,8 @@ plot(x)
 | 4 | Two-sided, asymmetric, beta-spending, non-binding futility |
 | 5 | Two-sided, asymmetric, null-spending, binding futility |
 | 6 | Two-sided, asymmetric, null-spending, non-binding futility |
+| 7 | Two-sided, asymmetric, binding futility + binding harm **(dev)** |
+| 8 | Two-sided, asymmetric, non-binding futility + non-binding harm **(dev)** |
 
 ## Two-sided asymmetric design with non-binding futility {#two-sided-nonbinding}
 
@@ -77,6 +84,57 @@ gsBoundSummary(x)
 - `sfHSD` with `sflpar = -4`: conservative futility (O'Brien-Fleming-like)
 - `sfLDOF`: Lan-DeMets O'Brien-Fleming futility (very conservative early)
 - `sfPower` with `sflpar = 0.5`: square-root spending
+
+## Harm bounds (test.type 7/8) {#harm-bounds}
+
+**(dev)** — requires gsDesign >= 3.9.0 from github.com/keaven/gsDesign.
+
+Test types 7 and 8 add a **harm bound** (upper bound for experimental harm)
+alongside the standard efficacy and futility bounds. This is useful when
+monitoring for the possibility that the experimental treatment is worse
+than control (e.g., OS harm in oncology trials).
+
+- `test.type = 7`: binding futility + binding harm
+- `test.type = 8`: non-binding futility + non-binding harm (recommended)
+
+```r
+x <- gsDesign(
+  k = 3,
+  test.type = 8,           # Non-binding futility + non-binding harm
+  alpha = 0.025,
+  beta = 0.1,
+  timing = c(0.5, 0.75),
+  sfu = sfLDOF,            # Efficacy spending
+  sfl = sfHSD,             # Futility spending
+  sflpar = -2,
+  sfharm = sfHSD,          # Harm bound spending
+  sfharmparam = -2,        # Harm bound parameter
+  astar = 0.05             # Total harm bound crossing probability under H0
+)
+gsBoundSummary(x)
+```
+
+### Selective bound testing
+
+Control which analyses include each bound type with `testUpper`, `testLower`,
+and `testHarm` (logical vectors of length `k`).
+
+```r
+# Efficacy at all analyses, futility only at IA1 and IA2, harm only at IA1
+x <- gsDesign(
+  k = 3,
+  test.type = 8,
+  alpha = 0.025,
+  beta = 0.1,
+  timing = c(0.5, 0.75),
+  sfu = sfLDOF,
+  sfl = sfHSD, sflpar = -2,
+  sfharm = sfHSD, sfharmparam = -2,
+  testUpper = c(TRUE, TRUE, TRUE),
+  testLower = c(TRUE, TRUE, FALSE),    # No futility at final
+  testHarm = c(TRUE, FALSE, FALSE)     # Harm only at IA1
+)
+```
 
 ## Time-to-event design with gsSurv {#time-to-event-gssurv}
 
@@ -183,6 +241,147 @@ gsBoundSummary(x, timename = "Month", tdigits = 1)
 **Key difference**: `spending = "information"` (default) uses information fraction
 for alpha spending; `spending = "calendar"` uses calendar time fraction, which
 spends less at early interims and saves more alpha for the final analysis.
+
+## Power computation with gsSurvPower {#gsssurvpower}
+
+**(dev)** — requires gsDesign >= 3.9.0 from github.com/keaven/gsDesign.
+
+`gsSurvPower()` computes power for a group sequential survival design under
+specified assumptions, without solving for sample size. Unlike `gsSurv()` which
+solves for enrollment to achieve target power, `gsSurvPower()` takes fixed
+assumptions and returns the resulting power.
+
+### Quick start: reuse a design object
+
+```r
+design <- gsSurv(
+  k = 3, test.type = 4, alpha = 0.025, sided = 1, beta = 0.1,
+  sfu = sfHSD, sfupar = -4, sfl = sfHSD, sflpar = -2,
+  lambdaC = log(2) / 12, hr = 0.7, eta = 0.01,
+  gamma = 10, R = 16, minfup = 12, T = 28
+)
+
+# Power at the design HR (should reproduce ~90%)
+pwr <- gsSurvPower(x = design, plannedCalendarTime = design$T)
+pwr$power
+
+# What-if: power under a worse HR
+gsSurvPower(x = design, hr = 0.8, plannedCalendarTime = design$T)$power
+
+# What-if: different alpha (e.g., from multiplicity reallocation)
+gsSurvPower(x = design, alpha = 0.0125, plannedCalendarTime = design$T)$power
+```
+
+### Calendar time vs event-driven timing
+
+```r
+# Calendar-driven: fix analysis times, events recomputed under assumed HR
+# A worse HR -> more events at same time -> different information fractions
+pwr_cal <- gsSurvPower(x = design, hr = 0.8, plannedCalendarTime = design$T)
+
+# Event-driven: fix event counts, calendar times adjust
+# Information fractions stay constant -> matches gsDesign power plot
+pwr_evt <- gsSurvPower(x = design, hr = 0.8, targetEvents = design$n.I)
+```
+
+### Complex analysis timing rules
+
+Combine multiple criteria per analysis: calendar time floors, event targets,
+maximum extensions, minimum time between analyses, and minimum follow-up.
+
+```r
+gsSurvPower(
+  x = design,
+  hr = 0.75,
+  plannedCalendarTime = c(20, 28, NA),    # Floor time for IA1, IA2; final is event-driven
+  targetEvents = c(NA, NA, 300),           # Target 300 events at final
+  maxExtension = c(NA, NA, 6),             # Max 6-month extension for final
+  minTimeFromPreviousAnalysis = c(NA, 6, 6),  # At least 6 months between analyses
+  minFollowUp = c(6, NA, 12)              # Min 6-mo FU at IA1, 12-mo at final
+)
+```
+
+### Hazard ratio roles: hr vs hr1
+
+- `hr`: The assumed treatment effect for power computation (the "what-if")
+- `hr1`: The design alternative that calibrates futility bounds (test.type 3, 4, 7, 8)
+
+When `x` is provided, `hr1` defaults to `x$hr`, so futility bounds stay calibrated
+to the original design even when evaluating power at a different `hr`.
+
+```r
+# Futility calibrated to HR = 0.7 (from design), power evaluated at HR = 0.8
+gsSurvPower(x = design, hr = 0.8, plannedCalendarTime = design$T)$power
+
+# Override futility calibration (unusual but possible)
+gsSurvPower(x = design, hr = 0.8, hr1 = 0.8, plannedCalendarTime = design$T)$power
+```
+
+### Without a reference design
+
+```r
+gsSurvPower(
+  k = 2, test.type = 4, alpha = 0.025, sided = 1,
+  sfu = sfLDOF, sfl = sfHSD, sflpar = -2,
+  lambdaC = log(2) / 6, hr = 0.65, eta = 0.01,
+  gamma = 8, R = 18, ratio = 1,
+  plannedCalendarTime = c(24, 36)
+)$power
+```
+
+### targetN for enrollment scaling
+
+Use `targetN` to rescale enrollment to hit a target sample size without
+changing the relative enrollment ramp-up.
+
+```r
+# Original design enrolls ~160 patients
+# What if we can only enroll 120?
+gsSurvPower(x = design, targetN = 120, plannedCalendarTime = design$T)$power
+```
+
+### informationRates for spending control
+
+Cap spending at planned information fractions to prevent over-spending when
+events accrue faster than planned.
+
+```r
+gsSurvPower(
+  x = design,
+  hr = 0.8,
+  plannedCalendarTime = design$T,
+  informationRates = design$timing,   # Cap spending at planned fractions
+  fullSpendingAtFinal = TRUE           # Ensure full alpha spent at final
+)$power
+```
+
+### Harm bounds with gsSurvPower
+
+```r
+gsSurvPower(
+  k = 3, test.type = 8,
+  alpha = 0.025, sided = 1,
+  sfu = sfLDOF, sfl = sfHSD, sflpar = -2,
+  sfharm = sfHSD, sfharmparam = -2,
+  lambdaC = log(2) / 12, hr = 0.7, eta = 0.01,
+  gamma = 10, R = 16, minfup = 12,
+  plannedCalendarTime = c(20, 28, 36),
+  testHarm = c(TRUE, TRUE, FALSE)  # Harm bound at IA1 and IA2 only
+)$power
+```
+
+### Variance method options
+
+```r
+# Default: Lachin-Foulkes (recommended)
+gsSurvPower(x = design, method = "LachinFoulkes", plannedCalendarTime = design$T)$power
+
+# Schoenfeld (simpler, slightly conservative)
+gsSurvPower(x = design, method = "Schoenfeld", plannedCalendarTime = design$T)$power
+
+# Freedman (accounts for non-proportional allocation)
+gsSurvPower(x = design, method = "Freedman", plannedCalendarTime = design$T)$power
+```
 
 ## Normal endpoint design {#normal-endpoint}
 
