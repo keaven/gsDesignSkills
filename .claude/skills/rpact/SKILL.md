@@ -9,10 +9,12 @@ description: >
 
 # Adaptive Clinical Trial Design with rpact
 
+**Note**: This skill targets rpact >= 4.x (CRAN).
+
 ## API reference
 
-For full function documentation (arguments, return values, examples), read `references/llms.txt`.
-Source: https://docs.rpact.org/reference/
+- Full function docs: `references/llms.txt` (source: https://docs.rpact.org/reference/)
+- Workflow patterns: `references/code_patterns.md`
 
 ## Key functions
 
@@ -74,3 +76,37 @@ Source: https://docs.rpact.org/reference/
 - `readDataset()` / `readDatasets()` - Read data from CSV
 - `writeDataset()` / `writeDatasets()` - Write data to CSV
 - `getObjectRCode()` - Generate reproducible R code for any rpact object
+
+## Workflow patterns
+
+For detailed code templates, read `references/code_patterns.md`.
+
+Topics covered:
+- Group sequential designs (OF, Pocock, alpha-spending, HSD, custom futility)
+- Adaptive designs (inverse normal combination, Fisher combination)
+- Sample size for survival (HR, medians, event probabilities, piecewise)
+- Sample size for means and rates (one-sample, two-sample, risk ratio)
+- Power computation (survival, means, rates)
+- Simulation for survival (two-arm, piecewise/NPH, multiple scenarios)
+- Multi-arm designs and simulation (Dunnett, arm selection, dose-response)
+- Enrichment designs (subgroup-specific effects)
+- Entering observed data with `getDataset()` (survival, means, rates)
+- Stage results and analysis (`getStageResults()`, `getAnalysisResults()`, `getTestActions()`)
+- Conditional power and sample size reassessment
+- Adjusted inference (final p-values, CIs, repeated p-values/CIs)
+- Piecewise survival and accrual specification
+- Comparing designs with `getDesignSet()`
+- Plotting (boundaries, power curves, simulation results)
+- Reproducible code with `getObjectRCode()`
+
+## Important design considerations
+
+- **`typeOfDesign` choices**: "OF" (O'Brien-Fleming), "P" (Pocock), "asOF"/"asHSD"/"asKD" (alpha-spending variants). Alpha-spending versions ("as*") allow unequal information rate spacing
+- **`getDesignInverseNormal()` vs `getDesignGroupSequential()`**: Same signature, but inverse normal is for adaptive designs where sample size can be recalculated between stages
+- **`bindingFutility = FALSE`**: Non-binding futility is standard for confirmatory trials; efficacy bounds computed ignoring futility
+- **Survival parameterization**: Can specify treatment effect via `hazardRatio`, `median1`/`median2`, `lambda1`/`lambda2`, or `pi1`/`pi2` (event probabilities) — use only one
+- **`plannedEvents`** in simulation: Vector of cumulative event counts at each analysis (not information fractions)
+- **Multi-arm `intersectionTest`**: "Dunnett" (parametric, most powerful), "Simes" (non-parametric), "Bonferroni" (conservative)
+- **`typeOfSelection`**: Controls arm selection at interim — "best" (highest effect), "rBest" (r best arms), "epsilon" (within epsilon of best), "all" (no dropping)
+- **`getObjectRCode()`**: Use to generate reproducible R code for any rpact object — invaluable for reporting and validation
+- **rpact defaults**: `alpha = 0.05`, `beta = 0.2`, `kMax = NA` (inferred), `sided = 1` — always set explicitly for clinical trial designs
