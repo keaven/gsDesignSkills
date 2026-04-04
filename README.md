@@ -35,6 +35,10 @@ When working on group sequential designs with graphical multiplicity control,
 read the skill at `.claude/skills/graphicalMCP-gsDesign2/SKILL.md`.
 ```
 
+## API documentation
+
+The gsDesign, gsDesign2, and simtrial skills include `llms.txt` API references from [gsDesign.ai](https://gsDesign.ai), a site providing AI-friendly documentation for clinical trial design R packages.
+
 ## Contributing
 
 Add new skills by creating a directory under `.claude/skills/` with a `SKILL.md` file.
