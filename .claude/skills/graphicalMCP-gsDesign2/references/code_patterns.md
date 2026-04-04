@@ -9,6 +9,13 @@
 6. [Sequential p-value computation](#sequential-p-values)
 7. [Hypothesis testing with graphicalMCP](#hypothesis-testing)
 8. [Verification with updated bounds](#verification)
+9. [Spending time rules](#spending-time-rules)
+10. [Stratified ORR power with gs_power_rd()](#stratified-orr)
+11. [Displaying design bounds](#display-bounds)
+12. [Repeated p-values for verification](#repeated-p-values)
+13. [Simulation with illness-death model](#simulation)
+14. [P-value computation, theoretical curves, and KM plots](#p-value-computation)
+15. [WPGSD analysis](#wpgsd)
 
 ---
 
@@ -409,139 +416,190 @@ for (i in 1:nHypotheses) {
 }
 ```
 
-## P-value computation {#p-value-computation}
+## Spending time rules {#spending-time-rules}
 
-### 1-sided logrank test (OS, PFS)
+Spending time controls how alpha is allocated across analyses. It differs from
+the information fraction, which drives the correlation structure.
+
+### The min() rule
+
+At interim analyses, use the minimum of the planned information fraction
+and the actual information fraction to protect against over-spending when
+events accumulate faster than planned:
 
 ```r
-logrank_pval <- function(data, stratified = FALSE) {
-  data$event <- 1L - data$CNSR
-  if (stratified) {
-    fit <- survdiff(Surv(AVAL, event) ~ TRT + strata(STRATUM), data = data)
-  } else {
-    fit <- survdiff(Surv(AVAL, event) ~ TRT, data = data)
-  }
-  # IMPORTANT: with strata, obs/exp are matrices (groups x strata); sum across strata
-  obs_ctrl <- if (is.matrix(fit$obs)) sum(fit$obs[1, ]) else fit$obs[1]
-  exp_ctrl <- if (is.matrix(fit$exp)) sum(fit$exp[1, ]) else fit$exp[1]
-  z_sign <- sign(obs_ctrl - exp_ctrl)
-  z <- z_sign * sqrt(fit$chisq)
-  pnorm(-z)  # 1-sided: small when experimental is better
-}
+# Planned info fractions from H1 design
+os_bm_info_frac <- ossub$analysis$info_frac
+pfs_bm_info_frac <- pfssub$analysis$info_frac
+
+# Actual events observed at each analysis
+events_os_bm <- c(185, 245, 295)    # From simulated/observed data
+events_pfs_bm <- c(265, 310)
+
+# Spending time: min(planned, actual) at interims; 1 at final
+spendingTime_H1 <- pmin(os_bm_info_frac, events_os_bm / max(events_os_bm))
+spendingTime_H3 <- pmin(pfs_bm_info_frac, events_pfs_bm / max(events_pfs_bm))
 ```
 
-**Key pitfall**: `survdiff()` with `strata()` returns `obs` and `exp` as a **matrix**
-(treatment groups × strata). Using `fit$obs[1]` extracts just the first stratum for the
-control group, giving wrong results. Always check `is.matrix()` and sum across strata.
+### Alignment across populations
 
-### Stratified risk difference test (ORR)
-
-```r
-rd_pval <- function(data, stratified = FALSE) {
-  if (!stratified) {
-    # Pooled test (unstratified)
-    ...
-    z <- (p_exp - p_ctrl) / se
-    return(pnorm(-z))
-  }
-  # Stratified: combine stratum-specific RDs with sample size weights
-  strata <- unique(data$STRATUM)
-  for (k in seq_along(strata)) {
-    # Compute rd_s[k], var_s[k], n_s[k] per stratum
-  }
-  w <- n_s / sum(n_s)  # sample size weights
-  rd_combined <- sum(w * rd_s)
-  se_combined <- sqrt(sum(w^2 * var_s))
-  z <- rd_combined / se_combined
-  pnorm(-z)  # 1-sided: small when experimental is better
-}
-```
-
-## Theoretical survival curves {#theoretical-curves}
-
-The illness-death model's internal CDF helpers (`.pfs_cdf()`, `.os_cdf()`) can compute
-marginal PFS and OS survival curves from the transition rates without simulation.
-Use this to visualize assumed treatment effects during the design phase.
+The overall population (H2, H4) uses the same spending time as its
+corresponding subgroup hypothesis (H1, H3). This ensures a consistent,
+pre-specified spending schedule:
 
 ```r
-# Extract rates for a stratum/treatment from the transition_rate table
-get_theoretical_surv <- function(transition_rate, stratum_val, trt_val, t_grid) {
-  tr <- transition_rate[transition_rate$stratum == stratum_val &
-                          transition_rate$treatment == trt_val, ]
-  get_rate <- function(trans) tr$rate[tr$transition == trans]
-
-  lambda_resp <- get_rate("response")
-  lambda_prog0 <- get_rate("prog_0")
-  lambda_death0 <- get_rate("death_0")
-  lambda_prog1 <- get_rate("prog_1")
-  lambda_death1 <- get_rate("death_1")
-  lambda_death2 <- get_rate("death_2")
-
-  lambda_0 <- lambda_resp + lambda_prog0 + lambda_death0
-  orr_param <- lambda_resp / lambda_0
-  lambda_1 <- lambda_prog1 + lambda_death1
-
-  pfs_surv <- 1 - sapply(t_grid, function(t)
-    .pfs_cdf(t, lambda_0, orr_param, lambda_1))
-  os_surv <- 1 - sapply(t_grid, function(t)
-    .os_cdf(t, lambda_0, orr_param, lambda_1,
-            lambda_death0, lambda_prog0, lambda_death1,
-            lambda_prog1, lambda_death2))
-
-  tibble(time = rep(t_grid, 2), surv = c(pfs_surv, os_surv),
-         endpoint = rep(c("PFS", "OS"), each = length(t_grid)),
-         stratum = stratum_val, treatment = trt_val)
-}
-
-# Limit t_grid to trial duration (final analysis time)
-t_grid <- seq(0, 38, by = 0.25)
-
-# By-stratum curves (BM+ and BM-)
-stratum_curves <- bind_rows(
-  get_theoretical_surv(transition_rate, "BM+", "control", t_grid),
-  get_theoretical_surv(transition_rate, "BM+", "experimental", t_grid),
-  get_theoretical_surv(transition_rate, "BM-", "control", t_grid),
-  get_theoretical_surv(transition_rate, "BM-", "experimental", t_grid)
-) %>% mutate(population = "By stratum")
-
-# Overall population: prevalence-weighted mixture of BM+ and BM-
-bm_pos_curves <- bind_rows(
-  get_theoretical_surv(transition_rate, "BM+", "control", t_grid),
-  get_theoretical_surv(transition_rate, "BM+", "experimental", t_grid)
+inputResults <- tibble(
+  H = c(rep(1, 3), rep(2, 3), rep(3, 2), rep(4, 2), 5, 6),
+  spendingTime = c(
+    pmin(os_bm_info_frac, events_os_bm / max(events_os_bm)),    # H1: OS BM+
+    pmin(os_bm_info_frac, events_os_bm / max(events_os_bm)),    # H2: OS All (same as H1)
+    pmin(pfs_bm_info_frac, events_pfs_bm / max(events_pfs_bm)), # H3: PFS BM+
+    pmin(pfs_bm_info_frac, events_pfs_bm / max(events_pfs_bm)), # H4: PFS All (same as H3)
+    NA, NA                                                        # H5, H6: ORR (not GSD)
+  ),
+  # ... other columns
 )
-bm_neg_curves <- bind_rows(
-  get_theoretical_surv(transition_rate, "BM-", "control", t_grid),
-  get_theoretical_surv(transition_rate, "BM-", "experimental", t_grid)
-)
-overall_curves <- bm_pos_curves %>%
-  select(time, endpoint, treatment, surv_pos = surv) %>%
-  left_join(
-    bm_neg_curves %>% select(time, endpoint, treatment, surv_neg = surv),
-    by = c("time", "endpoint", "treatment")
-  ) %>%
-  mutate(surv = bm_prev * surv_pos + (1 - bm_prev) * surv_neg,
-         stratum = "Overall", population = "Overall") %>%
-  select(time, surv, endpoint, stratum, treatment, population)
-
-theor_curves <- bind_rows(stratum_curves, overall_curves)
-
-# 2x2 layout: facet_grid(population ~ endpoint)
-# Top row: by stratum (BM+ solid, BM- dashed)
-# Bottom row: overall population
-ggplot(theor_curves, aes(x = time, y = surv,
-                          color = treatment, linetype = stratum)) +
-  geom_line(linewidth = 0.8) +
-  facet_grid(population ~ endpoint)
 ```
 
-## Kaplan-Meier plots {#km-plots}
+## Stratified ORR power with gs_power_rd() {#stratified-orr}
 
-KM plots should include:
-- X-axis grid every 6 months, y-axis grid every 20%
-- HR with 95% CI and 1-sided logrank p-value in upper right corner
-- Number at risk table below the plot at month 0 and every 6 months
+For the overall population ORR, use `gs_power_rd()` with stratified inputs
+and INVAR (inverse-variance) weighting instead of `fixed_design_rd()`:
 
-Use `gridExtra::grid.arrange()` to stack the KM plot and at-risk table.
+```r
+orr_all <- gsDesign2::gs_power_rd(
+  p_c = tibble(stratum = c("BM+", "BM-"),
+               rate = c(orr_ctrl_bm_pos, orr_ctrl_bm_neg)),
+  p_e = tibble(stratum = c("BM+", "BM-"),
+               rate = c(orr_exp_bm_pos, orr_exp_bm_neg)),
+  n = tibble(stratum = c("BM+", "BM-"),
+             n = c(n_bm, n_bm_neg),
+             analysis = c(1, 1)),
+  rd0 = 0,
+  ratio = 1,
+  weight = "invar",
+  upper = gsDesign2::gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = alphaHypotheses[6]),
+  lower = gsDesign2::gs_b,
+  lpar = -Inf,
+  test_lower = FALSE,
+  info_scale = "h0_h1_info",
+  binding = FALSE
+)
+
+summary(orr_all) %>%
+  gt::gt() %>%
+  gt::tab_header(title = "Power for ORR in Overall population (stratified)")
+```
+
+## Displaying design bounds {#display-bounds}
+
+Use `gs_bound_summary()` to display group sequential bounds in a table:
+
+```r
+gsDesign2::gs_bound_summary(ossub) %>%
+  gt::gt() %>%
+  gt::tab_header(title = "Design for OS in the BM+ population")
+```
+
+## Repeated p-values for verification {#repeated-p-values}
+
+In the verification step, compute both **sequential p-values** (cumulative evidence
+through analysis k) and **repeated p-values** (evidence at analysis k alone):
+
+```r
+for (aa in seq_len(n_analyses)) {
+  # Sequential p-value: observed Z at analyses 1..aa, padded with 0.9999 after
+  z_seq <- c(all_z[1:aa], rep(-qnorm(0.9999), n_analyses - aa))
+  seq_p_by_analysis[aa] <- gsDesign2::sequential_pval(
+    gs_design = d2,
+    event = n.I,
+    z = z_seq,
+    ustime = usTime,
+    interval = c(1e-05, 0.9999)
+  )
+
+  # Repeated p-value: observed Z at analysis aa ONLY, 0.9999 elsewhere
+  z_rep <- rep(-qnorm(0.9999), n_analyses)
+  z_rep[aa] <- all_z[aa]
+  rep_p_by_analysis[aa] <- gsDesign2::sequential_pval(
+    gs_design = d2,
+    event = n.I,
+    z = z_rep,
+    ustime = usTime,
+    interval = c(1e-05, 0.9999)
+  )
+}
+```
+
+The sequential p-value is non-decreasing: it uses all evidence through analysis k.
+The repeated p-value isolates the contribution of a single analysis, analogous to
+the repeated confidence interval.
+
+## Simulation with illness-death model {#simulation}
+
+The vignette template uses an illness-death model for realistic simulation of
+correlated OS, PFS, and ORR endpoints. The model has four states:
+0 (alive, no response/progression), 1 (responded), 2 (progressed), 3 (dead).
+
+See the illness-death model skill for full details. Brief usage:
+
+```r
+source("inst/simulation/sim_illness_death.R")
+source("inst/simulation/cut_illness_death.R")
+
+# Build transition rates from clinical assumptions
+transition_rate <- build_transition_rates(
+  strata = c("BM+", "BM-"),
+  treatments = c("control", "experimental"),
+  median_pfs = c("BM+" = 5, "BM-" = 5),
+  median_os = c("BM+" = 12, "BM-" = 12),
+  orr = list(
+    "BM+" = c(control = 0.15, experimental = 0.30),
+    "BM-" = c(control = 0.15, experimental = 0.12)
+  ),
+  hr_pfs = c("BM+" = 0.65, "BM-" = 1.2),
+  hr_os = c("BM+" = 0.70, "BM-" = 1.1)
+)
+
+# Simulate one trial
+sim_data <- sim_illness_death(
+  n = 500,
+  stratum = data.frame(stratum = c("BM+", "BM-"), p = c(0.5, 0.5)),
+  block = c("control", "control", "experimental", "experimental"),
+  enroll_rate = data.frame(rate = c(6.25, 12.5, 18.75, 25), duration = c(2, 2, 2, 12)),
+  transition_rate = transition_rate
+)
+
+# Determine analysis cut dates
+analyses <- list(
+  list(min_followup = 6, endpoint = NULL, event_target = NULL,
+       target_stratum = NULL, max_followup = NULL),
+  list(min_followup = 14, endpoint = "PFS", event_target = 310,
+       target_stratum = "BM+", max_followup = 17),
+  list(min_followup = 24, endpoint = "OS", event_target = 295,
+       target_stratum = "BM+", max_followup = 30)
+)
+cut_dates <- get_analysis_dates(sim_data, analyses)
+
+# Cut data to ADTTE format
+adtte <- lapply(seq_along(cut_dates), function(i) {
+  d <- cut_illness_death(sim_data, cut_dates[i])
+  d$ANALYSIS <- i
+  d
+})
+```
+
+---
+
+## P-value computation, theoretical curves, and KM plots {#p-value-computation}
+
+These topics are covered in detail in the **illness-death model** skill:
+- `logrank_pval()` — 1-sided logrank test with stratification pitfall
+- `rd_pval()` — Stratified risk difference test (ORR)
+- Theoretical survival curves from `.pfs_cdf()` / `.os_cdf()`
+- Prevalence-weighted overall population curves
+- Computing p-values across analyses for the 6-hypothesis template
 
 ## WPGSD analysis {#wpgsd}
 

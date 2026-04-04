@@ -75,6 +75,10 @@ The workflow has 4 phases:
 
 For detailed code templates covering each phase, read `references/code_patterns.md`.
 
+## Related skills
+
+- **illness-death model**: For simulating correlated OS, PFS, and ORR endpoints used in the vignette template. See the `illness-death` skill.
+
 ## Important design considerations
 
 - **H1 drives sample size**: One hypothesis (typically OS in the subgroup) is designed with `gs_design_ahr()` to determine enrollment rates and sample sizes. All other hypotheses derive their enrollment from H1 using `gs_power_ahr()` (time-to-event) or `fixed_design_rd()` (binary).
@@ -87,3 +91,6 @@ For detailed code templates covering each phase, read `references/code_patterns.
 - **Time travel**: If OS hypotheses are rejected and alpha passes to previously-tested PFS hypotheses, those PFS tests can be re-evaluated with updated bounds. This controls Type I error per Liu & Anderson (2008).
 - **One-sided testing**: Maurer-Bretz designs assume one-sided testing or non-binding futility bounds.
 - **Alpha spending function**: Lan-DeMets spending approximating O'Brien-Fleming (`sfLDOF`) is a common default.
+- **Spending time rules**: Use `pmin(planned_IF, actual_IF)` at interim analyses to protect against over-spending. Align spending time across populations (H2 uses H1's spending time). At final analysis, spending time = 1.
+- **Stratified ORR**: Use `gs_power_rd()` with `weight = "invar"` for stratified overall population ORR, not `fixed_design_rd()`.
+- **Repeated p-values**: In verification, compute both sequential p-values (cumulative evidence) and repeated p-values (single-analysis evidence) to understand each analysis's contribution.
