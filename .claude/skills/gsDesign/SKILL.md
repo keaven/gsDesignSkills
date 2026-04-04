@@ -46,3 +46,29 @@ Source: https://gsDesign.ai/packages/gsdesign/llms.txt
 - `as_rtf()` - Save summary tables as RTF files
 - `as_table()` - Create summary table objects
 - `xtable()` - LaTeX/HTML table output
+
+## Workflow patterns
+
+For detailed code templates covering common workflows, read `references/code_patterns.md`.
+
+Topics covered:
+- One-sided and two-sided designs with various spending functions
+- Time-to-event designs with `gsSurv()` (piecewise rates, stratification)
+- Calendar-based timing with `gsSurvCalendar()`
+- Normal and binomial endpoint designs
+- Integer rounding, bound summaries, and reporting (gt, RTF, LaTeX)
+- All 7 plot types
+- Spending function selection and comparison
+- Sequential p-values for graphical multiplicity
+- Conditional power and sample size re-estimation (`ssrCP`)
+- Updating bounds when observed timing differs from planned
+- Multiplicity graphs with `hGraph()`
+
+## Important design considerations
+
+- **test.type = 4** (non-binding futility with beta-spending) is the most common choice for confirmatory trials
+- **Always round to integers** with `toInteger()` before reporting a design
+- **gsSurv over nSurv**: prefer `gsSurv()` which combines sample size and boundary computation
+- **Spending time vs information fraction**: use `usTime`/`lsTime` in `gsDesign()` when spending should differ from information fraction
+- **sequentialPValue**: only meaningful for `test.type = 1, 4, 6` (one-sided or non-binding futility)
+- **Calendar vs information spending**: `gsSurvCalendar(spending = "calendar")` spends less at early interims
