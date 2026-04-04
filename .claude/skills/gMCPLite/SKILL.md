@@ -13,8 +13,8 @@ For new projects, prefer the `graphicalMCP` package which has a cleaner API.
 
 ## API reference
 
-For full function documentation (arguments, return values, examples), read `references/llms.txt`.
-Built from local man pages.
+- Full function docs: `references/llms.txt` (built from local man pages)
+- Workflow patterns: `references/code_patterns.md`
 
 ## Key functions
 
@@ -47,3 +47,31 @@ Built from local man pages.
 - `rejectNode()` - Reject a hypothesis and update graph
 - `exampleGraphs()` - Pre-built example graphs
 - `checkCorrelation()` - Validate correlation matrix
+
+## Workflow patterns
+
+For detailed code templates, read `references/code_patterns.md`.
+
+Topics covered:
+- Creating multiplicity graphs with `hGraph()` (basic and custom)
+- Customizing hGraph layout (positions, colors, legends, sizing, radianStart)
+- Creating graphMCP objects with `matrix2graph()`
+- Bonferroni, Simes, and parametric testing with `gMCP()`
+- Extended testing with `gMCP.extended()` and custom test functions
+- Generating intersection weights with `generateWeights()`
+- Updating graphs after rejection with `rejectNode()`
+- Simultaneous confidence intervals with `simConfint()`
+- Built-in example graphs (BonferroniHolm, fixedSequence, fallback, etc.)
+- Integration with gsDesign sequential p-values (`sequentialPValue()`)
+- Complex oncology trial template (6 hypotheses: OS/PFS/ORR x Subgroup/All)
+- Combining and subsetting graphs (`joinGraphs()`, `subgraph()`)
+
+## Important design considerations
+
+- **For new projects, prefer `graphicalMCP`**: It has a cleaner S3 API (`graph_create`, `graph_test_shortcut`, `graph_test_closure`) and is actively maintained
+- **`hGraph()` remains widely used**: Even with graphicalMCP for testing, `hGraph()` from gMCPLite is commonly used for visualization in publications and presentations
+- **Sequential p-values workflow**: Use `gsDesign::sequentialPValue()` to convert nominal p-values from group sequential analyses into sequential p-values, then pass to `gMCP()` for multiplicity control
+- **`upscale = TRUE`**: Required for parametric tests (Bretz et al. 2011) to rescale subgraph weights to sum to 1
+- **`correlation` with NA**: gMCPLite supports partially specified correlation matrices (NA for unknown entries)
+- **Time travel for alpha**: When a hypothesis is rejected at a later analysis, previously tested hypotheses can be re-tested at updated alpha levels — this controls Type I error but requires careful bound re-derivation
+- **`gMCP()` returns `gMCPResult`**: Access `@rejected` (logical), `@adjPValues` (adjusted p-values), and `@graphs` (sequence of updated graphs)
