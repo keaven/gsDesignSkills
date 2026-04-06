@@ -9,10 +9,13 @@ Claude Code skills for clinical trial design R packages:
 - **simtrial** - Clinical trial simulation
 - **wpgsd** - Weighted parametric group sequential design
 - **gMCPLite** - Graphical MCP (legacy)
+- **illness-death** - Illness-death multi-state model for correlated endpoints
+- **gsDesignNB** - Negative binomial / recurrent event designs
 
 ## Cross-package skills
 
 - **graphicalMCP-gsDesign2** - Group sequential design with graphical multiplicity control (Maurer-Bretz framework)
+- **multi-endpoint-sim** - Multi-endpoint trial simulation with sequential testing (gsDesign + illness-death + simtrial + graphicalMCP)
 
 ## Usage
 

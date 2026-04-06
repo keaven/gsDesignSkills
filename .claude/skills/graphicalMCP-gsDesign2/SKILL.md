@@ -87,10 +87,18 @@ For detailed code templates covering each phase, read `references/code_patterns.
 - **`fixed_design_rd()` output**: Returns a `fixed_design` object. Wrap with `summary()` before piping to `gt()` or `kable()`.
 - **Zero initial alpha**: If a hypothesis starts with alpha=0 (receives alpha only through reallocation), use another hypothesis's alpha for the bounds structure in the design. The actual testing uses the reallocated alpha from the graph.
 - **Spending time vs information fraction**: Spending time determines how alpha is allocated across analyses. Information fraction drives the correlation structure. Both are needed for bound computation.
-- **Non-binding futility**: Use `binding = FALSE` so efficacy bounds are computed ignoring the futility bound, preserving Type I error control even if the trial continues past a futility crossing.
+- **Non-binding futility**: Use `binding = FALSE` so efficacy bounds are computed ignoring the futility bound, preserving Type I error control even if the trial continues past a futility crossing. Theoretical basis: Liu & Anderson (2008) Theorem 1.
+- **Hung-Wang-O'Neill warning**: Naively testing a secondary endpoint at level α whenever the primary is significant does NOT control FWER in a group sequential trial (Hung, Wang & O'Neill, 2007). Must use sequential p-values with a proper closed testing or graphical procedure.
+- **Well-ordered spending functions**: For the Maurer-Bretz graphical procedure to be consonant (sequentially rejective), the nominal significance levels α*_t(γ) must be non-decreasing in γ. Qualified families: power (αt^ρ, all ρ > 0), Pocock-type, OBF-type (for γ < 0.318, covering all practical significance levels). See Maurer & Bretz (2013).
 - **Time travel**: If OS hypotheses are rejected and alpha passes to previously-tested PFS hypotheses, those PFS tests can be re-evaluated with updated bounds. This controls Type I error per Liu & Anderson (2008).
 - **One-sided testing**: Maurer-Bretz designs assume one-sided testing or non-binding futility bounds.
 - **Alpha spending function**: Lan-DeMets spending approximating O'Brien-Fleming (`sfLDOF`) is a common default.
+
+## Key references
+
+- Maurer W, Bretz F. Multiple testing in group sequential trials using graphical approaches. *Stat Biopharm Res* 2013; 5:311–320.
+- Liu Q, Anderson KM. On adaptive extensions of group sequential trials for clinical investigations. *JASA* 2008; 103:1621–1630.
+- Hung HMJ, Wang SJ, O'Neill R. Statistical considerations for testing multiple endpoints in group sequential or adaptive clinical trials. *J Biopharm Stat* 2007; 17:1201–1210.
 - **Spending time rules**: Use `pmin(planned_IF, actual_IF)` at interim analyses to protect against over-spending. Align spending time across populations (H2 uses H1's spending time). At final analysis, spending time = 1.
 - **Stratified ORR**: Use `gs_power_rd()` with `weight = "invar"` for stratified overall population ORR, not `fixed_design_rd()`.
 - **Repeated p-values**: In verification, compute both sequential p-values (cumulative evidence) and repeated p-values (single-analysis evidence) to understand each analysis's contribution.

@@ -670,3 +670,46 @@ results <- sim_fixed_n(
   rho_gamma = data.frame(rho = 0, gamma = 0)
 )
 ```
+
+---
+
+## Standalone wlr with illness-death model data {#wlr-illness-death}
+
+`wlr()` can be used standalone (outside `sim_gs_n()`) with data from the
+illness-death model. The key is mapping ADTTE columns to the `wlr()` format.
+
+### Column mapping
+
+`wlr()` expects columns: `tte`, `event`, `stratum`, `treatment`
+
+```r
+# From illness-death ADTTE data (columns: AVAL, CNSR, STRATUM, TRT)
+logrank_z <- function(data) {
+  d <- data.frame(
+    tte = data$AVAL,
+    event = 1L - data$CNSR,
+    stratum = data$STRATUM,
+    treatment = data$TRT
+  )
+  if (sum(d$event) < 2) return(NA_real_)
+  wlr(d, weight = fh(rho = 0, gamma = 0))$z
+}
+```
+
+### Sign convention
+
+`wlr()` returns **positive Z when experimental is better** (more events in
+control than expected under null). This matches the convention needed for
+`sequentialPValue()` and graphical testing.
+
+### Usage in simulation loops
+
+```r
+adtte_18 <- cut_illness_death(sim_data, cut_date = 18)
+z_pfs_18 <- logrank_z(adtte_18[adtte_18$PARAMCD == "PFS", ])
+z_os_18 <- logrank_z(adtte_18[adtte_18$PARAMCD == "OS", ])
+
+# Collect event counts for spending time
+ev_pfs_18 <- sum(1L - adtte_18$CNSR[adtte_18$PARAMCD == "PFS"])
+ev_os_18 <- sum(1L - adtte_18$CNSR[adtte_18$PARAMCD == "OS"])
+```

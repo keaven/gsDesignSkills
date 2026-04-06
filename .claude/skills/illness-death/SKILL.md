@@ -92,11 +92,17 @@ Topics covered:
 - Analysis cut date determination (calendar + event-driven)
 - Cutting data to ADTTE format
 - Computing nominal p-values (logrank, stratified logrank, risk difference)
+- Piecewise transition rate modification (progression, response)
+- Separate design vs simulation effect sizes
 - Theoretical survival curves from transition rates
 - Prevalence-weighted overall population curves
 - Multiple strata with different treatment effects
 
 ## Important design considerations
+
+- **Piecewise rates**: `build_transition_rates()` produces constant rates. To model piecewise PFS or response, modify the output by splitting rows into multiple time periods with different rates and durations.
+- **Design vs simulation effects**: Build separate transition rate tables with different HRs for design (sample size) and simulation (operating characteristics). Weaker simulation HRs reveal realistic power under conservative assumptions.
+- **Response rate timing**: Multiply the base response rate for early periods (e.g., 2.25× for $t < 6$ months) and reduce it later (e.g., 10% of base) to model response windows.
 
 - **Calibration**: `build_transition_rates()` numerically calibrates control arm rates to match specified median PFS and OS. Experimental arm rates are derived by scaling with HRs, then re-calibrating response rate for the target ORR.
 - **`death_wo_prog_rate`**: Baseline rate of death without prior progression (default 0.02/month). This controls the fraction of patients who die without progressing.

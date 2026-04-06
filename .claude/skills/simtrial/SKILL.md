@@ -77,6 +77,7 @@ Topics covered:
 - Rate format conversion with `to_sim_pw_surv()`
 - Flexible analysis timing with `get_analysis_date()` / `create_cut()`
 - Stratified simulations
+- Standalone `wlr()` with illness-death model ADTTE data
 - Example NPH datasets
 
 ## Important design considerations
@@ -88,3 +89,4 @@ Topics covered:
 - **`fa_alpha_spending = "full_alpha"`**: Spends full alpha at final analysis (default); use "info_frac" for event underrunning scenarios
 - **`create_cut()` and `create_test()`**: These factory functions are essential for building `sim_gs_n()` pipelines
 - **Example datasets**: Columns are `id`, `month`, `evntd`, `trt` — need renaming to `tte`, `event`, `treatment` for use with `wlr()` / `maxcombo()`
+- **Standalone `wlr()`**: Can be used outside `sim_gs_n()` with any data having `tte`, `event`, `stratum`, `treatment` columns. Returns positive Z when experimental is better. See `references/code_patterns.md` for illness-death model integration.

@@ -36,14 +36,27 @@ Features marked **(dev)** may not be on CRAN yet. The CRAN `llms.txt` covers ver
 
 ## Spending functions
 
-- `sfLDOF` - Lan-DeMets approximation to O'Brien-Fleming
-- `sfHSD` - Hwang-Shih-DeCani (gamma family)
-- `sfPower` - Kim-DeMets (power) spending
-- `sfExponential` - Exponential spending
-- `sfPoints` - Pointwise (piecewise linear) spending
-- `sfLinear` - Linear spending
-- `sfTDist` - t-distribution spending
+### One-parameter families
+- `sfLDOF` - Lan-DeMets O'Brien-Fleming: $2\Phi(-\Phi^{-1}(1-\alpha/2)/\sqrt{t})$
+- `sfHSD` - Hwang-Shih-DeCani: $\alpha(1-e^{-\gamma t})/(1-e^{-\gamma})$; $\gamma<0$ conservative, $\gamma>0$ aggressive
+- `sfPower` - Kim-DeMets power: $\alpha t^\rho$; $\rho=3$ is conservative (recommended)
+- `sfExponential` - Exponential: $\alpha t^{-\nu}$; $\nu=0.8$ approximates O'Brien-Fleming with simpler form; conservative early spending compared to sfHSD or sfPower at same late spending
+- `sfPoints` - Pointwise (piecewise linear) spending at specified information fractions
+- `sfLinear` - Linear spending: $\alpha t$
 - `sfXG` - Xu-Garden conditional error spending
+
+### Two-parameter families (Anderson & Clark, 2009)
+All use the general form $\alpha(t; a, b) = \alpha F(a + b F^{-1}(t))$ where $F$ is a CDF. Given two desired spending points $(t_0, s_0)$ and $(t_1, s_1)$, solve $F^{-1}(s_i) = a + b F^{-1}(t_i)$ for the parameters $a, b$. In gsDesign, pass `param = c(t0, t1, s0, s1)` to fit automatically.
+
+- `sfLogistic` - Logistic CDF: $\alpha c(t/(1-t))^b / (1+c(t/(1-t))^b)$ where $c=e^a$. Used in GUSTO V trial and Merck trials. General purpose.
+- `sfNormal` - Standard normal CDF. Nearly identical to sfLogistic in practice.
+- `sfCauchy` - Cauchy CDF. Flat between fitted points; **robust when analysis timing shifts**.
+- `sfExtremeValue` - Extreme value CDF: $\alpha\exp(-e^a(-\ln t)^b)$. Conservative early spending.
+- `sfExtremeValue2` - Flipped extreme value: $F(x) = 1-\exp(-\exp(x))$. Conservative early spending; useful for futility bound calibration **(dev)**.
+- `sfTDist` - t-distribution CDF (3 parameters: $a$, $b$, and df). Cauchy at df=1, normal at df=$\infty$; df provides continuous interpolation.
+- `sfBetaDist` - Incomplete beta CDF with parameters $a>0, b>0$: $\alpha F_{a,b}(t)$. Fitted via `nlminb()` (nonlinear).
+
+**Reference**: Anderson KM, Clark JB. Fitting spending functions. *Statist. Med.* 2010; 29:321–327.
 
 ## Output and reporting
 
@@ -66,6 +79,12 @@ Topics covered:
 - Integer rounding, bound summaries, and reporting (gt, RTF, LaTeX)
 - All 7 plot types
 - Spending function selection and comparison
+- Two-parameter spending function families (Anderson & Clark 2009): sfLogistic, sfNormal, sfCauchy, sfExtremeValue, sfExtremeValue2, sfTDist, sfBetaDist
+- Fitting spending functions to desired boundary values at two information fractions
+- Choosing between spending function families
+- `sfExtremeValue2` for calibrating futility bounds to target HR **(dev)**
+- `testLower` for selective futility bound testing at specific analyses
+- `testBinomial()` / `nBinomial()` for binomial Z-statistics and sample size
 - Sequential p-values for graphical multiplicity
 - Conditional power and sample size re-estimation (`ssrCP`)
 - Updating bounds when observed timing differs from planned
@@ -77,8 +96,19 @@ Topics covered:
 - **test.type = 8** **(dev)** adds non-binding harm bounds for monitoring experimental harm (e.g., OS in oncology)
 - **gsSurvPower for what-if** **(dev)**: use `gsSurvPower(x = design, hr = ...)` for sensitivity analyses without re-solving sample size
 - **Always round to integers** with `toInteger()` before reporting a design
+- **toInteger and testLower**: as of >= 3.9.0.9004, `toInteger()` preserves `testLower` settings; earlier versions reset suppressed futility bounds
+- **testLower**: logical vector controlling which analyses have futility bounds; `FALSE` suppresses futility at that analysis
+- **Two-parameter spending families**: `param = c(t1, t2, u1, u2)` fits `sf(t1) = alpha*u1` and `sf(t2) = alpha*u2`. Choose sfCauchy for robustness to timing changes, sfExtremeValue/sfExtremeValue2 for conservative early spending, sfLogistic/sfNormal as general purpose defaults.
+- **sfExtremeValue2**: 4-parameter futility spending `c(t1, t2, u1, u2)` for calibrating futility bounds to target a specific HR
+- **testBinomial sign convention**: `testBinomial(x1=exp, x2=ctrl, n1=n_exp, n2=n_ctrl)` gives positive Z when experimental is better; swapping x1/x2 reverses the sign
 - **gsSurv over nSurv**: prefer `gsSurv()` which combines sample size and boundary computation
 - **Calendar vs event-driven in gsSurvPower**: `plannedCalendarTime` gives unconditional power (events change with HR); `targetEvents` matches the gsDesign power plot
 - **Spending time vs information fraction**: use `usTime`/`lsTime` in `gsDesign()` when spending should differ from information fraction
-- **sequentialPValue**: only meaningful for `test.type = 1, 4, 6` (one-sided or non-binding futility)
+- **sequentialPValue**: only meaningful for `test.type = 1, 4, 6` (one-sided or non-binding futility). Based on Liu & Anderson (2008) Theorem 1: Type I error ≤ α for *any* stopping time τ, which is why non-binding futility and trial extension past an efficacy boundary preserve error control.
+- **Sequential p-values with multiplicity**: sequential p-values can be passed directly to graphical multiplicity procedures (e.g., `graph_test_shortcut()`) to test multiple hypotheses in group sequential trials while controlling FWER. See Maurer & Bretz (2013) and the graphicalMCP-gsDesign2 skill.
 - **Calendar vs information spending**: `gsSurvCalendar(spending = "calendar")` spends less at early interims
+
+## Key references
+
+- Anderson KM, Clark JB. Fitting spending functions. *Statist. Med.* 2010; 29:321–327.
+- Liu Q, Anderson KM. On adaptive extensions of group sequential trials for clinical investigations. *JASA* 2008; 103:1621–1630.

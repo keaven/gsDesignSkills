@@ -1,0 +1,457 @@
+---
+title: "AI Skills for Group Sequential Design"
+subtitle: "Teaching Claude Code to Design Clinical Trials"
+author: "Keaven M. Anderson"
+date: "2026"
+format:
+  revealjs:
+    theme: default
+    slide-number: c/t
+    transition: fade
+    width: 1280
+    height: 720
+    code-line-numbers: false
+    highlight-style: github
+    scrollable: true
+    smaller: true
+    footer: "AI Skills for Group Sequential Design"
+---
+
+## Motivation
+
+- **Group sequential design** (GSD) for clinical trials involves
+  complex R code across multiple specialized packages
+- Statistical programmers and biostatisticians spend significant time
+  on routine coding tasks
+- **AI coding assistants** like Claude Code can accelerate this ---
+  if they understand the domain
+- **Problem:** General-purpose AI lacks reliable knowledge of
+  clinical trial design APIs and conventions
+
+. . .
+
+**Solution:** Curated *AI skills* that encode package-specific knowledge,
+code patterns, and statistical conventions
+
+## The Shift: Delegation and Verification
+
+[Dohmke & Kalliamvakou (2025)](https://github.blog/news-insights/the-library/developers-reinvented/) describe software development evolving through stages:
+
+1. **Stage 1:** AI autocompletes lines of code
+2. **Stage 2:** AI as pair programmer (chat-driven coding)
+3. **Stage 3:** AI agent executes multi-step tasks autonomously
+4. **Stage 4:** Fully agentic --- multiple AI agents collaborate
+
+. . .
+
+For biostatisticians, the key shift is from **writing code** to
+**delegating and verifying**:
+
+- Skills encode the domain knowledge needed for reliable delegation
+- Biostatisticians focus on *design decisions* and *verification*,
+  not syntax
+- Reproducibility improves: skills are version-controlled, shared,
+  and testable
+
+## What Are AI Skills?
+
+Skills are structured knowledge files that give an AI assistant
+expertise in a specific domain:
+
+```
+.claude/skills/<skill-name>/
+├── SKILL.md              # Triggers, workflow, key concepts
+└── references/
+    ├── code_patterns.md  # Verified code templates
+    └── llms.txt          # API documentation
+```
+
+- **SKILL.md** --- When to activate, what the package does,
+  critical gotchas
+- **Code patterns** --- Tested, working code templates for common tasks
+- **llms.txt** --- Machine-readable API reference from
+  [gsDesign.ai](https://gsDesign.ai)
+
+## The gsDesignSkills Repository
+
+::: {.columns}
+::: {.column width="50%"}
+
+### Individual Package Skills
+
+| Skill | Package |
+|-------|---------|
+| `gsDesign` | Classical GSD |
+| `gsDesign2` | Next-gen GSD (NPH) |
+| `graphicalMCP` | Multiplicity graphs |
+| `rpact` | Adaptive designs |
+| `simtrial` | Trial simulation |
+| `wpgsd` | Weighted parametric GSD |
+| `gsDesignNB` | Negative binomial |
+| `gMCPLite` | Legacy MCP |
+
+:::
+::: {.column width="50%"}
+
+### Cross-Package Skills
+
+| Skill | Integration |
+|-------|-------------|
+| `graphicalMCP-gsDesign2` | GSD + multiplicity |
+| `illness-death` | Multi-state oncology |
+| `multi-endpoint-sim` | GSD + simulation + multiplicity |
+
+### API Documentation
+
+- `llms.txt` files from [gsDesign.ai](https://gsDesign.ai)
+- Machine-readable format optimized for AI consumption
+
+:::
+:::
+
+## Anatomy of a Skill: gsDesign
+
+```yaml
+# SKILL.md frontmatter
+name: gsDesign
+description: Classical group sequential trial design
+```
+
+**Trigger patterns** tell Claude *when* to activate:
+
+> Group sequential boundaries, spending functions,
+> sample size for time-to-event trials, gsSurv, gsSurvPower,
+> harm bounds (test.type 7/8)...
+
+**Key concepts** encode domain knowledge:
+
+- `test.type = 4` is standard for confirmatory trials
+- Always round to integers with `toInteger()` before reporting
+- `gsBoundSummary()` produces gt-ready data frames
+- 7 plot types available
+- Two-parameter spending function families (Anderson & Clark 2009):
+  `sfLogistic`, `sfNormal`, `sfCauchy`, `sfExtremeValue`, `sfBetaDist`
+- Sequential p-value theory (Liu & Anderson 2008):
+  formal validity proof, spending time vs information fraction
+
+## Code Patterns: Verified Templates
+
+Each skill includes tested code templates, e.g., a confirmatory survival design:
+
+```r
+design <- gsSurv(
+  k = 3, test.type = 4, alpha = 0.025, beta = 0.1,
+  lambdaC = log(2) / 12, hr = 0.7, hr0 = 1,
+  eta = 0.01, gamma = 10, R = 12, T = 36, minfup = 24,
+  sfu = sfLDOF, sfl = sfHSD, sflpar = -2
+) |> toInteger()
+
+design |> gsBoundSummary() |> gt::gt(groupname_col = "Analysis")
+```
+
+Without the skill, Claude might use wrong parameter names,
+forget `toInteger()`, or misapply spending functions.
+
+## The Cross-Package Skill: GSD + Multiplicity
+
+The `graphicalMCP-gsDesign2` skill encodes a **4-phase workflow**
+for multi-endpoint trials (e.g., OS + PFS + ORR in subgroup + all):
+
+::: {.incremental}
+1. **Design specification** --- Build multiplicity graph, design the
+   sample-size-driving hypothesis (H1), derive enrollment, compute
+   power for remaining hypotheses
+2. **Results entry** --- Record event counts, nominal p-values,
+   compute spending times
+3. **Hypothesis testing** --- Compute sequential p-values,
+   test with `graph_test_shortcut()`
+4. **Verification** --- Update group sequential bounds per
+   the graph, compare nominal p-values to updated bounds
+:::
+
+## Example 1: Ask Claude to Design a Trial
+
+**Prompt:**
+
+> Design a 3-analysis group sequential survival trial with
+> non-binding futility. Control median PFS is 8 months,
+> target HR 0.65, 90% power, enrollment over 18 months,
+> 24 months minimum follow-up.
+
+With the gsDesign skill loaded, Claude produces:
+
+```r
+design <- gsSurv(
+  k = 3, test.type = 4, alpha = 0.025, beta = 0.1,
+  lambdaC = log(2) / 8, hr = 0.65, hr0 = 1,
+  eta = 0.01, gamma = 1, R = 18, minfup = 24,
+  sfu = sfLDOF, sfl = sfHSD, sflpar = -2
+) |> toInteger()
+```
+
+- Correct spending functions for efficacy and futility
+- Proper parameterization (`lambdaC`, not median directly)
+- Integer rounding included
+
+## Example 1: Reporting and Sensitivity
+
+Claude also generates reporting and sensitivity analysis:
+
+```r
+design |>
+  gsBoundSummary(deltaname = "HR", logdelta = TRUE,
+                  Nname = "Events", timename = "Month") |>
+  gt::gt(groupname_col = "Analysis") |>
+  gt::tab_header(title = "Group Sequential Design: PFS Endpoint",
+                  subtitle = "Non-binding futility, LD-OF efficacy spending")
+
+# What-if: power under HR = 0.75?
+gsSurvPower(x = design, hr = 0.75)
+```
+
+Plus natural language summary of sample size, events, and timing.
+
+## Example 2: Multiplicity-Adjusted Testing
+
+**Prompt:**
+
+> We have a Phase III trial with OS and PFS in a biomarker
+> subgroup and overall population. Set up the multiplicity
+> graph and compute sequential p-values from interim results.
+
+With the `graphicalMCP-gsDesign2` skill, Claude:
+
+1. Creates the multiplicity graph with proper alpha allocation
+2. Designs the sample-size-driving hypothesis
+3. Computes `sequential_pval()` for each hypothesis at each analysis
+4. Tests using `graph_test_shortcut()` with adjusted significance levels
+
+. . .
+
+**Without the skill**, Claude would not know:
+
+- That `info_frac = NULL` with `analysis_time` is the correct approach
+- How spending time decouples from information fraction
+- The `event = NULL` requirement in `gs_power_ahr()` when using timing
+
+## Multi-Endpoint Simulation Pipeline
+
+::: {.columns}
+::: {.column width="55%"}
+
+The `multi-endpoint-sim` skill orchestrates **5 packages** for
+simulation-based operating characteristics:
+
+```
+gsDesign (bounds) →
+  illness-death (data generation) →
+    simtrial (cutting + analysis) →
+      gsDesign (sequential p-values) →
+        graphicalMCP (multiplicity testing)
+```
+
+- **Sequential p-values** (Liu & Anderson 2008) enable valid testing
+  at each analysis
+- **graphicalMCP** controls familywise error using
+  Maurer-Bretz Algorithm 1
+
+:::
+::: {.column width="45%"}
+
+```{mermaid}
+%%| fig-height: 2.5
+graph LR
+  S0["<b>State 0</b><br/>Stable<br/>No Response"] -->|response| S1["<b>State 1</b><br/>Responded"]
+  S0 -->|prog_0| S2["<b>State 2</b><br/>Progressed"]
+  S0 -->|death_0| S3["<b>State 3</b><br/>Dead"]
+  S1 -->|prog_1| S2
+  S1 -->|death_1| S3
+  S2 -->|death_2| S3
+```
+
+Illness-death model simulates correlated OS, PFS, ORR
+from 6 transition rates
+
+:::
+:::
+
+## Beyond gsDesign: Specialized Skills
+
+### Negative Binomial (gsDesignNB)
+
+- Recurrent event trial design
+- Event gaps, variable accrual
+- Blinded sample size re-estimation
+
+### rpact
+
+- Adaptive designs with sample size reassessment
+- Inverse normal and Fisher combination tests
+- Multi-arm and enrichment designs
+
+## Theoretical Foundations Encoded in Skills
+
+Skills don't just encode *code* --- they encode *theory*:
+
+| Paper | Encoded In | What It Enables |
+|-------|-----------|-----------------|
+| Anderson et al. (2022) | `wpgsd` | Unified framework for weighted parametric GSD |
+| Anderson & Clark (2009) | `gsDesign` | Two-parameter spending function families with closed-form fitting |
+| Anderson et al. (2026) | `gsDesign2`, `graphicalMCP-gsDesign2` | Spending time theory for sequential p-values |
+| Liu & Anderson (2008) | `gsDesign`, `graphicalMCP-gsDesign2` | Sequential p-value validity (Theorems 1--2) |
+| Maurer & Bretz (2013) | `graphicalMCP-gsDesign2` | Algorithm 1 for closed testing with group sequential designs |
+
+. . .
+
+This means Claude can explain *why* a spending function is well-ordered,
+*when* spending time should differ from information fraction,
+and *how* sequential p-values maintain Type I error control ---
+not just produce code that calls the right function.
+
+## How Skills Are Used
+
+**1. Copy skills** into your project:
+
+```bash
+cp -r gsDesignSkills/.claude/skills/* my-project/.claude/skills/
+```
+
+**2. Reference** in your project's `CLAUDE.md`:
+
+```markdown
+## Skills
+When working on group sequential designs,
+read `.claude/skills/gsDesign/SKILL.md`.
+```
+
+**3. Use naturally** --- Claude reads the skill when triggered, applies
+code patterns as verified starting points, and consults `llms.txt` for
+full API details when needed.
+
+## What Skills Prevent
+
+::: {.columns}
+::: {.column width="50%"}
+
+### Common AI Mistakes
+
+- Wrong parameter names
+  (`ssmethod` vs `method`)
+- Hallucinated functions
+  (`as_gt()` on wrong object type)
+- Wrong API conventions
+  (rpact dropout as percentage vs proportion)
+- Missing critical steps
+  (no `toInteger()`, wrong `test.type`)
+
+:::
+::: {.column width="50%"}
+
+### What Skills Provide
+
+- Verified parameter names and defaults
+- Tested code patterns that work
+- Cross-package conventions
+  (gsDesign vs rpact mapping)
+- Domain knowledge
+  (when to use non-binding futility,
+  spending time vs information fraction)
+
+:::
+:::
+
+## AI-Readable Documentation: llms.txt
+
+[gsDesign.ai](https://gsDesign.ai) provides machine-optimized
+documentation:
+
+- Function signatures with all parameters
+- Return value structures
+- Cross-references between related functions
+- Compact format designed for AI context windows
+
+. . .
+
+Included in skills for: gsDesign, gsDesign2, graphicalMCP,
+rpact, simtrial, wpgsd, gsDesignNB
+
+## Practical Impact
+
+Skills have been used to:
+
+- **Update the gsDesign Technical Manual** --- Claude incorporated
+  substantial package updates across 13 files, adding 5 new chapters
+  and sections with assistance from these skills
+- **Generate cross-validation code** between gsDesign and rpact with
+  correct parameter mapping
+- **Design complex multi-endpoint trials** with graphical multiplicity
+  following the Maurer-Bretz framework
+- **Simulate multi-endpoint group sequential trials** --- 5-package
+  pipeline from design through illness-death simulation to
+  multiplicity-adjusted testing
+- **Create simulation studies** for negative binomial and
+  illness-death models
+
+. . .
+
+The key insight: **domain-specific knowledge** turns a general-purpose
+AI into a reliable statistical programming assistant.
+
+## Future Directions
+
+- **Expanding skills** for additional packages and design types
+- **Delegation and verification** --- biostatisticians shift from
+  writing code to reviewing AI-generated designs
+  (Dohmke & Kalliamvakou 2025)
+- **Validation workflows** --- skills that check designs against
+  simulation
+- **Interactive design exploration** --- iterative refinement of
+  designs through conversation
+- **Community contributions** --- open-source skills that improve
+  with collective expertise
+
+## Summary
+
+| | |
+|---|---|
+| **What** | Curated knowledge files for AI coding assistants |
+| **Why** | Clinical trial design requires domain expertise that general AI lacks |
+| **How** | SKILL.md + code patterns + llms.txt API references |
+| **Where** | [github.com/keaven/gsDesignSkills](https://github.com/keaven/gsDesignSkills) |
+| **Coverage** | 11 skills across 8+ R packages for GSD, multiplicity, simulation |
+| **Impact** | Reliable code generation, fewer errors, faster workflows |
+
+. . .
+
+**Repository:** [github.com/keaven/gsDesignSkills](https://github.com/keaven/gsDesignSkills)
+
+**API docs:** [gsDesign.ai](https://gsDesign.ai)
+
+## References
+
+::: {style="font-size: 0.7em;"}
+
+- Anderson, K. M., Guo, Z., Zhao, J., & Sun, L. Z. (2022). A unified framework for weighted parametric group sequential design. *Biometrical Journal*, 64(7), 1219--1239. <https://doi.org/10.1002/bimj.202100085>
+- Anderson, K. M., & Clark, J. W. (2009). Fitting spending functions. *Statistics in Medicine*, 29(3), 321--327.
+- Anderson, K. M. et al. (2026). Spending time in group sequential design. Accepted for publication.
+- Dohmke, T., & Kalliamvakou, E. (2025). Developers, reinvented. <https://github.blog/news-insights/the-library/developers-reinvented/>
+- Liu, Q., & Anderson, K. M. (2008). On adaptive extensions of group sequential trials for clinical investigations. *JASA*, 103(484), 1621--1630.
+- Maurer, W., & Bretz, F. (2013). Multiple testing in group sequential trials using graphical approaches. *Statistics in Biopharmaceutical Research*, 5(4), 311--320.
+
+:::
+
+## Discussion {.center}
+
+<br>
+
+### Questions?
+
+- **Needed:** Volunteers to try out gsDesignSkills
+
+<br>
+
+**Repository:** [github.com/keaven/gsDesignSkills](https://github.com/keaven/gsDesignSkills)
+
+**Technical manual:** [keaven.github.io/gsd-tech-manual](https://keaven.github.io/gsd-tech-manual/)
+
+**API documentation:** [gsDesign.ai](https://gsDesign.ai)

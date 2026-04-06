@@ -528,3 +528,86 @@ p_H2 <- logrank_pval(adtte[[3]] %>% filter(PARAMCD == "OS"), stratified = TRUE)
 # H5: ORR BM+ (risk difference, unstratified)
 p_H5 <- rd_pval(adtte[[1]] %>% filter(PARAMCD == "ORR", STRATUM == "BM+"))
 ```
+
+---
+
+## Piecewise transition rate modification {#piecewise-rates}
+
+`build_transition_rates()` produces constant rates. To implement piecewise
+hazards (e.g., progression rate that halves after 8 months, or response rate
+that varies over time), modify the output data frame by splitting rows into
+multiple time periods.
+
+### Piecewise progression rates
+
+Model PFS with median 8 months for $t < 8$, median 16 months for $t \geq 8$:
+
+```r
+transition_rate <- build_transition_rates(
+  strata = "All",
+  treatments = c("control", "experimental"),
+  median_pfs = c(All = 8),     # Calibrate with first-period median
+
+  median_os = c(All = 14),
+  orr = list(All = c(control = 0.15, experimental = 0.25)),
+  hr_pfs = c(All = 0.75),
+  hr_os = c(All = 0.75)
+)
+
+# Split prog_0 and prog_1 into two periods
+prog_transitions <- c("prog_0", "prog_1")
+pw_rows <- list()
+for (i in seq_len(nrow(transition_rate))) {
+  row <- transition_rate[i, ]
+  if (row$transition %in% prog_transitions) {
+    # Period 1: original rate, duration = changepoint
+    row1 <- row; row1$duration <- 8
+    pw_rows[[length(pw_rows) + 1]] <- row1
+    # Period 2: half the rate, duration = Inf
+    row2 <- row; row2$rate <- row$rate / 2; row2$duration <- Inf
+    pw_rows[[length(pw_rows) + 1]] <- row2
+  } else {
+    pw_rows[[length(pw_rows) + 1]] <- row
+  }
+}
+transition_rate_pw <- do.call(rbind, pw_rows)
+```
+
+### Piecewise response rates
+
+Model early high response rate (first 6 months) with low late response:
+
+```r
+orr_changepoint <- 6
+orr_rate_mult <- 2.25     # Multiply base rate for t < 6
+orr_rate_late <- 0.1      # 10% of base rate for t >= 6
+
+# Add to the piecewise loop above
+if (row$transition == "response") {
+  row1 <- row
+  row1$rate <- row$rate * orr_rate_mult
+  row1$duration <- orr_changepoint
+  pw_rows[[length(pw_rows) + 1]] <- row1
+  row2 <- row
+  row2$rate <- row$rate * orr_rate_late
+  row2$duration <- Inf
+  pw_rows[[length(pw_rows) + 1]] <- row2
+}
+```
+
+### Separate design vs simulation transition rates
+
+Use different HRs for design (optimistic) and simulation (weaker effect):
+
+```r
+# Design rates: HR = 0.75 (for sample size and bounds)
+transition_rate_design <- build_transition_rates(
+  ..., hr_pfs = c(All = 0.75), hr_os = c(All = 0.75)
+)
+
+# Simulation rates: HR = 0.80 (weaker, for operating characteristics)
+transition_rate_sim <- build_transition_rates(
+  ..., hr_pfs = c(All = 0.80), hr_os = c(All = 0.80)
+)
+# Apply the same piecewise modifications to both
+```

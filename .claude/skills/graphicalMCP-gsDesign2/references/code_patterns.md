@@ -634,3 +634,77 @@ bound_wpgsd <- wpgsd::generate_bounds(
 
 ct <- wpgsd::closed_test(bound_wpgsd, p_obs)
 ```
+
+---
+
+## Theoretical basis: Maurer-Bretz framework {#theoretical-basis}
+
+**Reference**: Maurer W, Bretz F. Multiple testing in group sequential trials
+using graphical approaches. *Stat Biopharm Res* 2013; 5:311–320.
+
+### Algorithm 1: Sequentially rejective graphical procedure for GSD
+
+The Maurer-Bretz algorithm extends the graphical approach of Bretz et al.
+(2009) to group sequential trials. At each analysis, it operates exactly like
+the non-sequential graphical procedure but uses group sequential nominal
+significance levels instead of fixed levels.
+
+1. **Initialize**: Set $t = 1$, $I = \{1, \ldots, h\}$ (active hypotheses)
+2. **At analysis $t$**: Compute nominal p-values $p_{i,t}$ and group sequential
+   nominal significance levels $\alpha^*_{i,t}(w_i(I) \cdot \alpha)$ for each $i \in I$
+3. **If $p_{j,t} \leq \alpha^*_{j,t}(w_j(I) \cdot \alpha)$ for some $j$**: Reject $H_j$,
+   update the graph (weights and transitions), repeat step 2
+4. **If no rejection and $t < k$**: Continue to next analysis $t \to t + 1$
+
+**Key insight**: The nominal level $\alpha^*_{i,t}(\gamma)$ is the group sequential
+boundary at analysis $t$ for a design with total alpha $= \gamma$. This is NOT
+the same as $w_i(I) \cdot \alpha^*_{i,t}(\alpha)$ — i.e., one cannot simply multiply
+a fixed-alpha boundary by the weight.
+
+### Equivalence with sequential p-values
+
+Algorithm 1 can equivalently be performed using sequential p-values
+(Liu & Anderson, 2008):
+
+1. At each analysis $t$, compute sequential p-values $p^s_{i,t}$ for each $i$
+2. Reject $H_j$ if $p^s_{j,t} \leq \alpha \cdot w_j(I)$
+3. Update graph and repeat
+
+This is exactly what `graphicalMCP::graph_test_shortcut(g, p, alpha)` does
+when called with sequential p-values at each analysis.
+
+### Well-ordered spending functions
+
+For the procedure to be consonant (sequentially rejective), the spending
+function family must produce nominal significance levels $\alpha^*_t(\gamma)$ that
+are non-decreasing in $\gamma$. This is called the **well-ordering** property
+(Liu & Anderson, 2008).
+
+**Sufficient condition**: The spent levels $\alpha_t(\gamma) = a(\gamma, y_t) - a(\gamma, y_{t-1})$
+are nondecreasing in $\gamma$ for all analyses $t$. For differentiable spending
+functions, $\partial^2 a(\gamma, y) / \partial\gamma \partial y \geq 0$ suffices.
+
+**Qualified families**:
+
+| Spending function | Well-ordered? | Notes |
+|-------------------|---------------|-------|
+| Power: $a(\gamma,y) = \gamma y^\rho$ | Yes (all $\rho > 0$) | Includes $\rho=3$ (OBF-like) and $\rho=1$ (Pocock-like) |
+| Pocock-type: $a(\gamma,y) = \gamma \ln(1+(e-1)y)$ | Yes | |
+| OBF-type: $a(\gamma,y) = 2(1 - \Phi(\Phi^{-1}(1-\gamma/2)/\sqrt{y}))$ | Yes for $\gamma < 0.318$ | Covers $\alpha = 0.025$ and all practical levels |
+| `sfLDOF` in gsDesign | Yes for $\gamma < 0.318$ | Same as OBF-type |
+| `sfHSD` with $\gamma < 0$ | Verify case by case | Generally well-ordered for practical levels |
+
+### Why naive hierarchical testing fails in GSD
+
+**Hung, Wang & O'Neill (2007)** showed that the following naive strategy
+inflates the FWER: "test the secondary endpoint at level $\alpha$ whenever
+the primary endpoint is significant at an interim or final analysis."
+
+The problem: in a GSD with non-binding futility, the primary can be
+significant at an interim but not at the final analysis (if the trial
+continues and evidence weakens). Testing the secondary at a later analysis
+with full $\alpha$ double-counts the alpha already spent by the primary.
+
+**Solution**: Use sequential p-values for each hypothesis and apply the
+graphical procedure (Algorithm 1) at each analysis. This is exactly
+the approach implemented in the graphicalMCP-gsDesign2 workflow.
