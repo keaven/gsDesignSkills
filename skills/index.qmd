@@ -1,0 +1,40 @@
+---
+title: "Skills Catalog"
+---
+
+## Individual Package Skills
+
+| Skill | Package | Description |
+|-------|---------|-------------|
+| [gsDesign](gsDesign.qmd) | gsDesign | Classical group sequential boundaries, spending functions, survival trial design |
+| [gsDesign2](gsDesign2.qmd) | gsDesign2 | Next-generation GSD with average hazard ratio, non-proportional hazards, spending time |
+| [graphicalMCP](graphicalMCP.qmd) | graphicalMCP | Graphical multiple comparison procedures, Bonferroni-based closed testing |
+| [rpact](rpact.qmd) | rpact | Confirmatory adaptive designs, sample size reassessment, combination tests |
+| [simtrial](simtrial.qmd) | simtrial | Survival trial simulation, weighted logrank, MaxCombo tests |
+| [wpgsd](wpgsd.qmd) | wpgsd | Weighted parametric GSD with correlated test statistics |
+| [gsDesignNB](gsDesignNB.qmd) | gsDesignNB | Negative binomial / recurrent event trial design and simulation |
+| [gMCPLite](gMCPLite.qmd) | gMCPLite | Legacy graphical MCP (prefer graphicalMCP for new projects) |
+
+## Cross-Package Skills
+
+| Skill | Packages | Description |
+|-------|----------|-------------|
+| [graphicalMCP-gsDesign2](graphicalMCP-gsDesign2.qmd) | graphicalMCP + gsDesign2 | GSD with graphical multiplicity control, Maurer-Bretz framework |
+| [illness-death](illness-death.qmd) | gMCPLite (simulation code) | Multi-state model for correlated OS/PFS/ORR endpoints |
+| [multi-endpoint-sim](multi-endpoint-sim.qmd) | gsDesign + gMCPLite + simtrial + graphicalMCP | Full simulation pipeline from design through multiplicity-adjusted testing |
+
+## Skill Anatomy
+
+Each skill follows the same structure:
+
+```
+.claude/skills/<skill-name>/
+├── SKILL.md              # Triggers, workflow, key concepts
+└── references/
+    ├── code_patterns.md  # Verified code templates
+    └── llms.txt          # API documentation (where available)
+```
+
+- **SKILL.md** defines *when* to activate and *what* domain knowledge to apply
+- **Code patterns** provide tested, working templates as starting points
+- **llms.txt** files from [gsDesign.ai](https://gsDesign.ai) give complete API details

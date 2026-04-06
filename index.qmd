@@ -1,0 +1,59 @@
+---
+title: "AI Skills for Group Sequential Design"
+subtitle: "Teaching AI to Design Clinical Trials"
+---
+
+## Overview
+
+**gsDesignSkills** provides curated AI skills that give coding assistants
+domain expertise in clinical trial design. Each skill encodes package-specific
+knowledge, verified code patterns, and statistical conventions for R packages
+used in group sequential design, multiplicity control, and trial simulation.
+
+Skills are structured knowledge files designed for
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) and other
+AI coding assistants that support the `.claude/skills/` convention.
+
+## Quick Start
+
+Copy the skills you need into your project:
+
+```bash
+# Copy all skills
+cp -r gsDesignSkills/.claude/skills/* my-project/.claude/skills/
+
+# Or copy a single skill
+cp -r gsDesignSkills/.claude/skills/gsDesign my-project/.claude/skills/
+```
+
+Then reference in your project's `CLAUDE.md`:
+
+```markdown
+## Skills
+When working on group sequential designs,
+read `.claude/skills/gsDesign/SKILL.md`.
+```
+
+## What's Included
+
+### 11 Skills Across 8+ R Packages
+
+| Category | Skills |
+|----------|--------|
+| **Group Sequential Design** | [gsDesign](skills/gsDesign.qmd), [gsDesign2](skills/gsDesign2.qmd), [rpact](skills/rpact.qmd) |
+| **Multiplicity Control** | [graphicalMCP](skills/graphicalMCP.qmd), [gMCPLite](skills/gMCPLite.qmd), [wpgsd](skills/wpgsd.qmd) |
+| **Trial Simulation** | [simtrial](skills/simtrial.qmd), [gsDesignNB](skills/gsDesignNB.qmd) |
+| **Cross-Package** | [graphicalMCP-gsDesign2](skills/graphicalMCP-gsDesign2.qmd), [illness-death](skills/illness-death.qmd), [multi-endpoint-sim](skills/multi-endpoint-sim.qmd) |
+
+### Each Skill Contains
+
+- **SKILL.md** — Trigger patterns, workflow, key concepts, and gotchas
+- **Code patterns** — Tested, working code templates for common tasks
+- **llms.txt** — Machine-readable API documentation from [gsDesign.ai](https://gsDesign.ai)
+
+## Resources
+
+- [Presentation](ai-skills-gsd.qmd) — Overview of the skills approach
+- [Simulation Example](multi-endpoint-sim.qmd) — Multi-endpoint trial simulation using 5 skills together
+- [gsDesign.ai](https://gsDesign.ai) — AI-friendly API documentation for clinical trial design packages
+- [GitHub Repository](https://github.com/keaven/gsDesignSkills) — Source code and contributions

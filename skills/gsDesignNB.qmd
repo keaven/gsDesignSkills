@@ -1,0 +1,10 @@
+---
+title: "gsDesignNB"
+subtitle: "Negative Binomial / Recurrent Event Designs"
+---
+
+{{< include ../.claude/skills/gsDesignNB/SKILL.md >}}
+
+## Code Patterns
+
+{{< include ../.claude/skills/gsDesignNB/references/code_patterns.md >}}

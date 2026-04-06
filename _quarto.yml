@@ -1,0 +1,55 @@
+project:
+  type: website
+  output-dir: docs
+  render:
+    - "*.qmd"
+    - "skills/*.qmd"
+    - "!CLAUDE.md"
+    - "!README.md"
+
+website:
+  title: "gsDesignSkills"
+  description: "AI Skills for Clinical Trial Design"
+  repo-url: https://github.com/keaven/gsDesignSkills
+  repo-actions: [source, issue]
+  navbar:
+    left:
+      - text: Home
+        href: index.qmd
+      - text: Skills
+        href: skills/index.qmd
+      - text: Presentation
+        href: ai-skills-gsd.qmd
+      - text: Simulation Example
+        href: multi-endpoint-sim.qmd
+    right:
+      - icon: github
+        href: https://github.com/keaven/gsDesignSkills
+  sidebar:
+    - title: "Skills"
+      style: docked
+      contents:
+        - skills/index.qmd
+        - section: "Individual Packages"
+          contents:
+            - skills/gsDesign.qmd
+            - skills/gsDesign2.qmd
+            - skills/graphicalMCP.qmd
+            - skills/rpact.qmd
+            - skills/simtrial.qmd
+            - skills/wpgsd.qmd
+            - skills/gsDesignNB.qmd
+            - skills/gMCPLite.qmd
+        - section: "Cross-Package"
+          contents:
+            - skills/graphicalMCP-gsDesign2.qmd
+            - skills/illness-death.qmd
+            - skills/multi-endpoint-sim.qmd
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-overflow: wrap
+
+freeze: auto

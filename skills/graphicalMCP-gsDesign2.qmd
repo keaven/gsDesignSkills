@@ -1,0 +1,10 @@
+---
+title: "graphicalMCP-gsDesign2"
+subtitle: "GSD with Graphical Multiplicity Control"
+---
+
+{{< include ../.claude/skills/graphicalMCP-gsDesign2/SKILL.md >}}
+
+## Code Patterns
+
+{{< include ../.claude/skills/graphicalMCP-gsDesign2/references/code_patterns.md >}}

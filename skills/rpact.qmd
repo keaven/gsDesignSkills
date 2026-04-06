@@ -1,0 +1,10 @@
+---
+title: "rpact"
+subtitle: "Confirmatory Adaptive Clinical Trial Design"
+---
+
+{{< include ../.claude/skills/rpact/SKILL.md >}}
+
+## Code Patterns
+
+{{< include ../.claude/skills/rpact/references/code_patterns.md >}}

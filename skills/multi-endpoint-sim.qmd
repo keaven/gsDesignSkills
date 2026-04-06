@@ -1,0 +1,10 @@
+---
+title: "multi-endpoint-sim"
+subtitle: "Multi-Endpoint Trial Simulation Pipeline"
+---
+
+{{< include ../.claude/skills/multi-endpoint-sim/SKILL.md >}}
+
+## Code Patterns
+
+{{< include ../.claude/skills/multi-endpoint-sim/references/code_patterns.md >}}

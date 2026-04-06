@@ -1,0 +1,10 @@
+---
+title: "gsDesign2"
+subtitle: "Next-Generation Group Sequential Design"
+---
+
+{{< include ../.claude/skills/gsDesign2/SKILL.md >}}
+
+## Code Patterns
+
+{{< include ../.claude/skills/gsDesign2/references/code_patterns.md >}}

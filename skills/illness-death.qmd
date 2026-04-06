@@ -1,0 +1,10 @@
+---
+title: "illness-death"
+subtitle: "Multi-State Model for Correlated Endpoints"
+---
+
+{{< include ../.claude/skills/illness-death/SKILL.md >}}
+
+## Code Patterns
+
+{{< include ../.claude/skills/illness-death/references/code_patterns.md >}}
