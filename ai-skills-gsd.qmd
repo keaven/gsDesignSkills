@@ -125,14 +125,16 @@ description: Classical group sequential trial design
 
 **Key concepts** encode domain knowledge:
 
-- `test.type = 4` is standard for confirmatory trials
+- Non-binding futility `test.type = 4` or one-sided `test.type = 1` are standard for confirmatory trials
 - Always round to integers with `toInteger()` before reporting
+- Spending time supported
+- Can skip futility or efficacy assessment at any analysis
+- Harm bounds available 
 - `gsBoundSummary()` produces gt-ready data frames
-- 7 plot types available
-- Two-parameter spending function families (Anderson & Clark 2009):
-  `sfLogistic`, `sfNormal`, `sfCauchy`, `sfExtremeValue`, `sfBetaDist`
-- Sequential p-value theory (Liu & Anderson 2008):
-  formal validity proof, spending time vs information fraction
+- 7 plot types available (new conditional power capabilities planned)
+- Standard and flexible spending function families available (Anderson & Clark 2009)
+- Sequential p-value theory (Liu & Anderson 2008)
+
 
 ## Code Patterns: Verified Templates
 
@@ -146,7 +148,7 @@ design <- gsSurv(
   sfu = sfLDOF, sfl = sfHSD, sflpar = -2
 ) |> toInteger()
 
-design |> gsBoundSummary() |> gt::gt(groupname_col = "Analysis")
+design |> gsBoundSummary() |> gt::gt()
 ```
 
 Without the skill, Claude might use wrong parameter names,
@@ -184,7 +186,7 @@ With the gsDesign skill loaded, Claude produces:
 design <- gsSurv(
   k = 3, test.type = 4, alpha = 0.025, beta = 0.1,
   lambdaC = log(2) / 8, hr = 0.65, hr0 = 1,
-  eta = 0.01, gamma = 1, R = 18, minfup = 24,
+  eta = 0.01, gamma = 10, R = 18, T = 42, minfup = 24,
   sfu = sfLDOF, sfl = sfHSD, sflpar = -2
 ) |> toInteger()
 ```
@@ -201,7 +203,7 @@ Claude also generates reporting and sensitivity analysis:
 design |>
   gsBoundSummary(deltaname = "HR", logdelta = TRUE,
                   Nname = "Events", timename = "Month") |>
-  gt::gt(groupname_col = "Analysis") |>
+  gt::gt() |>
   gt::tab_header(title = "Group Sequential Design: PFS Endpoint",
                   subtitle = "Non-binding futility, LD-OF efficacy spending")
 
@@ -259,7 +261,8 @@ gsDesign (bounds) →
 ::: {.column width="45%"}
 
 ```{mermaid}
-%%| fig-height: 2.5
+%%| fig-height: 3
+%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '18px'}}}%%
 graph LR
   S0["<b>State 0</b><br/>Stable<br/>No Response"] -->|response| S1["<b>State 1</b><br/>Responded"]
   S0 -->|prog_0| S2["<b>State 2</b><br/>Progressed"]
@@ -298,6 +301,7 @@ Skills don't just encode *code* --- they encode *theory*:
 | Anderson et al. (2022) | `wpgsd` | Unified framework for weighted parametric GSD |
 | Anderson & Clark (2009) | `gsDesign` | Two-parameter spending function families with closed-form fitting |
 | Anderson et al. (2026) | `gsDesign2`, `graphicalMCP-gsDesign2` | Spending time theory for sequential p-values |
+| FDA OS Guidance (2025) | `gsDesign` | Harm bounds design for OS safety assessment in oncology |
 | Liu & Anderson (2008) | `gsDesign`, `graphicalMCP-gsDesign2` | Sequential p-value validity (Theorems 1--2) |
 | Maurer & Bretz (2013) | `graphicalMCP-gsDesign2` | Algorithm 1 for closed testing with group sequential designs |
 
@@ -316,17 +320,53 @@ not just produce code that calls the right function.
 cp -r gsDesignSkills/.claude/skills/* my-project/.claude/skills/
 ```
 
-**2. Reference** in your project's `CLAUDE.md`:
+**2. Reference** skills for your AI assistant:
+
+::: {.columns}
+::: {.column width="33%"}
+
+### Claude Code
+
+In `CLAUDE.md`:
 
 ```markdown
-## Skills
-When working on group sequential designs,
-read `.claude/skills/gsDesign/SKILL.md`.
+When working on group sequential
+designs, read
+`.claude/skills/gsDesign/SKILL.md`.
 ```
 
-**3. Use naturally** --- Claude reads the skill when triggered, applies
-code patterns as verified starting points, and consults `llms.txt` for
-full API details when needed.
+:::
+::: {.column width="33%"}
+
+### VS Code / Copilot
+
+In `.github/copilot-instructions.md`:
+
+```markdown
+For group sequential designs,
+follow instructions in
+`.claude/skills/gsDesign/SKILL.md`.
+```
+
+:::
+::: {.column width="33%"}
+
+### Cline
+
+In `.clinerules`:
+
+```markdown
+When working on group sequential
+designs, read
+`.claude/skills/gsDesign/SKILL.md`.
+```
+
+:::
+:::
+
+**3. Use naturally** --- the assistant reads the skill when triggered,
+applies code patterns as verified starting points, and consults
+`llms.txt` for full API details when needed.
 
 ## What Skills Prevent
 
@@ -435,6 +475,7 @@ AI into a reliable statistical programming assistant.
 - Anderson, K. M., & Clark, J. W. (2009). Fitting spending functions. *Statistics in Medicine*, 29(3), 321--327.
 - Anderson, K. M. et al. (2026). Spending time in group sequential design. Accepted for publication.
 - Dohmke, T., & Kalliamvakou, E. (2025). Developers, reinvented. <https://github.blog/news-insights/the-library/developers-reinvented/>
+- FDA. (2025). Approaches to assessment of overall survival in oncology clinical trials. Draft guidance for industry. <https://www.fda.gov/media/188274/download>
 - Liu, Q., & Anderson, K. M. (2008). On adaptive extensions of group sequential trials for clinical investigations. *JASA*, 103(484), 1621--1630.
 - Maurer, W., & Bretz, F. (2013). Multiple testing in group sequential trials using graphical approaches. *Statistics in Biopharmaceutical Research*, 5(4), 311--320.
 

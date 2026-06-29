@@ -100,25 +100,64 @@ alongside the standard efficacy and futility bounds. This is useful when
 monitoring for the possibility that the experimental treatment is worse
 than control (e.g., OS harm in oncology trials).
 
+### FDA guidance context
+
+The FDA draft guidance *Approaches to Assessment of Overall Survival in Oncology Clinical Trials* (August 2025) recommends:
+
+- All randomized oncology trials should be designed to assess OS, even when OS is not the primary endpoint
+- Interim analyses of OS for futility or harm should be included, timed to limit exposure to potentially harmful therapeutics
+- Timing of interim and final OS analyses should be **event-driven** rather than time-based
+- Pre-specify a threshold (HR ≥ some value) to indicate potential harm, with justification
+- Design for sufficient events to rule out harm with pre-specified precision (e.g., 95% CI for OS HR excludes the harm threshold)
+- When OS is not the primary endpoint, also pre-specify: information fraction, boundaries (on p-value scale and translated to HR), and whether boundaries are binding
+- For multiple endpoints with OS, pre-specify a multiplicity plan controlling study-wise Type I error
+
+`test.type = 8` directly addresses these requirements by adding a non-binding harm bound to the group sequential design.
+
 - `test.type = 7`: binding futility + binding harm
 - `test.type = 8`: non-binding futility + non-binding harm (recommended)
 
+### Example: OS harm assessment per FDA guidance
+
+5-year study with 12-month enrollment and annual analyses. Efficacy testing
+is skipped at Year 1 (too few events), but harm is monitored from the start.
+Low control failure rate (median OS = 48 months) keeps sample size realistic.
+
 ```r
-x <- gsDesign(
-  k = 3,
-  test.type = 8,           # Non-binding futility + non-binding harm
+os_harm <- gsSurvCalendar(
+  test.type = 8,              # Non-binding futility + non-binding harm
   alpha = 0.025,
-  beta = 0.1,
-  timing = c(0.5, 0.75),
-  sfu = sfLDOF,            # Efficacy spending
-  sfl = sfHSD,             # Futility spending
-  sflpar = -2,
-  sfharm = sfHSD,          # Harm bound spending
-  sfharmparam = -2,        # Harm bound parameter
-  astar = 0.05             # Total harm bound crossing probability under H0
-)
-gsBoundSummary(x)
+  beta = 0.2,                 # 80% power
+  sfu = sfLDOF,               # Efficacy spending
+  sfl = sfHSD, sflpar = -2,   # Futility spending
+  sfharm = sfHSD,             # Harm bound spending
+  sfharmparam = -2,
+  astar = 0.05,               # Harm bound Type I error under H0
+  calendarTime = c(12, 24, 36, 48, 60),  # Annual analyses
+  spending = "information",
+  lambdaC = log(2) / 48,     # Control median OS = 48 months
+  hr = 0.6,                   # Target HR
+  eta = 0.001,
+  gamma = 10,                 # Enrollment rate (patients/month)
+  R = 12,                     # 12-month enrollment
+  minfup = 48,                # 60 - 12 = 48 months minimum follow-up
+  testUpper = c(FALSE, TRUE, TRUE, TRUE, TRUE),   # Skip efficacy at Year 1
+  testHarm = c(TRUE, TRUE, TRUE, TRUE, TRUE)      # Harm at all analyses
+) |> toInteger()
+
+gsBoundSummary(os_harm, timename = "Month", tdigits = 0)
 ```
+
+Key design choices:
+
+- **Event-driven timing**: although analyses are scheduled annually,
+  spending is based on information fraction (`spending = "information"`)
+- **Efficacy skipped at Year 1**: too few events for meaningful efficacy
+  assessment; harm monitoring starts immediately
+- **`astar = 0.05`**: probability of crossing the harm bound under H0;
+  controls the false-positive rate for declaring harm
+- **Low failure rate**: median OS = 48 months ensures the trial collects
+  enough events to rule out harm with adequate precision
 
 ### Selective bound testing
 
@@ -126,7 +165,7 @@ Control which analyses include each bound type with `testUpper`, `testLower`,
 and `testHarm` (logical vectors of length `k`).
 
 ```r
-# Efficacy at all analyses, futility only at IA1 and IA2, harm only at IA1
+# 3-analysis design: efficacy at all, futility at IA1-IA2, harm at IA1 only
 x <- gsDesign(
   k = 3,
   test.type = 8,
@@ -179,6 +218,65 @@ gsBoundSummary(x, timename = "Month", tdigits = 1)
 - `R`: Duration of each enrollment period matching rows of `gamma`
 - `T`: Total study duration. Set `T = NULL` to solve for T given `minfup`
 - `minfup`: Minimum follow-up. Set `minfup = NULL` to solve for minfup given `T`
+
+### Three ways to derive sample size and obtain desired power {#three-power-patterns}
+
+There are three mutually exclusive approaches for `nSurv()`/`gsSurv()` to derive the sample size needed to achieve target power (Lachin & Foulkes, 1986). Exactly one of these determines the "free variable" that is adjusted:
+
+**Pattern 1: Vary enrollment rate (recommended)**
+
+Fix `T` and `minfup`. The enrollment rates in `gamma` are scaled proportionally to achieve target power. This is the Lachin-Foulkes method and is generally the most reliable approach.
+
+```r
+# gamma is scaled proportionally to achieve 90% power
+x <- gsSurv(
+  k = 3, test.type = 4, alpha = 0.025, beta = 0.1,
+  lambdaC = log(2) / 12, hr = 0.7, eta = 0.001,
+  gamma = c(2, 4, 6, 8),   # Relative rates; will be scaled
+  R = c(3, 3, 3, 3),       # 12 months enrollment total
+  T = 36,                   # Fixed study duration
+  minfup = 24,              # Fixed minimum follow-up
+  sfu = sfLDOF, sfl = sfHSD, sflpar = -2
+)
+# T = 36 = sum(R) + minfup = 12 + 24
+# Output gamma values are scaled from input to achieve power
+```
+
+**Pattern 2: Vary enrollment duration**
+
+Fix `gamma` rates and `minfup`, set `T = NULL`. Solves for how long enrollment must last (adjusting `R` and `T`).
+
+```r
+# Enrollment rates are fixed; solve for enrollment duration
+x <- gsSurv(
+  k = 3, test.type = 4, alpha = 0.025, beta = 0.1,
+  lambdaC = log(2) / 12, hr = 0.7, eta = 0.001,
+  gamma = 10,               # Fixed enrollment rate (patients/month)
+  R = 18,                   # Starting value; will be adjusted
+  T = NULL,                 # Solve for study duration
+  minfup = 24,              # Fixed minimum follow-up
+  sfu = sfLDOF, sfl = sfHSD, sflpar = -2
+)
+# Output: R and T are computed; gamma stays at 10
+```
+
+**Pattern 3: Vary follow-up duration (not recommended)**
+
+Fix `gamma` and `R`, set `minfup = NULL`. Solves for minimum follow-up. **This method often fails** -- it produces an error if the fixed enrollment either over-powers the trial with no follow-up or under-powers it with infinite follow-up.
+
+```r
+# Fixed enrollment; solve for follow-up (use with caution)
+x <- gsSurv(
+  k = 3, test.type = 4, alpha = 0.025, beta = 0.1,
+  lambdaC = log(2) / 12, hr = 0.7, eta = 0.001,
+  gamma = 10,               # Fixed enrollment rate
+  R = 18,                   # Fixed enrollment duration
+  T = NULL,                 # Will be computed as sum(R) + minfup
+  minfup = NULL,            # Solve for minimum follow-up
+  sfu = sfLDOF, sfl = sfHSD, sflpar = -2
+)
+# May fail with: "Minimum follow-up greater than study duration"
+```
 
 ### Piecewise exponential failure rates
 

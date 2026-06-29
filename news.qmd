@@ -1,0 +1,79 @@
+---
+title: "Package Updates"
+subtitle: "Recent releases relevant to gsDesignSkills"
+---
+
+## gsDesign 3.10.0 (June 2026)
+
+*Main branch at [github.com/keaven/gsDesign](https://github.com/keaven/gsDesign); not yet on CRAN.*
+
+### New features
+
+- **`gsSurvPower()`**: Power computation for group sequential survival designs with fixed enrollment, dropout, treatment effect, and analysis timing. Supports `informationRates` to cap spending at planned vs. realized information fractions and `fullSpendingAtFinal` to force spending fraction to 1 at final analysis.
+- **`testUpper` / `testLower` / `testHarm`**: Selective bound testing at interim analyses for `gsDesign()`, `gsSurv()`, and `gsSurvCalendar()`. Inactive bounds set to extreme values and displayed as `NA`.
+- **test.type 7/8**: Three-boundary designs (efficacy + futility + harm) with `sfharm`/`sfharmparam` for independent harm-bound spending.
+- **`hr > hr0` support**: Survival design functions handle reversed HR conventions for time-to-response or safety endpoints.
+- **Exact binomial functions**: `repeatedPValueBinomialExact()`, `sequentialPValueBinomialExact()`, `simBinomialSeasonalExact()` for rare-event monitoring.
+- **`toInteger()` improvements**: Preserves selective-bound flags and harm-bound spending; uses fixed-calendar enrollment inflation.
+- **`sfExtremeValue2`**: Two-parameter flipped extreme value spending function for futility bound calibration.
+
+### Key references
+
+- [gsSurvPower vignette](https://keaven.github.io/gsDesign/articles/gsSurvPower.html)
+- [Selective bound testing vignette](https://keaven.github.io/gsDesign/articles/SelectiveBoundTesting.html)
+- [Harm bound vignette](https://keaven.github.io/gsDesign/articles/HarmBound.html)
+
+---
+
+## gsDesign2 1.1.9 (2026)
+ 
+*Main branch at [github.com/Merck/gsDesign2](https://github.com/Merck/gsDesign2).*
+
+### New features
+
+- **`sequential_pval()`**: Sequential p-value for AHR group sequential designs. Use with `gs_design_ahr()` output. For gsDesign objects (from `gsSurv()`, `gsSurvCalendar()`, `gsSurvPower()`), continue to use `gsDesign::sequentialPValue()`.
+- **Minimal risk weighting** added to `gs_design_rd()` and `gs_power_rd()`.
+- **`gs_design_ahr()` spending time output** (v1.1.8): Can now output spending time directly.
+
+---
+
+## rpact 4.4.0 (2026)
+
+*[CRAN](https://cran.r-project.org/package=rpact) and [github.com/rpact-com/rpact](https://github.com/rpact-com/rpact).*
+
+### New features (4.3.0–4.4.0)
+
+- **`getFutilityBounds()`**: Convert futility bounds between scales (z-value, p-value, conditional power, predictive power, reverse conditional power, effect estimate).
+- **`futilityBoundsScale`** argument in `getDesignInverseNormal()` and `getDesignGroupSequential()` for specifying futility bounds on alternative scales.
+- **`alpha0Scale`** argument in `getDesignFisher()` for alternative-scale alpha0 bounds.
+- **`efficacyStops` / `futilityStops`** (v4.2.1): Control which stages have stopping.
+- **Dose-response** (v4.2.0): Multi-arm simulations support `doseLevels` for linear or sigmoid Emax models.
+- **Unequal variances** (v4.2.0): `getSampleSizeMeans()`, `getPowerMeans()`, `getSimulationMeans()` support different variances per group.
+
+### Key references
+
+- [rpact documentation](https://docs.rpact.org)
+- Wassmer G, Brannath W. *Group Sequential and Confirmatory Adaptive Designs in Clinical Trials*. Springer, 2025.
+
+---
+
+## graphicalMCP 0.2.9 (March 2026)
+
+*[CRAN](https://cran.r-project.org/package=graphicalMCP) and [github.com/openpharma/graphicalMCP](https://github.com/openpharma/graphicalMCP).*
+
+### Changes
+
+- Fixed precision issue in `graph_test_closure()` parametric tests (#90).
+- Added Hochberg-based procedures (v0.2.7).
+- Internal validation via power simulations (v0.2.7).
+
+---
+
+## How sequential p-values work with multiplicity
+
+| Design package | Sequential p-value function | Use with |
+|---|---|---|
+| gsDesign (`gsSurv`, `gsSurvCalendar`, `gsSurvPower`) | `gsDesign::sequentialPValue()` | gsDesign objects |
+| gsDesign2 (`gs_design_ahr`, `gs_power_ahr`) | `gsDesign2::sequential_pval()` | gsDesign2 objects |
+
+Both produce a single p-value per hypothesis per analysis that can be passed to `graphicalMCP::graph_test_shortcut()` for FWER-controlled multiplicity testing.

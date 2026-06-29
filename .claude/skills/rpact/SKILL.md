@@ -9,7 +9,7 @@ description: >
 
 # Adaptive Clinical Trial Design with rpact
 
-**Note**: This skill targets rpact >= 4.x (CRAN).
+**Note**: This skill targets rpact >= 4.4.0 (CRAN). Dev version 4.4.0.9305 is on GitHub.
 
 ## API reference
 
@@ -25,6 +25,7 @@ description: >
 - `getDesignConditionalDunnett()` - Conditional Dunnett test for multi-arm
 - `getDesignCharacteristics()` - Design characteristics and properties
 - `getDesignSet()` - Compare multiple designs
+- `getFutilityBounds()` - Convert futility bounds between scales (z-value, p-value, conditional power, predictive power, reverse conditional power, effect estimate) (new in 4.3.0)
 
 ### Sample size
 - `getSampleSizeMeans()` - Continuous endpoints
@@ -109,4 +110,9 @@ Topics covered:
 - **Multi-arm `intersectionTest`**: "Dunnett" (parametric, most powerful), "Simes" (non-parametric), "Bonferroni" (conservative)
 - **`typeOfSelection`**: Controls arm selection at interim — "best" (highest effect), "rBest" (r best arms), "epsilon" (within epsilon of best), "all" (no dropping)
 - **`getObjectRCode()`**: Use to generate reproducible R code for any rpact object — invaluable for reporting and validation
+- **`futilityBoundsScale` (v4.3.0+)**: In `getDesignInverseNormal()` and `getDesignGroupSequential()`, specify futility bounds on alternative scales (p-value, conditional power, etc.) that are internally converted
+- **`alpha0Scale` (v4.3.0+)**: In `getDesignFisher()`, specify alpha0 bounds on alternative scales
+- **`efficacyStops` / `futilityStops` (v4.2.1+)**: Control which stages have efficacy/futility stopping
+- **Dose-response (v4.2.0+)**: Multi-arm simulations support `doseLevels` for linear or sigmoid Emax models
+- **Unequal variances (v4.2.0+)**: `getSampleSizeMeans()`, `getPowerMeans()`, `getSimulationMeans()` support different variances per group
 - **rpact defaults**: `alpha = 0.05`, `beta = 0.2`, `kMax = NA` (inferred), `sided = 1` — always set explicitly for clinical trial designs

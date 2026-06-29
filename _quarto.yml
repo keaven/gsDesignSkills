@@ -22,6 +22,8 @@ website:
         href: ai-skills-gsd.qmd
       - text: Simulation Example
         href: multi-endpoint-sim.qmd
+      - text: News
+        href: news.qmd
     right:
       - icon: github
         href: https://github.com/keaven/gsDesignSkills

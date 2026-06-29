@@ -10,6 +10,9 @@ description: >
 
 # Graphical Multiple Comparison Procedures with graphicalMCP
 
+**Note**: This skill targets graphicalMCP >= 0.2.9 (CRAN, github.com/openpharma/graphicalMCP).
+Version 0.2.9 fixed precision issues in parametric tests (#90).
+
 ## API reference
 
 - Full function docs: `references/llms.txt` (source: https://openpharma.github.io/graphicalMCP/)
@@ -72,4 +75,7 @@ Topics covered:
 - **`sim_corr` vs `test_corr`**: `sim_corr` is for generating correlated p-values in power simulation; `test_corr` is the known correlation used in the parametric test itself
 - **`power_marginal`**: Marginal power for each hypothesis at full alpha (not at allocated alpha); higher values = stronger signal
 - **Transition matrix rows must sum to ≤ 1**: Each row represents how alpha propagates when that hypothesis is rejected
-- **Sequential p-values**: Use `sequential_pval()` from gsDesign2 to get p-values for group sequential hypotheses, then pass to `graph_test_shortcut()` for multiplicity control
+- **Sequential p-values with multiplicity**: Sequential p-values can be passed directly to `graph_test_shortcut()` to test multiple hypotheses in group sequential trials while controlling FWER.
+  - For gsDesign objects (from `gsSurv()`, `gsSurvCalendar()`, `gsSurvPower()`): use `gsDesign::sequentialPValue()`
+  - For gsDesign2 objects (from `gs_design_ahr()`): use `gsDesign2::sequential_pval()`
+  - See Maurer & Bretz (2013) and the graphicalMCP-gsDesign2 skill.
