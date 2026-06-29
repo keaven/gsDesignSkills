@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Guide users through sample size calculation, group sequential design, and simulation for clinical trials with negative binomial (recurrent event) outcomes using the gsDesignNB R package. Use this skill when the user asks about: negative binomial sample size, recurrent event trials, overdispersed counts, event gaps, rate ratios, Wald test for count data, seasonal event rates, blinded or unblinded sample size re-estimation, group sequential designs for negative binomial endpoints, or the Zhu-Lakkis method.">
+
+<title>gsDesignNB – gsDesignSkills</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-2e5cbef59756d87313a778b4017e2694.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">gsDesignSkills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../skills/index.html"> 
+<span class="menu-text">Skills</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../ai-skills-gsd.html"> 
+<span class="menu-text">Presentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../multi-endpoint-sim.html"> 
+<span class="menu-text">Simulation Example</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../news.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/keaven/gsDesignSkills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/gsDesign.html">Individual Packages</a></li><li class="breadcrumb-item"><a href="../skills/gsDesignNB.html">gsDesignNB</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Skills Catalog</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Individual Packages</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/rpact.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rpact</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/simtrial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">simtrial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/wpgsd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">wpgsd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesignNB.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">gsDesignNB</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gMCPLite.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gMCPLite</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-Package</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP-gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP-gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/illness-death.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">illness-death</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/multi-endpoint-sim.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">multi-endpoint-sim</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#sample-size-and-simulation-for-negative-binomial-outcomes-with-gsdesignnb" id="toc-sample-size-and-simulation-for-negative-binomial-outcomes-with-gsdesignnb" class="nav-link active" data-scroll-target="#sample-size-and-simulation-for-negative-binomial-outcomes-with-gsdesignnb">Sample Size and Simulation for Negative Binomial Outcomes with gsDesignNB</a>
+  <ul class="collapse">
+  <li><a href="#api-reference" id="toc-api-reference" class="nav-link" data-scroll-target="#api-reference">API reference</a></li>
+  <li><a href="#key-functions" id="toc-key-functions" class="nav-link" data-scroll-target="#key-functions">Key functions</a>
+  <ul class="collapse">
+  <li><a href="#sample-size-calculation" id="toc-sample-size-calculation" class="nav-link" data-scroll-target="#sample-size-calculation">Sample size calculation</a></li>
+  <li><a href="#group-sequential-design" id="toc-group-sequential-design" class="nav-link" data-scroll-target="#group-sequential-design">Group sequential design</a></li>
+  <li><a href="#simulation" id="toc-simulation" class="nav-link" data-scroll-target="#simulation">Simulation</a></li>
+  <li><a href="#data-cutting-and-analysis-timing" id="toc-data-cutting-and-analysis-timing" class="nav-link" data-scroll-target="#data-cutting-and-analysis-timing">Data cutting and analysis timing</a></li>
+  <li><a href="#statistical-testing-and-estimation" id="toc-statistical-testing-and-estimation" class="nav-link" data-scroll-target="#statistical-testing-and-estimation">Statistical testing and estimation</a></li>
+  <li><a href="#sample-size-re-estimation" id="toc-sample-size-re-estimation" class="nav-link" data-scroll-target="#sample-size-re-estimation">Sample size re-estimation</a></li>
+  </ul></li>
+  <li><a href="#workflow-patterns" id="toc-workflow-patterns" class="nav-link" data-scroll-target="#workflow-patterns">Workflow patterns</a></li>
+  <li><a href="#important-design-considerations" id="toc-important-design-considerations" class="nav-link" data-scroll-target="#important-design-considerations">Important design considerations</a></li>
+  <li><a href="#code-patterns" id="toc-code-patterns" class="nav-link" data-scroll-target="#code-patterns">Code Patterns</a></li>
+  </ul></li>
+  <li><a href="#code-patterns-for-gsdesignnb" id="toc-code-patterns-for-gsdesignnb" class="nav-link" data-scroll-target="#code-patterns-for-gsdesignnb">Code Patterns for gsDesignNB</a>
+  <ul class="collapse">
+  <li><a href="#table-of-contents" id="toc-table-of-contents" class="nav-link" data-scroll-target="#table-of-contents">Table of Contents</a></li>
+  <li><a href="#sample-size" id="toc-sample-size" class="nav-link" data-scroll-target="#sample-size">Fixed sample size calculation</a>
+  <ul class="collapse">
+  <li><a href="#basic-calculation" id="toc-basic-calculation" class="nav-link" data-scroll-target="#basic-calculation">Basic calculation</a></li>
+  <li><a href="#piecewise-accrual-ramp-up" id="toc-piecewise-accrual-ramp-up" class="nav-link" data-scroll-target="#piecewise-accrual-ramp-up">Piecewise accrual ramp-up</a></li>
+  <li><a href="#with-dropout-and-maximum-follow-up" id="toc-with-dropout-and-maximum-follow-up" class="nav-link" data-scroll-target="#with-dropout-and-maximum-follow-up">With dropout and maximum follow-up</a></li>
+  <li><a href="#group-specific-parameters" id="toc-group-specific-parameters" class="nav-link" data-scroll-target="#group-specific-parameters">Group-specific parameters</a></li>
+  <li><a href="#unequal-allocation" id="toc-unequal-allocation" class="nav-link" data-scroll-target="#unequal-allocation">Unequal allocation</a></li>
+  <li><a href="#key-output-fields" id="toc-key-output-fields" class="nav-link" data-scroll-target="#key-output-fields">Key output fields</a></li>
+  </ul></li>
+  <li><a href="#power-calc" id="toc-power-calc" class="nav-link" data-scroll-target="#power-calc">Power calculation</a></li>
+  <li><a href="#event-gaps" id="toc-event-gaps" class="nav-link" data-scroll-target="#event-gaps">Event gaps and piecewise accrual</a></li>
+  <li><a href="#non-inferiority" id="toc-non-inferiority" class="nav-link" data-scroll-target="#non-inferiority">Non-inferiority and super-superiority</a>
+  <ul class="collapse">
+  <li><a href="#non-inferiority-rr0-1" id="toc-non-inferiority-rr0-1" class="nav-link" data-scroll-target="#non-inferiority-rr0-1">Non-inferiority (rr0 &gt; 1)</a></li>
+  <li><a href="#super-superiority-rr0-1" id="toc-super-superiority-rr0-1" class="nav-link" data-scroll-target="#super-superiority-rr0-1">Super-superiority (rr0 &lt; 1)</a></li>
+  </ul></li>
+  <li><a href="#group-sequential" id="toc-group-sequential" class="nav-link" data-scroll-target="#group-sequential">Group sequential design</a>
+  <ul class="collapse">
+  <li><a href="#basic-group-sequential-design" id="toc-basic-group-sequential-design" class="nav-link" data-scroll-target="#basic-group-sequential-design">Basic group sequential design</a></li>
+  <li><a href="#with-custom-spending-times" id="toc-with-custom-spending-times" class="nav-link" data-scroll-target="#with-custom-spending-times">With custom spending times</a></li>
+  <li><a href="#key-output-fields-1" id="toc-key-output-fields-1" class="nav-link" data-scroll-target="#key-output-fields-1">Key output fields</a></li>
+  </ul></li>
+  <li><a href="#simulation" id="toc-simulation" class="nav-link" data-scroll-target="#simulation">Simulation of recurrent events</a>
+  <ul class="collapse">
+  <li><a href="#basic-simulation" id="toc-basic-simulation" class="nav-link" data-scroll-target="#basic-simulation">Basic simulation</a></li>
+  <li><a href="#with-enrollment-ramp-up-and-event-gaps" id="toc-with-enrollment-ramp-up-and-event-gaps" class="nav-link" data-scroll-target="#with-enrollment-ramp-up-and-event-gaps">With enrollment ramp-up and event gaps</a></li>
+  </ul></li>
+  <li><a href="#gs-simulation" id="toc-gs-simulation" class="nav-link" data-scroll-target="#gs-simulation">Group sequential simulation</a>
+  <ul class="collapse">
+  <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage">Basic usage</a></li>
+  <li><a href="#with-custom-cutting-criteria" id="toc-with-custom-cutting-criteria" class="nav-link" data-scroll-target="#with-custom-cutting-criteria">With custom cutting criteria</a></li>
+  </ul></li>
+  <li><a href="#data-cutting" id="toc-data-cutting" class="nav-link" data-scroll-target="#data-cutting">Data cutting and analysis timing</a>
+  <ul class="collapse">
+  <li><a href="#cut-at-a-calendar-date" id="toc-cut-at-a-calendar-date" class="nav-link" data-scroll-target="#cut-at-a-calendar-date">Cut at a calendar date</a></li>
+  <li><a href="#find-date-when-target-events-reached" id="toc-find-date-when-target-events-reached" class="nav-link" data-scroll-target="#find-date-when-target-events-reached">Find date when target events reached</a></li>
+  <li><a href="#find-date-satisfying-multiple-criteria" id="toc-find-date-satisfying-multiple-criteria" class="nav-link" data-scroll-target="#find-date-satisfying-multiple-criteria">Find date satisfying multiple criteria</a></li>
+  <li><a href="#find-date-for-completers" id="toc-find-date-for-completers" class="nav-link" data-scroll-target="#find-date-for-completers">Find date for completers</a></li>
+  </ul></li>
+  <li><a href="#wald-test" id="toc-wald-test" class="nav-link" data-scroll-target="#wald-test">Wald test for treatment rate ratio</a>
+  <ul class="collapse">
+  <li><a href="#extracting-information-from-the-test" id="toc-extracting-information-from-the-test" class="nav-link" data-scroll-target="#extracting-information-from-the-test">Extracting information from the test</a></li>
+  </ul></li>
+  <li><a href="#information" id="toc-information" class="nav-link" data-scroll-target="#information">Blinded and unblinded information</a>
+  <ul class="collapse">
+  <li><a href="#blinded-information-at-interim" id="toc-blinded-information-at-interim" class="nav-link" data-scroll-target="#blinded-information-at-interim">Blinded information at interim</a></li>
+  <li><a href="#method-of-moments-estimation" id="toc-method-of-moments-estimation" class="nav-link" data-scroll-target="#method-of-moments-estimation">Method of moments estimation</a></li>
+  <li><a href="#information-at-a-planning-time" id="toc-information-at-a-planning-time" class="nav-link" data-scroll-target="#information-at-a-planning-time">Information at a planning time</a></li>
+  </ul></li>
+  <li><a href="#ssr" id="toc-ssr" class="nav-link" data-scroll-target="#ssr">Sample size re-estimation</a>
+  <ul class="collapse">
+  <li><a href="#blinded-ssr-friede-schmidli" id="toc-blinded-ssr-friede-schmidli" class="nav-link" data-scroll-target="#blinded-ssr-friede-schmidli">Blinded SSR (Friede &amp; Schmidli)</a></li>
+  <li><a href="#unblinded-ssr" id="toc-unblinded-ssr" class="nav-link" data-scroll-target="#unblinded-ssr">Unblinded SSR</a></li>
+  <li><a href="#updating-group-sequential-bounds-after-ssr" id="toc-updating-group-sequential-bounds-after-ssr" class="nav-link" data-scroll-target="#updating-group-sequential-bounds-after-ssr">Updating group sequential bounds after SSR</a></li>
+  </ul></li>
+  <li><a href="#completers" id="toc-completers" class="nav-link" data-scroll-target="#completers">Completers-based interim analysis</a></li>
+  <li><a href="#seasonal" id="toc-seasonal" class="nav-link" data-scroll-target="#seasonal">Seasonal event simulation</a></li>
+  <li><a href="#verification" id="toc-verification" class="nav-link" data-scroll-target="#verification">Verification of operating characteristics</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/gsDesignNB.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/gsDesign.html">Individual Packages</a></li><li class="breadcrumb-item"><a href="../skills/gsDesignNB.html">gsDesignNB</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">gsDesignNB</h1>
+<p class="subtitle lead">Negative Binomial / Recurrent Event Designs</p>
+</div>
+
+<div>
+  <div class="description">
+    <p>Guide users through sample size calculation, group sequential design, and simulation for clinical trials with negative binomial (recurrent event) outcomes using the gsDesignNB R package. Use this skill when the user asks about: negative binomial sample size, recurrent event trials, overdispersed counts, event gaps, rate ratios, Wald test for count data, seasonal event rates, blinded or unblinded sample size re-estimation, group sequential designs for negative binomial endpoints, or the Zhu-Lakkis method.</p>
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="sample-size-and-simulation-for-negative-binomial-outcomes-with-gsdesignnb" class="level1">
+<h1>Sample Size and Simulation for Negative Binomial Outcomes with gsDesignNB</h1>
+<section id="api-reference" class="level2">
+<h2 class="anchored" data-anchor-id="api-reference">API reference</h2>
+<ul>
+<li>Full function docs: <code>references/llms.txt</code> (built from local man pages)</li>
+<li>Workflow patterns: <code>references/code_patterns.md</code></li>
+</ul>
+</section>
+<section id="key-functions" class="level2">
+<h2 class="anchored" data-anchor-id="key-functions">Key functions</h2>
+<section id="sample-size-calculation" class="level3">
+<h3 class="anchored" data-anchor-id="sample-size-calculation">Sample size calculation</h3>
+<ul>
+<li><code>sample_size_nbinom()</code> - Sample size/power for negative binomial outcomes (Zhu-Lakkis Method 3)</li>
+</ul>
+</section>
+<section id="group-sequential-design" class="level3">
+<h3 class="anchored" data-anchor-id="group-sequential-design">Group sequential design</h3>
+<ul>
+<li><code>gsNBCalendar()</code> - Group sequential design with calendar-time analysis schedule</li>
+<li><code>compute_info_at_time()</code> - Statistical information at a given calendar time</li>
+<li><code>toInteger()</code> - Round sample sizes to integers preserving allocation ratio</li>
+<li><code>check_gs_bound()</code> - Check if group sequential bounds are crossed</li>
+<li><code>summarize_gs_sim()</code> - Summarize operating characteristics from simulations</li>
+</ul>
+</section>
+<section id="simulation" class="level3">
+<h3 class="anchored" data-anchor-id="simulation">Simulation</h3>
+<ul>
+<li><code>nb_sim()</code> - Simulate recurrent events (Gamma-Poisson mixture)</li>
+<li><code>nb_sim_seasonal()</code> - Simulate recurrent events with seasonal variation</li>
+<li><code>sim_gs_nbinom()</code> - Simulate multiple group sequential trials</li>
+</ul>
+</section>
+<section id="data-cutting-and-analysis-timing" class="level3">
+<h3 class="anchored" data-anchor-id="data-cutting-and-analysis-timing">Data cutting and analysis timing</h3>
+<ul>
+<li><code>cut_data_by_date()</code> - Cut simulated data at a calendar date</li>
+<li><code>get_analysis_date()</code> - Find date when target event count is reached</li>
+<li><code>get_cut_date()</code> - Find earliest date satisfying multiple analysis criteria</li>
+<li><code>cut_date_for_completers()</code> - Find date when target completers are reached</li>
+<li><code>cut_completers()</code> - Cut data for completers analysis</li>
+</ul>
+</section>
+<section id="statistical-testing-and-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="statistical-testing-and-estimation">Statistical testing and estimation</h3>
+<ul>
+<li><code>mutze_test()</code> - Wald test for treatment rate ratio (NB or Poisson)</li>
+<li><code>estimate_nb_mom()</code> - Method of moments estimation for NB parameters</li>
+<li><code>calculate_blinded_info()</code> - Blinded information and dispersion estimation</li>
+</ul>
+</section>
+<section id="sample-size-re-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="sample-size-re-estimation">Sample size re-estimation</h3>
+<ul>
+<li><code>blinded_ssr()</code> - Blinded SSR using Friede &amp; Schmidli method</li>
+<li><code>unblinded_ssr()</code> - Unblinded SSR using observed group rates</li>
+</ul>
+</section>
+</section>
+<section id="workflow-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="workflow-patterns">Workflow patterns</h2>
+<p>For detailed code templates, read <code>references/code_patterns.md</code>.</p>
+<p>Topics covered: - Fixed sample size calculation with piecewise accrual, dropout, event gaps - Power calculation from a fixed design - Non-inferiority and super-superiority designs (rr0 parameter) - Group sequential design with calendar-time analysis schedule - Simulation of recurrent events and group sequential trials - Seasonal event rate simulation - Data cutting at interim/final analyses - Wald test (mutze_test) for treatment rate ratio - Blinded and unblinded information estimation at interim - Blinded and unblinded sample size re-estimation - Completers-based interim analysis - Verification of theoretical vs.&nbsp;simulated operating characteristics</p>
+</section>
+<section id="important-design-considerations" class="level2">
+<h2 class="anchored" data-anchor-id="important-design-considerations">Important design considerations</h2>
+<ul>
+<li><strong>Dispersion parameter k</strong>: Controls overdispersion; k = 0 reduces to Poisson. Larger k means more overdispersion. Can be scalar (common) or length-2 vector (group-specific).</li>
+<li><strong>Event gaps</strong>: After each event, patients are “off risk” for <code>event_gap</code> time units. This reduces effective exposure: <code>lambda_eff = lambda / (1 + lambda * gap)</code>. Specified in the same time units as rates.</li>
+<li><strong>Variance inflation factor Q</strong>: When follow-up varies across patients, <code>Q = E[t^2] / E[t]^2</code> inflates the variance. <code>sample_size_nbinom()</code> handles this automatically.</li>
+<li><strong>Rate parameterization</strong>: Rates lambda1 (control) and lambda2 (experimental) are events per unit time. The treatment effect is the rate ratio RR = lambda2/lambda1.</li>
+<li><strong>Wald test (Mütze et al.)</strong>: <code>mutze_test()</code> fits a negative binomial GLM with offset for log exposure. Falls back to Poisson when the NB dispersion estimate is very large (&gt; poisson_threshold).</li>
+<li><strong>Calendar-time analysis schedule</strong>: <code>gsNBCalendar()</code> takes <code>analysis_times</code> as calendar months. Information at each analysis depends on enrollment pattern, dropout, and follow-up.</li>
+<li><strong>Spending time vs.&nbsp;information fraction</strong>: For group sequential designs, <code>usTime</code>/<code>lsTime</code> control alpha spending and may differ from the information fraction. This allows calendar-based or event-based spending schedules.</li>
+<li><strong>Blinded information</strong>: <code>calculate_blinded_info()</code> uses the blinded (pooled) rate and dispersion to estimate information. Can produce extreme values when the NB MLE is unstable — bound dispersion or use planning values as a fallback.</li>
+<li><strong>SSR</strong>: Blinded SSR (Friede &amp; Schmidli) maintains the blind; unblinded SSR uses observed group rates for more accurate re-estimation but requires unblinding.</li>
+<li><strong><code>check_gs_bound()</code> info_scale</strong>: Use “blinded” (default) or “unblinded” to select which information drives bound updates at analysis time.</li>
+</ul>
+</section>
+<section id="code-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="code-patterns">Code Patterns</h2>
+</section>
+</section>
+<section id="code-patterns-for-gsdesignnb" class="level1">
+<h1>Code Patterns for gsDesignNB</h1>
+<section id="table-of-contents" class="level2">
+<h2 class="anchored" data-anchor-id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#sample-size">Fixed sample size calculation</a></li>
+<li><a href="#power-calc">Power calculation</a></li>
+<li><a href="#event-gaps">Event gaps and piecewise accrual</a></li>
+<li><a href="#non-inferiority">Non-inferiority and super-superiority</a></li>
+<li><a href="#group-sequential">Group sequential design</a></li>
+<li><a href="#simulation">Simulation of recurrent events</a></li>
+<li><a href="#gs-simulation">Group sequential simulation</a></li>
+<li><a href="#data-cutting">Data cutting and analysis timing</a></li>
+<li><a href="#wald-test">Wald test for treatment rate ratio</a></li>
+<li><a href="#information">Blinded and unblinded information</a></li>
+<li><a href="#ssr">Sample size re-estimation</a></li>
+<li><a href="#completers">Completers-based interim analysis</a></li>
+<li><a href="#seasonal">Seasonal event simulation</a></li>
+<li><a href="#verification">Verification of operating characteristics</a></li>
+</ol>
+<hr>
+</section>
+<section id="sample-size" class="level2">
+<h2 class="anchored" data-anchor-id="sample-size">Fixed sample size calculation</h2>
+<p><code>sample_size_nbinom()</code> implements the Zhu-Lakkis Method 3 for negative binomial outcomes, accounting for variable accrual, dropout, maximum follow-up, and event gaps.</p>
+<section id="basic-calculation" class="level3">
+<h3 class="anchored" data-anchor-id="basic-calculation">Basic calculation</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gsDesignNB)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">0.5</span>,          <span class="co"># Control event rate (events/time unit)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda2 =</span> <span class="fl">0.3</span>,          <span class="co"># Experimental event rate</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">dispersion =</span> <span class="fl">0.5</span>,       <span class="co"># Overdispersion parameter k</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>,            <span class="co"># Target power</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,          <span class="co"># One-sided significance level</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">10</span>,      <span class="co"># Enrollment rate (patients/time unit)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_duration =</span> <span class="dv">12</span>,  <span class="co"># Total enrollment duration</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">trial_duration =</span> <span class="dv">24</span>     <span class="co"># Total trial duration</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>design</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(design)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="piecewise-accrual-ramp-up" class="level3">
+<h3 class="anchored" data-anchor-id="piecewise-accrual-ramp-up">Piecewise accrual ramp-up</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">0.5</span>, <span class="at">lambda2 =</span> <span class="fl">0.3</span>, <span class="at">dispersion =</span> <span class="fl">0.5</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">10</span>),        <span class="co"># Rate per period</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_duration =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>),     <span class="co"># Duration per period (total: 6 months)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">trial_duration =</span> <span class="dv">12</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="with-dropout-and-maximum-follow-up" class="level3">
+<h3 class="anchored" data-anchor-id="with-dropout-and-maximum-follow-up">With dropout and maximum follow-up</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">0.5</span>, <span class="at">lambda2 =</span> <span class="fl">0.3</span>, <span class="at">dispersion =</span> <span class="fl">0.5</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">10</span>, <span class="at">accrual_duration =</span> <span class="dv">12</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">trial_duration =</span> <span class="dv">24</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fl">0.05</span>,       <span class="co"># Annual dropout rate (scalar: same for both groups)</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span>          <span class="co"># Cap follow-up at 12 months</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="group-specific-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="group-specific-parameters">Group-specific parameters</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">0.5</span>, <span class="at">lambda2 =</span> <span class="fl">0.3</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dispersion =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.3</span>),       <span class="co"># Different dispersion per group</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">10</span>, <span class="at">accrual_duration =</span> <span class="dv">12</span>, <span class="at">trial_duration =</span> <span class="dv">24</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fu">c</span>(<span class="fl">0.10</span>, <span class="fl">0.05</span>),   <span class="co"># Different dropout per group</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="fu">c</span>(<span class="dv">12</span>, <span class="dv">12</span>)        <span class="co"># Can differ per group</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="unequal-allocation" class="level3">
+<h3 class="anchored" data-anchor-id="unequal-allocation">Unequal allocation</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">0.5</span>, <span class="at">lambda2 =</span> <span class="fl">0.3</span>, <span class="at">dispersion =</span> <span class="fl">0.5</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">ratio =</span> <span class="dv">2</span>,   <span class="co"># 2:1 experimental:control</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">10</span>, <span class="at">accrual_duration =</span> <span class="dv">12</span>, <span class="at">trial_duration =</span> <span class="dv">24</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># design$n1 = control, design$n2 = experimental (n2 = ratio * n1)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="key-output-fields" class="level3">
+<h3 class="anchored" data-anchor-id="key-output-fields">Key output fields</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>design<span class="sc">$</span>n_total        <span class="co"># Total sample size</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>design<span class="sc">$</span>n1             <span class="co"># Control group N</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>design<span class="sc">$</span>n2             <span class="co"># Experimental group N</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>design<span class="sc">$</span>power          <span class="co"># Achieved power</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>design<span class="sc">$</span>total_events   <span class="co"># Expected total events</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>design<span class="sc">$</span>events_n1      <span class="co"># Expected control events</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>design<span class="sc">$</span>events_n2      <span class="co"># Expected experimental events</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>design<span class="sc">$</span>exposure       <span class="co"># Average exposure per group</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>design<span class="sc">$</span>variance       <span class="co"># Variance of log rate ratio</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="power-calc" class="level2">
+<h2 class="anchored" data-anchor-id="power-calc">Power calculation</h2>
+<p>Set <code>power = NULL</code> to compute power for a given sample size:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>power_result <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">0.5</span>, <span class="at">lambda2 =</span> <span class="fl">0.4</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dispersion =</span> <span class="fl">0.5</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="cn">NULL</span>,                     <span class="co"># Request power calculation</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> design<span class="sc">$</span>accrual_rate,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_duration =</span> design<span class="sc">$</span>inputs<span class="sc">$</span>accrual_duration,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">trial_duration =</span> design<span class="sc">$</span>inputs<span class="sc">$</span>trial_duration,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> design<span class="sc">$</span>inputs<span class="sc">$</span>dropout_rate,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> design<span class="sc">$</span>inputs<span class="sc">$</span>max_followup</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>power_result<span class="sc">$</span>power</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="event-gaps" class="level2">
+<h2 class="anchored" data-anchor-id="event-gaps">Event gaps and piecewise accrual</h2>
+<p>Event gaps model time “off risk” after each event (e.g., recovery period).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">2.0</span>, <span class="at">lambda2 =</span> <span class="fl">1.0</span>,    <span class="co"># Higher rates (events/year)</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dispersion =</span> <span class="fl">0.5</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">10</span>, <span class="at">accrual_duration =</span> <span class="dv">12</span>, <span class="at">trial_duration =</span> <span class="dv">24</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">event_gap =</span> <span class="dv">30</span> <span class="sc">/</span> <span class="fl">365.25</span>          <span class="co"># 30-day gap after each event (in years)</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Event gaps reduce effective exposure:</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># lambda_eff = lambda / (1 + lambda * gap)</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Exposure_at_risk &lt; Exposure_total</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>design<span class="sc">$</span>exposure_at_risk_n1  <span class="co"># Exposure at risk (excludes gap time)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="non-inferiority" class="level2">
+<h2 class="anchored" data-anchor-id="non-inferiority">Non-inferiority and super-superiority</h2>
+<p>The <code>rr0</code> parameter specifies the null hypothesis rate ratio.</p>
+<section id="non-inferiority-rr0-1" class="level3">
+<h3 class="anchored" data-anchor-id="non-inferiority-rr0-1">Non-inferiority (rr0 &gt; 1)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># H0: RR &gt;= 1.1, H1: RR &lt; 1.1</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>ni_design <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">0.1</span>, <span class="at">lambda2 =</span> <span class="fl">0.09</span>,   <span class="co"># Experimental slightly better</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">rr0 =</span> <span class="fl">1.1</span>,                        <span class="co"># Non-inferiority margin</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">dispersion =</span> <span class="fl">0.5</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">100</span>, <span class="at">accrual_duration =</span> <span class="dv">1</span>, <span class="at">trial_duration =</span> <span class="dv">2</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="super-superiority-rr0-1" class="level3">
+<h3 class="anchored" data-anchor-id="super-superiority-rr0-1">Super-superiority (rr0 &lt; 1)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># H0: RR &gt;= 0.5, H1: RR &lt; 0.5 (must show &gt; 50% reduction)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ss_design <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">0.1</span>, <span class="at">lambda2 =</span> <span class="fl">0.02</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">rr0 =</span> <span class="fl">0.5</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">dispersion =</span> <span class="fl">0.5</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">100</span>, <span class="at">accrual_duration =</span> <span class="dv">1</span>, <span class="at">trial_duration =</span> <span class="dv">2</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">1</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="group-sequential" class="level2">
+<h2 class="anchored" data-anchor-id="group-sequential">Group sequential design</h2>
+<p><code>gsNBCalendar()</code> creates a group sequential design for negative binomial outcomes with calendar-time analysis schedule, compatible with gsDesign spending functions.</p>
+<section id="basic-group-sequential-design" class="level3">
+<h3 class="anchored" data-anchor-id="basic-group-sequential-design">Basic group sequential design</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: fixed design</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>nb_ss <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">1.5</span><span class="sc">/</span><span class="dv">12</span>, <span class="at">lambda2 =</span> <span class="fl">1.0</span><span class="sc">/</span><span class="dv">12</span>, <span class="at">dispersion =</span> <span class="fl">0.5</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">1</span>, <span class="at">accrual_duration =</span> <span class="dv">12</span>, <span class="at">trial_duration =</span> <span class="dv">24</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span>, <span class="at">event_gap =</span> <span class="dv">20</span><span class="sc">/</span><span class="fl">30.4375</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: group sequential design</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>gs_nb <span class="ot">&lt;-</span> <span class="fu">gsNBCalendar</span>(</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> nb_ss,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">3</span>,                              <span class="co"># 3 analyses</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">test.type =</span> <span class="dv">4</span>,                       <span class="co"># 2-sided, non-binding futility</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">sfu =</span> gsDesign<span class="sc">::</span>sfLDOF,             <span class="co"># Upper spending: Lan-DeMets O'Brien-Fleming</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">sfl =</span> gsDesign<span class="sc">::</span>sfHSD, <span class="at">sflpar =</span> <span class="sc">-</span><span class="dv">8</span>, <span class="co"># Lower spending: Hwang-Shih-DeCani</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">analysis_times =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">18</span>, <span class="dv">24</span>)       <span class="co"># Calendar months</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: integer sample sizes</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>gs_nb <span class="ot">&lt;-</span> <span class="fu">toInteger</span>(gs_nb)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Display bounds</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>gsDesign<span class="sc">::</span><span class="fu">gsBoundSummary</span>(gs_nb, <span class="at">deltaname =</span> <span class="st">"RR"</span>, <span class="at">logdelta =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="with-custom-spending-times" class="level3">
+<h3 class="anchored" data-anchor-id="with-custom-spending-times">With custom spending times</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>gs_nb <span class="ot">&lt;-</span> <span class="fu">gsNBCalendar</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> nb_ss,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">3</span>, <span class="at">test.type =</span> <span class="dv">1</span>,               <span class="co"># One-sided (efficacy only)</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sfu =</span> gsDesign<span class="sc">::</span>sfLinear,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">sfupar =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>),               <span class="co"># Linear spending parameters</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">usTime =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.18</span>, <span class="dv">1</span>),           <span class="co"># Spending time (may differ from info fraction)</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">analysis_times =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">18</span>, <span class="dv">24</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="key-output-fields-1" class="level3">
+<h3 class="anchored" data-anchor-id="key-output-fields-1">Key output fields</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>gs_nb<span class="sc">$</span>n.I           <span class="co"># Information at each analysis</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>gs_nb<span class="sc">$</span>n_total       <span class="co"># Total N at each analysis (vector)</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>gs_nb<span class="sc">$</span>n1            <span class="co"># Control N at each analysis</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>gs_nb<span class="sc">$</span>n2            <span class="co"># Experimental N at each analysis</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>gs_nb<span class="sc">$</span>events        <span class="co"># Expected total events at each analysis</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>gs_nb<span class="sc">$</span>exposure      <span class="co"># Expected exposure at each analysis</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>gs_nb<span class="sc">$</span>T             <span class="co"># Calendar times of analyses</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>gs_nb<span class="sc">$</span>upper<span class="sc">$</span>bound   <span class="co"># Upper (efficacy) Z bounds</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>gs_nb<span class="sc">$</span>lower<span class="sc">$</span>bound   <span class="co"># Lower (futility) Z bounds</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="simulation" class="level2">
+<h2 class="anchored" data-anchor-id="simulation">Simulation of recurrent events</h2>
+<p><code>nb_sim()</code> simulates a single trial using a Gamma-Poisson mixture model.</p>
+<section id="basic-simulation" class="level3">
+<h3 class="anchored" data-anchor-id="basic-simulation">Basic simulation</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>sim_data <span class="ot">&lt;-</span> <span class="fu">nb_sim</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="dv">20</span>, <span class="at">duration =</span> <span class="dv">12</span>),</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"Experimental"</span>),</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.3</span>),</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">dispersion =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"Experimental"</span>),</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.05</span>),</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">100</span>)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span>,</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">200</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Output: one row per event/censoring per patient</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sim_data)</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="co"># id, treatment, enroll_time, tte, calendar_time, event</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="with-enrollment-ramp-up-and-event-gaps" class="level3">
+<h3 class="anchored" data-anchor-id="with-enrollment-ramp-up-and-event-gaps">With enrollment ramp-up and event gaps</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>sim_data <span class="ot">&lt;-</span> <span class="fu">nb_sim</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">20</span>),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">8</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"Experimental"</span>),</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">1.5</span><span class="sc">/</span><span class="dv">12</span>, <span class="fl">1.0</span><span class="sc">/</span><span class="dv">12</span>),</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">dispersion =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"Experimental"</span>),</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">0.001</span>, <span class="fl">0.001</span>),</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">100</span>)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span>,</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span>     <span class="co"># 5-day gap after each event</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="gs-simulation" class="level2">
+<h2 class="anchored" data-anchor-id="gs-simulation">Group sequential simulation</h2>
+<p><code>sim_gs_nbinom()</code> runs many group sequential trials and returns per-analysis results.</p>
+<section id="basic-usage" class="level3">
+<h3 class="anchored" data-anchor-id="basic-usage">Basic usage</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>sim_results <span class="ot">&lt;-</span> <span class="fu">sim_gs_nbinom</span>(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_sims =</span> <span class="dv">1000</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="dv">20</span>, <span class="at">duration =</span> <span class="dv">12</span>),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"Experimental"</span>),</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">1.5</span><span class="sc">/</span><span class="dv">12</span>, <span class="fl">1.0</span><span class="sc">/</span><span class="dv">12</span>),</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">dispersion =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"Experimental"</span>),</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">0.001</span>, <span class="fl">0.001</span>),</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">100</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span>,</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">event_gap =</span> <span class="dv">20</span><span class="sc">/</span><span class="fl">30.4375</span>,</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">analysis_times =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">18</span>, <span class="dv">24</span>),</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_target =</span> gs_nb<span class="sc">$</span>n_total[<span class="dv">3</span>],</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> gs_nb</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Check bounds</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>sim_checked <span class="ot">&lt;-</span> <span class="fu">check_gs_bound</span>(sim_results, <span class="at">design =</span> gs_nb, <span class="at">info_scale =</span> <span class="st">"blinded"</span>)</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarize operating characteristics</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>oc <span class="ot">&lt;-</span> <span class="fu">summarize_gs_sim</span>(sim_checked)</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>oc<span class="sc">$</span>power                 <span class="co"># Overall power</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>oc<span class="sc">$</span>analysis_summary      <span class="co"># Per-analysis cumulative crossing probabilities</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="with-custom-cutting-criteria" class="level3">
+<h3 class="anchored" data-anchor-id="with-custom-cutting-criteria">With custom cutting criteria</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>sim_results <span class="ot">&lt;-</span> <span class="fu">sim_gs_nbinom</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_sims =</span> <span class="dv">500</span>,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="dv">20</span>, <span class="at">duration =</span> <span class="dv">12</span>),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> fail_rate_df,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> dropout_df,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span>,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span>,</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_target =</span> <span class="dv">240</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> gs_nb,</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">cuts =</span> <span class="fu">list</span>(</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Analysis 1: calendar time 10 OR 80 events, whichever later</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">planned_calendar =</span> <span class="dv">10</span>, <span class="at">target_events =</span> <span class="dv">80</span>),</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Analysis 2: calendar time 18 OR 160 events</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">planned_calendar =</span> <span class="dv">18</span>, <span class="at">target_events =</span> <span class="dv">160</span>),</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Analysis 3: calendar time 24 (final)</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">planned_calendar =</span> <span class="dv">24</span>)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="data-cutting" class="level2">
+<h2 class="anchored" data-anchor-id="data-cutting">Data cutting and analysis timing</h2>
+<section id="cut-at-a-calendar-date" class="level3">
+<h3 class="anchored" data-anchor-id="cut-at-a-calendar-date">Cut at a calendar date</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate to one row per subject at cut date</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>cut_summary <span class="ot">&lt;-</span> <span class="fu">cut_data_by_date</span>(sim_data, <span class="at">cut_date =</span> <span class="dv">18</span>, <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Output: id, treatment, enroll_time, tte, tte_total, events</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="find-date-when-target-events-reached" class="level3">
+<h3 class="anchored" data-anchor-id="find-date-when-target-events-reached">Find date when target events reached</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>event_date <span class="ot">&lt;-</span> <span class="fu">get_analysis_date</span>(sim_data, <span class="at">planned_events =</span> <span class="dv">150</span>, <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="find-date-satisfying-multiple-criteria" class="level3">
+<h3 class="anchored" data-anchor-id="find-date-satisfying-multiple-criteria">Find date satisfying multiple criteria</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>cut_date <span class="ot">&lt;-</span> <span class="fu">get_cut_date</span>(</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> sim_data,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">planned_calendar =</span> <span class="dv">18</span>,       <span class="co"># At least 18 months</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_events =</span> <span class="dv">150</span>,          <span class="co"># At least 150 events</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_completers =</span> <span class="dv">100</span>,      <span class="co"># At least 100 completers</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="find-date-for-completers" class="level3">
+<h3 class="anchored" data-anchor-id="find-date-for-completers">Find date for completers</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>comp_date <span class="ot">&lt;-</span> <span class="fu">cut_date_for_completers</span>(sim_data, <span class="at">target_completers =</span> <span class="dv">80</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>cut_comp <span class="ot">&lt;-</span> <span class="fu">cut_completers</span>(sim_data, <span class="at">cut_date =</span> comp_date, <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="wald-test" class="level2">
+<h2 class="anchored" data-anchor-id="wald-test">Wald test for treatment rate ratio</h2>
+<p><code>mutze_test()</code> performs a Wald test based on negative binomial (or Poisson) GLM.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cut data first</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>cut_summary <span class="ot">&lt;-</span> <span class="fu">cut_data_by_date</span>(sim_data, <span class="at">cut_date =</span> <span class="dv">24</span>, <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Negative binomial Wald test</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">mutze_test</span>(cut_summary)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>z              <span class="co"># Z statistic</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>p_value        <span class="co"># P-value</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>rate_ratio     <span class="co"># Estimated rate ratio (exp(estimate))</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>conf_int       <span class="co"># Confidence interval for rate ratio</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>dispersion     <span class="co"># Estimated NB dispersion (1/theta)</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>group_summary  <span class="co"># Events, exposure by group</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Poisson fallback</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>result_poisson <span class="ot">&lt;-</span> <span class="fu">mutze_test</span>(cut_summary, <span class="at">method =</span> <span class="st">"poisson"</span>)</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Two-sided test</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>result_2sided <span class="ot">&lt;-</span> <span class="fu">mutze_test</span>(cut_summary, <span class="at">sided =</span> <span class="dv">2</span>, <span class="at">conf_level =</span> <span class="fl">0.95</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="extracting-information-from-the-test" class="level3">
+<h3 class="anchored" data-anchor-id="extracting-information-from-the-test">Extracting information from the test</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Statistical information = 1 / SE^2</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>info <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> result<span class="sc">$</span>se<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Log rate ratio estimate</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>log_rr <span class="ot">&lt;-</span> result<span class="sc">$</span>estimate</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="information" class="level2">
+<h2 class="anchored" data-anchor-id="information">Blinded and unblinded information</h2>
+<section id="blinded-information-at-interim" class="level3">
+<h3 class="anchored" data-anchor-id="blinded-information-at-interim">Blinded information at interim</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>blinded_res <span class="ot">&lt;-</span> <span class="fu">calculate_blinded_info</span>(</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> cut_summary,</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">ratio =</span> <span class="dv">1</span>,                         <span class="co"># 1:1 randomization</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1_planning =</span> <span class="fl">0.5</span>,            <span class="co"># Planned control rate</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda2_planning =</span> <span class="fl">0.3</span>             <span class="co"># Planned experimental rate</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>blinded_res<span class="sc">$</span>blinded_info             <span class="co"># Estimated information</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>blinded_res<span class="sc">$</span>dispersion_blinded       <span class="co"># Estimated dispersion</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>blinded_res<span class="sc">$</span>lambda_blinded           <span class="co"># Blinded overall rate</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="method-of-moments-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="method-of-moments-estimation">Method of moments estimation</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Blinded (pooled) estimate</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>mom_blinded <span class="ot">&lt;-</span> <span class="fu">estimate_nb_mom</span>(cut_summary)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>mom_blinded<span class="sc">$</span>lambda      <span class="co"># Overall rate</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>mom_blinded<span class="sc">$</span>dispersion  <span class="co"># Dispersion k</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Unblinded (by group) estimate</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>mom_unblinded <span class="ot">&lt;-</span> <span class="fu">estimate_nb_mom</span>(cut_summary, <span class="at">group =</span> <span class="st">"treatment"</span>)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>mom_unblinded<span class="sc">$</span>lambda    <span class="co"># Named vector: Control, Experimental</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>mom_unblinded<span class="sc">$</span>dispersion  <span class="co"># Common dispersion</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="information-at-a-planning-time" class="level3">
+<h3 class="anchored" data-anchor-id="information-at-a-planning-time">Information at a planning time</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>info <span class="ot">&lt;-</span> <span class="fu">compute_info_at_time</span>(</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">analysis_time =</span> <span class="dv">18</span>,</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">20</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_duration =</span> <span class="dv">12</span>,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">0.5</span>, <span class="at">lambda2 =</span> <span class="fl">0.3</span>,</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">dispersion =</span> <span class="fl">0.5</span>,</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">ratio =</span> <span class="dv">1</span>,</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fl">0.05</span>,</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span>,</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="ssr" class="level2">
+<h2 class="anchored" data-anchor-id="ssr">Sample size re-estimation</h2>
+<section id="blinded-ssr-friede-schmidli" class="level3">
+<h3 class="anchored" data-anchor-id="blinded-ssr-friede-schmidli">Blinded SSR (Friede &amp; Schmidli)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>blinded_ssr_res <span class="ot">&lt;-</span> <span class="fu">blinded_ssr</span>(</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> cut_summary,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">ratio =</span> <span class="dv">1</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1_planning =</span> <span class="fl">0.5</span>,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda2_planning =</span> <span class="fl">0.3</span>,</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>,</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">20</span>,</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_duration =</span> <span class="dv">12</span>,</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">trial_duration =</span> <span class="dv">24</span>,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span>,</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>blinded_ssr_res<span class="sc">$</span>n_total_blinded    <span class="co"># Re-estimated total N</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>blinded_ssr_res<span class="sc">$</span>info_fraction      <span class="co"># Current information fraction</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="unblinded-ssr" class="level3">
+<h3 class="anchored" data-anchor-id="unblinded-ssr">Unblinded SSR</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>unblinded_ssr_res <span class="ot">&lt;-</span> <span class="fu">unblinded_ssr</span>(</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> cut_summary,</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">ratio =</span> <span class="dv">1</span>,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1_planning =</span> <span class="fl">0.5</span>,</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda2_planning =</span> <span class="fl">0.3</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>,</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="dv">20</span>,</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_duration =</span> <span class="dv">12</span>,</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">trial_duration =</span> <span class="dv">24</span>,</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span>,</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>unblinded_ssr_res<span class="sc">$</span>n_total_unblinded</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>unblinded_ssr_res<span class="sc">$</span>lambda1_unblinded  <span class="co"># Observed control rate</span></span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>unblinded_ssr_res<span class="sc">$</span>lambda2_unblinded  <span class="co"># Observed experimental rate</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="updating-group-sequential-bounds-after-ssr" class="level3">
+<h3 class="anchored" data-anchor-id="updating-group-sequential-bounds-after-ssr">Updating group sequential bounds after SSR</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Observed information fraction</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>info_frac <span class="ot">&lt;-</span> blinded_ssr_res<span class="sc">$</span>info_fraction</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Update bounds with observed information</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>gs_update <span class="ot">&lt;-</span> gsDesign<span class="sc">::</span><span class="fu">gsDesign</span>(</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">2</span>,</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">test.type =</span> <span class="dv">1</span>,</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">sfu =</span> gsDesign<span class="sc">::</span>sfLDOF,</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">timing =</span> info_frac         <span class="co"># Observed information fraction</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Use gs_update$upper$bound for updated efficacy bounds</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="completers" class="level2">
+<h2 class="anchored" data-anchor-id="completers">Completers-based interim analysis</h2>
+<p>An interim analysis triggered by the number of patients completing full follow-up.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>target_completers <span class="ot">&lt;-</span> <span class="dv">80</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Find date when 80 patients have completed max_followup</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>comp_date <span class="ot">&lt;-</span> <span class="fu">cut_date_for_completers</span>(sim_data, target_completers)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Cut data at that date</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>interim_data <span class="ot">&lt;-</span> <span class="fu">cut_completers</span>(sim_data, <span class="at">cut_date =</span> comp_date, <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span>)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Test</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">mutze_test</span>(interim_data)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>z_interim <span class="ot">&lt;-</span> result<span class="sc">$</span>z</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>info_interim <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> result<span class="sc">$</span>se<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Final analysis</span></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>final_date <span class="ot">&lt;-</span> <span class="fu">max</span>(sim_data<span class="sc">$</span>calendar_time)</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>final_data <span class="ot">&lt;-</span> <span class="fu">cut_data_by_date</span>(sim_data, <span class="at">cut_date =</span> final_date, <span class="at">event_gap =</span> <span class="dv">5</span><span class="sc">/</span><span class="fl">365.25</span>)</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>result_final <span class="ot">&lt;-</span> <span class="fu">mutze_test</span>(final_data)</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>info_final <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> result_final<span class="sc">$</span>se<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Adaptive bounds based on observed information fraction</span></span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>gs_adaptive <span class="ot">&lt;-</span> gsDesign<span class="sc">::</span><span class="fu">gsDesign</span>(</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">2</span>, <span class="at">test.type =</span> <span class="dv">1</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">sfu =</span> gsDesign<span class="sc">::</span>sfLDOF,</span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">timing =</span> info_interim <span class="sc">/</span> info_final</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="seasonal" class="level2">
+<h2 class="anchored" data-anchor-id="seasonal">Seasonal event simulation</h2>
+<p><code>nb_sim_seasonal()</code> simulates events with season-dependent rates.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>fail_rate <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatment =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"Experimental"</span>), <span class="at">each =</span> <span class="dv">4</span>),</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">season =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Winter"</span>, <span class="st">"Spring"</span>, <span class="st">"Summer"</span>, <span class="st">"Fall"</span>), <span class="dv">2</span>),</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">2.0</span>, <span class="fl">0.5</span>, <span class="fl">0.2</span>, <span class="fl">1.5</span>,       <span class="co"># Control by season</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>           <span class="fl">1.4</span>, <span class="fl">0.35</span>, <span class="fl">0.14</span>, <span class="fl">1.05</span>),    <span class="co"># Experimental (30% reduction)</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">dispersion =</span> <span class="fl">0.5</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>sim_seasonal <span class="ot">&lt;-</span> <span class="fu">nb_sim_seasonal</span>(</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="dv">40</span>, <span class="at">duration =</span> <span class="fl">0.5</span>),</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> fail_rate,</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"Experimental"</span>),</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.05</span>),</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">100</span>)</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">1</span>,</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">randomization_start_date =</span> <span class="fu">as.Date</span>(<span class="st">"2024-01-01"</span>),</span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">200</span></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Output: one row per season-interval per patient</span></span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Columns: id, treatment, season, enroll_time, start, end, event,</span></span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a><span class="co">#           calendar_start, calendar_end</span></span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Cut and analyze</span></span>
+<span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>cut_seasonal <span class="ot">&lt;-</span> <span class="fu">cut_data_by_date</span>(sim_seasonal, <span class="at">cut_date =</span> <span class="fl">1.25</span>, <span class="at">event_gap =</span> <span class="dv">7</span><span class="sc">/</span><span class="fl">365.25</span>)</span>
+<span id="cb31-28"><a href="#cb31-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-29"><a href="#cb31-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit NB GLM with seasonal adjustment</span></span>
+<span id="cb31-30"><a href="#cb31-30" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">glm.nb</span>(</span>
+<span id="cb31-31"><a href="#cb31-31" aria-hidden="true" tabindex="-1"></a>  events <span class="sc">~</span> treatment <span class="sc">+</span> season <span class="sc">+</span> <span class="fu">offset</span>(<span class="fu">log</span>(tte)),</span>
+<span id="cb31-32"><a href="#cb31-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> cut_seasonal[cut_seasonal<span class="sc">$</span>tte <span class="sc">&gt;</span> <span class="dv">0</span>, ]</span>
+<span id="cb31-33"><a href="#cb31-33" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-34"><a href="#cb31-34" aria-hidden="true" tabindex="-1"></a>rr <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="fu">coef</span>(fit)[<span class="st">"treatmentExperimental"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="verification" class="level2">
+<h2 class="anchored" data-anchor-id="verification">Verification of operating characteristics</h2>
+<p>Compare theoretical (formula-based) predictions to simulation results.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Theoretical predictions from design</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">sample_size_nbinom</span>(</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fl">0.4</span>, <span class="at">lambda2 =</span> <span class="fl">0.3</span>, <span class="at">dispersion =</span> <span class="fl">0.5</span>,</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="fl">0.9</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrual_rate =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">accrual_duration =</span> <span class="fu">c</span>(<span class="dv">6</span>, <span class="dv">6</span>),</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">trial_duration =</span> <span class="dv">24</span>, <span class="at">dropout_rate =</span> <span class="fl">0.1</span><span class="sc">/</span><span class="dv">12</span>,</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span>, <span class="at">event_gap =</span> <span class="dv">20</span><span class="sc">/</span><span class="fl">30.42</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate many trials</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>sim_results <span class="ot">&lt;-</span> <span class="fu">sim_gs_nbinom</span>(</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_sims =</span> <span class="dv">3600</span>,   <span class="co"># SE of power estimate ~ 0.005</span></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> design<span class="sc">$</span>accrual_rate <span class="sc">*</span> design<span class="sc">$</span>n_total,</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> design<span class="sc">$</span>inputs<span class="sc">$</span>accrual_duration</span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"Experimental"</span>),</span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.3</span>),</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">dispersion =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>)</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"Experimental"</span>),</span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">0.1</span><span class="sc">/</span><span class="dv">12</span>, <span class="fl">0.1</span><span class="sc">/</span><span class="dv">12</span>),</span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">100</span>)</span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_followup =</span> <span class="dv">12</span>,</span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">event_gap =</span> <span class="dv">20</span><span class="sc">/</span><span class="fl">30.42</span>,</span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">analysis_times =</span> design<span class="sc">$</span>inputs<span class="sc">$</span>trial_duration,</span>
+<span id="cb32-30"><a href="#cb32-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_target =</span> design<span class="sc">$</span>n_total,</span>
+<span id="cb32-31"><a href="#cb32-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design</span>
+<span id="cb32-32"><a href="#cb32-32" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-33"><a href="#cb32-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-34"><a href="#cb32-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare theoretical vs. simulated</span></span>
+<span id="cb32-35"><a href="#cb32-35" aria-hidden="true" tabindex="-1"></a>sim_final <span class="ot">&lt;-</span> sim_results[sim_results<span class="sc">$</span>analysis <span class="sc">==</span> <span class="dv">1</span>, ]</span>
+<span id="cb32-36"><a href="#cb32-36" aria-hidden="true" tabindex="-1"></a>comparison <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb32-37"><a href="#cb32-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">Metric =</span> <span class="fu">c</span>(<span class="st">"Events (Control)"</span>, <span class="st">"Events (Experimental)"</span>,</span>
+<span id="cb32-38"><a href="#cb32-38" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Exposure at Risk (Control)"</span>, <span class="st">"Power"</span>),</span>
+<span id="cb32-39"><a href="#cb32-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">Theoretical =</span> <span class="fu">c</span>(design<span class="sc">$</span>events_n1, design<span class="sc">$</span>events_n2,</span>
+<span id="cb32-40"><a href="#cb32-40" aria-hidden="true" tabindex="-1"></a>                   design<span class="sc">$</span>exposure_at_risk_n1 <span class="sc">*</span> design<span class="sc">$</span>n1, design<span class="sc">$</span>power),</span>
+<span id="cb32-41"><a href="#cb32-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">Simulated =</span> <span class="fu">c</span>(<span class="fu">mean</span>(sim_final<span class="sc">$</span>events_ctrl), <span class="fu">mean</span>(sim_final<span class="sc">$</span>events_exp),</span>
+<span id="cb32-42"><a href="#cb32-42" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">mean</span>(sim_final<span class="sc">$</span>exposure_at_risk_ctrl), <span class="fu">mean</span>(sim_final<span class="sc">$</span>z_stat <span class="sc">&gt;</span> <span class="fu">qnorm</span>(<span class="dv">1</span> <span class="sc">-</span> <span class="fl">0.025</span>)))</span>
+<span id="cb32-43"><a href="#cb32-43" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/gsDesignNB.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

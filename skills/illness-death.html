@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Guide users through simulating clinical trials using the illness-death model with response. Use this skill when the user asks about: multi-state models for oncology trials, simulating correlated OS/PFS/ORR endpoints, transition rates between disease states, illness-death model calibration, building ADTTE datasets from simulation, analysis cut date determination, or theoretical survival curves from transition rates.">
+
+<title>illness-death – gsDesignSkills</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-2e5cbef59756d87313a778b4017e2694.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">gsDesignSkills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../skills/index.html"> 
+<span class="menu-text">Skills</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../ai-skills-gsd.html"> 
+<span class="menu-text">Presentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../multi-endpoint-sim.html"> 
+<span class="menu-text">Simulation Example</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../news.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/keaven/gsDesignSkills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/graphicalMCP-gsDesign2.html">Cross-Package</a></li><li class="breadcrumb-item"><a href="../skills/illness-death.html">illness-death</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Skills Catalog</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Individual Packages</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/rpact.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rpact</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/simtrial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">simtrial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/wpgsd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">wpgsd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesignNB.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesignNB</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gMCPLite.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gMCPLite</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-Package</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP-gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP-gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/illness-death.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">illness-death</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/multi-endpoint-sim.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">multi-endpoint-sim</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#illness-death-model-with-response" id="toc-illness-death-model-with-response" class="nav-link active" data-scroll-target="#illness-death-model-with-response">Illness-Death Model with Response</a>
+  <ul class="collapse">
+  <li><a href="#source-files" id="toc-source-files" class="nav-link" data-scroll-target="#source-files">Source files</a></li>
+  <li><a href="#model-overview" id="toc-model-overview" class="nav-link" data-scroll-target="#model-overview">Model overview</a>
+  <ul class="collapse">
+  <li><a href="#derived-endpoints" id="toc-derived-endpoints" class="nav-link" data-scroll-target="#derived-endpoints">Derived endpoints</a></li>
+  <li><a href="#key-property-endpoint-correlation" id="toc-key-property-endpoint-correlation" class="nav-link" data-scroll-target="#key-property-endpoint-correlation">Key property: endpoint correlation</a></li>
+  </ul></li>
+  <li><a href="#key-functions" id="toc-key-functions" class="nav-link" data-scroll-target="#key-functions">Key functions</a>
+  <ul class="collapse">
+  <li><a href="#build_transition_rates" id="toc-build_transition_rates" class="nav-link" data-scroll-target="#build_transition_rates"><code>build_transition_rates()</code></a></li>
+  <li><a href="#sim_illness_death" id="toc-sim_illness_death" class="nav-link" data-scroll-target="#sim_illness_death"><code>sim_illness_death()</code></a></li>
+  <li><a href="#get_analysis_dates" id="toc-get_analysis_dates" class="nav-link" data-scroll-target="#get_analysis_dates"><code>get_analysis_dates()</code></a></li>
+  <li><a href="#cut_illness_death" id="toc-cut_illness_death" class="nav-link" data-scroll-target="#cut_illness_death"><code>cut_illness_death()</code></a></li>
+  <li><a href="#internal-cdf-helpers" id="toc-internal-cdf-helpers" class="nav-link" data-scroll-target="#internal-cdf-helpers">Internal CDF helpers</a></li>
+  </ul></li>
+  <li><a href="#workflow-patterns" id="toc-workflow-patterns" class="nav-link" data-scroll-target="#workflow-patterns">Workflow patterns</a></li>
+  <li><a href="#important-design-considerations" id="toc-important-design-considerations" class="nav-link" data-scroll-target="#important-design-considerations">Important design considerations</a></li>
+  <li><a href="#code-patterns" id="toc-code-patterns" class="nav-link" data-scroll-target="#code-patterns">Code Patterns</a></li>
+  </ul></li>
+  <li><a href="#code-patterns-for-the-illness-death-model" id="toc-code-patterns-for-the-illness-death-model" class="nav-link" data-scroll-target="#code-patterns-for-the-illness-death-model">Code Patterns for the Illness-Death Model</a>
+  <ul class="collapse">
+  <li><a href="#table-of-contents" id="toc-table-of-contents" class="nav-link" data-scroll-target="#table-of-contents">Table of Contents</a></li>
+  <li><a href="#build-rates" id="toc-build-rates" class="nav-link" data-scroll-target="#build-rates">Building transition rates</a>
+  <ul class="collapse">
+  <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage">Basic usage</a></li>
+  <li><a href="#output-format" id="toc-output-format" class="nav-link" data-scroll-target="#output-format">Output format</a></li>
+  <li><a href="#calibration-details" id="toc-calibration-details" class="nav-link" data-scroll-target="#calibration-details">Calibration details</a></li>
+  <li><a href="#advanced-parameters" id="toc-advanced-parameters" class="nav-link" data-scroll-target="#advanced-parameters">Advanced parameters</a></li>
+  <li><a href="#weaker-simulation-effects-for-testing-scenarios" id="toc-weaker-simulation-effects-for-testing-scenarios" class="nav-link" data-scroll-target="#weaker-simulation-effects-for-testing-scenarios">Weaker simulation effects (for testing scenarios)</a></li>
+  </ul></li>
+  <li><a href="#simulate" id="toc-simulate" class="nav-link" data-scroll-target="#simulate">Simulating a trial</a>
+  <ul class="collapse">
+  <li><a href="#output-columns" id="toc-output-columns" class="nav-link" data-scroll-target="#output-columns">Output columns</a></li>
+  <li><a href="#single-stratum-simulation" id="toc-single-stratum-simulation" class="nav-link" data-scroll-target="#single-stratum-simulation">Single-stratum simulation</a></li>
+  </ul></li>
+  <li><a href="#cut-dates" id="toc-cut-dates" class="nav-link" data-scroll-target="#cut-dates">Analysis cut dates</a>
+  <ul class="collapse">
+  <li><a href="#timing-logic" id="toc-timing-logic" class="nav-link" data-scroll-target="#timing-logic">Timing logic</a></li>
+  </ul></li>
+  <li><a href="#cut-data" id="toc-cut-data" class="nav-link" data-scroll-target="#cut-data">Cutting data to ADTTE format</a>
+  <ul class="collapse">
+  <li><a href="#output-format-1" id="toc-output-format-1" class="nav-link" data-scroll-target="#output-format-1">Output format</a></li>
+  <li><a href="#selecting-endpoints" id="toc-selecting-endpoints" class="nav-link" data-scroll-target="#selecting-endpoints">Selecting endpoints</a></li>
+  <li><a href="#event-counts-summary" id="toc-event-counts-summary" class="nav-link" data-scroll-target="#event-counts-summary">Event counts summary</a></li>
+  </ul></li>
+  <li><a href="#p-values" id="toc-p-values" class="nav-link" data-scroll-target="#p-values">Nominal p-values (logrank and risk difference)</a>
+  <ul class="collapse">
+  <li><a href="#one-sided-logrank-test-os-pfs" id="toc-one-sided-logrank-test-os-pfs" class="nav-link" data-scroll-target="#one-sided-logrank-test-os-pfs">One-sided logrank test (OS, PFS)</a></li>
+  <li><a href="#stratified-risk-difference-test-orr" id="toc-stratified-risk-difference-test-orr" class="nav-link" data-scroll-target="#stratified-risk-difference-test-orr">Stratified risk difference test (ORR)</a></li>
+  <li><a href="#computing-p-values-across-analyses" id="toc-computing-p-values-across-analyses" class="nav-link" data-scroll-target="#computing-p-values-across-analyses">Computing p-values across analyses</a></li>
+  </ul></li>
+  <li><a href="#theoretical-curves" id="toc-theoretical-curves" class="nav-link" data-scroll-target="#theoretical-curves">Theoretical survival curves</a></li>
+  <li><a href="#overall-curves" id="toc-overall-curves" class="nav-link" data-scroll-target="#overall-curves">Overall population curves (prevalence-weighted)</a></li>
+  <li><a href="#full-workflow" id="toc-full-workflow" class="nav-link" data-scroll-target="#full-workflow">Full workflow: design assumptions to analysis</a></li>
+  <li><a href="#piecewise-rates" id="toc-piecewise-rates" class="nav-link" data-scroll-target="#piecewise-rates">Piecewise transition rate modification</a>
+  <ul class="collapse">
+  <li><a href="#piecewise-progression-rates" id="toc-piecewise-progression-rates" class="nav-link" data-scroll-target="#piecewise-progression-rates">Piecewise progression rates</a></li>
+  <li><a href="#piecewise-response-rates" id="toc-piecewise-response-rates" class="nav-link" data-scroll-target="#piecewise-response-rates">Piecewise response rates</a></li>
+  <li><a href="#separate-design-vs-simulation-transition-rates" id="toc-separate-design-vs-simulation-transition-rates" class="nav-link" data-scroll-target="#separate-design-vs-simulation-transition-rates">Separate design vs simulation transition rates</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/illness-death.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/graphicalMCP-gsDesign2.html">Cross-Package</a></li><li class="breadcrumb-item"><a href="../skills/illness-death.html">illness-death</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">illness-death</h1>
+<p class="subtitle lead">Multi-State Model for Correlated Endpoints</p>
+</div>
+
+<div>
+  <div class="description">
+    <p>Guide users through simulating clinical trials using the illness-death model with response. Use this skill when the user asks about: multi-state models for oncology trials, simulating correlated OS/PFS/ORR endpoints, transition rates between disease states, illness-death model calibration, building ADTTE datasets from simulation, analysis cut date determination, or theoretical survival curves from transition rates.</p>
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="illness-death-model-with-response" class="level1">
+<h1>Illness-Death Model with Response</h1>
+<p>This skill covers the illness-death model implementation in <code>gMCPLite/inst/simulation/</code>, which simulates correlated OS, PFS, and ORR endpoints for oncology trial design.</p>
+<section id="source-files" class="level2">
+<h2 class="anchored" data-anchor-id="source-files">Source files</h2>
+<p>The model lives in <code>inst/simulation/</code> within the gMCPLite package:</p>
+<ul>
+<li><code>sim_illness_death.R</code> — <code>build_transition_rates()</code>, <code>sim_illness_death()</code>, and internal CDF helpers (<code>.pfs_cdf()</code>, <code>.os_cdf()</code>)</li>
+<li><code>cut_illness_death.R</code> — <code>get_analysis_dates()</code>, <code>cut_illness_death()</code></li>
+</ul>
+<p>Load via <code>source()</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">file.path</span>(rprojroot<span class="sc">::</span><span class="fu">find_root</span>(<span class="st">"DESCRIPTION"</span>), <span class="st">"inst"</span>, <span class="st">"simulation"</span>, <span class="st">"sim_illness_death.R"</span>))</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">file.path</span>(rprojroot<span class="sc">::</span><span class="fu">find_root</span>(<span class="st">"DESCRIPTION"</span>), <span class="st">"inst"</span>, <span class="st">"simulation"</span>, <span class="st">"cut_illness_death.R"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="model-overview" class="level2">
+<h2 class="anchored" data-anchor-id="model-overview">Model overview</h2>
+<p>The illness-death model has four states with piecewise exponential transition times:</p>
+<pre><code>  State 0 ─── response ───&gt; State 1 (responded)
+  (alive,     prog_0 ────&gt; State 2 (progressed)
+   no resp)   death_0 ───&gt; State 3 (dead)
+
+  State 1 ─── prog_1 ────&gt; State 2
+  (responded)  death_1 ───&gt; State 3
+
+  State 2 ─── death_2 ───&gt; State 3
+  (progressed)</code></pre>
+<section id="derived-endpoints" class="level3">
+<h3 class="anchored" data-anchor-id="derived-endpoints">Derived endpoints</h3>
+<ul>
+<li><strong>PFS</strong>: Time from randomization to progression or death (whichever first)</li>
+<li><strong>OS</strong>: Time from randomization to death</li>
+<li><strong>ORR</strong>: Binary indicator of response before progression/death</li>
+<li><strong>TTR</strong>: Time to response</li>
+</ul>
+</section>
+<section id="key-property-endpoint-correlation" class="level3">
+<h3 class="anchored" data-anchor-id="key-property-endpoint-correlation">Key property: endpoint correlation</h3>
+<p>Because PFS and OS share the same underlying state transitions, they are automatically correlated — a patient who progresses early tends to die earlier. This makes the model more realistic than independently simulating PFS and OS.</p>
+</section>
+</section>
+<section id="key-functions" class="level2">
+<h2 class="anchored" data-anchor-id="key-functions">Key functions</h2>
+<section id="build_transition_rates" class="level3">
+<h3 class="anchored" data-anchor-id="build_transition_rates"><code>build_transition_rates()</code></h3>
+<p>Calibrates transition rates from clinically interpretable inputs (median PFS/OS, ORR, hazard ratios). Uses numerical root-finding so that control arm marginal PFS and OS medians match the inputs exactly.</p>
+</section>
+<section id="sim_illness_death" class="level3">
+<h3 class="anchored" data-anchor-id="sim_illness_death"><code>sim_illness_death()</code></h3>
+<p>Simulates enrollment, randomization, and multi-state outcomes. Uses <code>simtrial::rpwexp()</code> for piecewise exponential transition times and <code>simtrial::rpwexp_enroll()</code> for enrollment.</p>
+</section>
+<section id="get_analysis_dates" class="level3">
+<h3 class="anchored" data-anchor-id="get_analysis_dates"><code>get_analysis_dates()</code></h3>
+<p>Computes calendar cut dates from timing rules: minimum follow-up after FPE, event-driven triggers with caps, and maximum extensions.</p>
+</section>
+<section id="cut_illness_death" class="level3">
+<h3 class="anchored" data-anchor-id="cut_illness_death"><code>cut_illness_death()</code></h3>
+<p>Applies administrative censoring at a cut date and produces ADTTE-format datasets with OS, PFS, TTR, and ORR endpoints.</p>
+</section>
+<section id="internal-cdf-helpers" class="level3">
+<h3 class="anchored" data-anchor-id="internal-cdf-helpers">Internal CDF helpers</h3>
+<ul>
+<li><code>.pfs_cdf(t, ...)</code> — Marginal PFS CDF from transition rates</li>
+<li><code>.os_cdf(t, ...)</code> — Marginal OS CDF from transition rates</li>
+<li><code>.conv2_cdf(t, a, b)</code> — CDF of sum of two independent exponentials</li>
+<li><code>.conv3_cdf(t, a, b, c)</code> — CDF of sum of three independent exponentials</li>
+</ul>
+<p>These allow computing theoretical survival curves without simulation.</p>
+</section>
+</section>
+<section id="workflow-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="workflow-patterns">Workflow patterns</h2>
+<p>For detailed code templates, read <code>references/code_patterns.md</code>.</p>
+<p>Topics covered: - Building transition rates from clinical assumptions - Simulating a single trial - Analysis cut date determination (calendar + event-driven) - Cutting data to ADTTE format - Computing nominal p-values (logrank, stratified logrank, risk difference) - Piecewise transition rate modification (progression, response) - Separate design vs simulation effect sizes - Theoretical survival curves from transition rates - Prevalence-weighted overall population curves - Multiple strata with different treatment effects</p>
+</section>
+<section id="important-design-considerations" class="level2">
+<h2 class="anchored" data-anchor-id="important-design-considerations">Important design considerations</h2>
+<ul>
+<li><p><strong>Piecewise rates</strong>: <code>build_transition_rates()</code> produces constant rates. To model piecewise PFS or response, modify the output by splitting rows into multiple time periods with different rates and durations.</p></li>
+<li><p><strong>Design vs simulation effects</strong>: Build separate transition rate tables with different HRs for design (sample size) and simulation (operating characteristics). Weaker simulation HRs reveal realistic power under conservative assumptions.</p></li>
+<li><p><strong>Response rate timing</strong>: Multiply the base response rate for early periods (e.g., 2.25× for <span class="math inline">\(t &lt; 6\)</span> months) and reduce it later (e.g., 10% of base) to model response windows.</p></li>
+<li><p><strong>Calibration</strong>: <code>build_transition_rates()</code> numerically calibrates control arm rates to match specified median PFS and OS. Experimental arm rates are derived by scaling with HRs, then re-calibrating response rate for the target ORR.</p></li>
+<li><p><strong><code>death_wo_prog_rate</code></strong>: Baseline rate of death without prior progression (default 0.02/month). This controls the fraction of patients who die without progressing.</p></li>
+<li><p><strong><code>responder_prog_ratio</code></strong>: Ratio of progression rate for responders vs non-responders (default 0.5). Lower values mean responders have longer PFS.</p></li>
+<li><p><strong>Piecewise rates</strong>: <code>transition_rate</code> supports multiple rows per (stratum, treatment, transition) with different durations, enabling time-varying hazards.</p></li>
+<li><p><strong>Enrollment</strong>: Uses <code>simtrial::rpwexp_enroll()</code> — specify ramp-up as increasing rates over duration periods.</p></li>
+<li><p><strong>FPE-relative timing</strong>: Analysis cut dates are computed relative to the final patient enrolled (FPE), not study start.</p></li>
+<li><p><strong>Event-driven timing with caps</strong>: <code>get_analysis_dates()</code> supports both calendar-based and event-driven triggers with maximum extension caps.</p></li>
+<li><p><strong>Stratified analyses</strong>: For overall population p-values, use <code>strata()</code> in <code>survdiff()</code> (logrank) or sample-size-weighted stratum-specific risk differences (ORR). Beware that <code>survdiff()</code> with <code>strata()</code> returns <code>obs</code>/<code>exp</code> as matrices — sum across strata columns.</p></li>
+</ul>
+</section>
+<section id="code-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="code-patterns">Code Patterns</h2>
+</section>
+</section>
+<section id="code-patterns-for-the-illness-death-model" class="level1">
+<h1>Code Patterns for the Illness-Death Model</h1>
+<section id="table-of-contents" class="level2">
+<h2 class="anchored" data-anchor-id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#build-rates">Building transition rates</a></li>
+<li><a href="#simulate">Simulating a trial</a></li>
+<li><a href="#cut-dates">Analysis cut dates</a></li>
+<li><a href="#cut-data">Cutting data to ADTTE format</a></li>
+<li><a href="#p-values">Nominal p-values (logrank and risk difference)</a></li>
+<li><a href="#theoretical-curves">Theoretical survival curves</a></li>
+<li><a href="#overall-curves">Overall population curves (prevalence-weighted)</a></li>
+<li><a href="#full-workflow">Full workflow: design assumptions to analysis</a></li>
+</ol>
+<hr>
+</section>
+<section id="build-rates" class="level2">
+<h2 class="anchored" data-anchor-id="build-rates">Building transition rates</h2>
+<p><code>build_transition_rates()</code> calibrates illness-death transition rates from clinically interpretable parameters. The model has states: - 0: Alive, no response, no progression - 1: Responded, no progression - 2: Progressed - 3: Dead (absorbing)</p>
+<section id="basic-usage" class="level3">
+<h3 class="anchored" data-anchor-id="basic-usage">Basic usage</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"inst/simulation/sim_illness_death.R"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"inst/simulation/cut_illness_death.R"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>transition_rate <span class="ot">&lt;-</span> <span class="fu">build_transition_rates</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">strata =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatments =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_pfs =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="dv">5</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="dv">5</span>),       <span class="co"># Control median PFS (months)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_os =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="dv">12</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="dv">12</span>),       <span class="co"># Control median OS (months)</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">orr =</span> <span class="fu">list</span>(</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"BM+"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">control =</span> <span class="fl">0.15</span>, <span class="at">experimental =</span> <span class="fl">0.35</span>),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"BM-"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">control =</span> <span class="fl">0.15</span>, <span class="at">experimental =</span> <span class="fl">0.25</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_pfs =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="fl">0.65</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="fl">0.85</span>),     <span class="co"># Experimental/control HR</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_os =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="fl">0.65</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="fl">0.85</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="output-format" class="level3">
+<h3 class="anchored" data-anchor-id="output-format">Output format</h3>
+<p>The result is a data frame with columns: <code>stratum</code>, <code>treatment</code>, <code>transition</code>, <code>rate</code>, <code>duration</code>. Six transitions per (stratum, treatment) combination:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Transition</th>
+<th>From</th>
+<th>To</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>response</code></td>
+<td>0</td>
+<td>1</td>
+<td>Response (before progression/death)</td>
+</tr>
+<tr class="even">
+<td><code>prog_0</code></td>
+<td>0</td>
+<td>2</td>
+<td>Progression without prior response</td>
+</tr>
+<tr class="odd">
+<td><code>death_0</code></td>
+<td>0</td>
+<td>3</td>
+<td>Death without prior progression</td>
+</tr>
+<tr class="even">
+<td><code>prog_1</code></td>
+<td>1</td>
+<td>2</td>
+<td>Progression after response</td>
+</tr>
+<tr class="odd">
+<td><code>death_1</code></td>
+<td>1</td>
+<td>3</td>
+<td>Death after response (without progression)</td>
+</tr>
+<tr class="even">
+<td><code>death_2</code></td>
+<td>2</td>
+<td>3</td>
+<td>Death after progression</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="calibration-details" class="level3">
+<h3 class="anchored" data-anchor-id="calibration-details">Calibration details</h3>
+<p>Control arm rates are calibrated via <code>uniroot()</code>: 1. <code>lambda_0</code> (total exit rate from state 0) is found such that the marginal PFS CDF equals 0.5 at the specified median PFS. 2. <code>lambda_death2</code> (post-progression death rate) is found such that the marginal OS CDF equals 0.5 at the specified median OS. 3. Response rate <code>lambda_resp = ORR * lambda_0</code> ensures the competing risks probability of response matches the specified ORR.</p>
+<p>Experimental arm rates: 1. Progression rates scaled by <code>hr_pfs</code>: <code>lambda_prog0_exp = lambda_prog0_ctrl * hr_pfs</code> 2. Death rates scaled by <code>hr_os</code>: <code>lambda_death0_exp = lambda_death0_ctrl * hr_os</code> 3. Response rate solved to match experimental ORR exactly.</p>
+</section>
+<section id="advanced-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="advanced-parameters">Advanced parameters</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>transition_rate <span class="ot">&lt;-</span> <span class="fu">build_transition_rates</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">strata =</span> <span class="st">"All"</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatments =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_pfs =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="dv">5</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_os =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="dv">12</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">orr =</span> <span class="fu">list</span>(<span class="at">All =</span> <span class="fu">c</span>(<span class="at">control =</span> <span class="fl">0.30</span>, <span class="at">experimental =</span> <span class="fl">0.45</span>)),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_pfs =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="fl">0.70</span>),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_os =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="fl">0.65</span>),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">death_wo_prog_rate =</span> <span class="fl">0.02</span>,     <span class="co"># Rate of death without progression (default 0.02)</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">responder_prog_ratio =</span> <span class="fl">0.5</span>     <span class="co"># Responders progress at 50% of non-responder rate</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="weaker-simulation-effects-for-testing-scenarios" class="level3">
+<h3 class="anchored" data-anchor-id="weaker-simulation-effects-for-testing-scenarios">Weaker simulation effects (for testing scenarios)</h3>
+<p>To simulate under effects weaker than design assumptions (e.g., to illustrate a scenario where not all hypotheses are rejected):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>hr_os_sim_bm_pos <span class="ot">&lt;-</span> <span class="fl">0.70</span>    <span class="co"># Design assumed 0.65</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>hr_pfs_sim_bm_pos <span class="ot">&lt;-</span> <span class="fl">0.65</span>   <span class="co"># Design assumed 0.65</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>hr_os_sim_bm_neg <span class="ot">&lt;-</span> <span class="fl">1.1</span>     <span class="co"># Design assumed 0.85 (reversed effect in BM-)</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>hr_pfs_sim_bm_neg <span class="ot">&lt;-</span> <span class="fl">1.2</span>    <span class="co"># Design assumed 0.85 (reversed effect in BM-)</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>orr_exp_sim_bm_pos <span class="ot">&lt;-</span> <span class="fl">0.30</span>  <span class="co"># Design assumed 0.35</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>orr_exp_sim_bm_neg <span class="ot">&lt;-</span> <span class="fl">0.12</span>  <span class="co"># Design assumed 0.25</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>transition_rate <span class="ot">&lt;-</span> <span class="fu">build_transition_rates</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">strata =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>),</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatments =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_pfs =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="dv">5</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="dv">5</span>),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_os =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="dv">12</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="dv">12</span>),</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">orr =</span> <span class="fu">list</span>(</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"BM+"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">control =</span> <span class="fl">0.15</span>, <span class="at">experimental =</span> orr_exp_sim_bm_pos),</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"BM-"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">control =</span> <span class="fl">0.15</span>, <span class="at">experimental =</span> orr_exp_sim_bm_neg)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_pfs =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> hr_pfs_sim_bm_pos, <span class="st">"BM-"</span> <span class="ot">=</span> hr_pfs_sim_bm_neg),</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_os =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> hr_os_sim_bm_pos, <span class="st">"BM-"</span> <span class="ot">=</span> hr_os_sim_bm_neg)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="simulate" class="level2">
+<h2 class="anchored" data-anchor-id="simulate">Simulating a trial</h2>
+<p><code>sim_illness_death()</code> generates patient-level data with enrollment, randomization, and multi-state outcomes.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(simtrial)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">54321</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>n_total <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>steady_rate <span class="ot">&lt;-</span> n_total <span class="sc">/</span> <span class="dv">15</span>  <span class="co"># 18-month ramp: 0.25*2 + 0.5*2 + 0.75*2 + 1*12 = 15 rate-months</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>sim_data <span class="ot">&lt;-</span> <span class="fu">sim_illness_death</span>(</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> n_total,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="fu">data.frame</span>(<span class="at">stratum =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>), <span class="at">p =</span> <span class="fu">c</span>(<span class="fl">0.50</span>, <span class="fl">0.50</span>)),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">block =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"control"</span>, <span class="st">"experimental"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> steady_rate <span class="sc">*</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.50</span>, <span class="fl">0.75</span>, <span class="fl">1.00</span>),</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">12</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">transition_rate =</span> transition_rate,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>fpe <span class="ot">&lt;-</span> <span class="fu">max</span>(sim_data<span class="sc">$</span>ENRLTIME)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Total N:"</span>, <span class="fu">nrow</span>(sim_data), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"N BM+:"</span>, <span class="fu">sum</span>(sim_data<span class="sc">$</span>STRATUM <span class="sc">==</span> <span class="st">"BM+"</span>),</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"N BM-:"</span>, <span class="fu">sum</span>(sim_data<span class="sc">$</span>STRATUM <span class="sc">==</span> <span class="st">"BM-"</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"FPE:"</span>, <span class="fu">round</span>(fpe, <span class="dv">1</span>), <span class="st">"months</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="output-columns" class="level3">
+<h3 class="anchored" data-anchor-id="output-columns">Output columns</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 61%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>USUBJID</code></td>
+<td>Patient ID</td>
+</tr>
+<tr class="even">
+<td><code>STRATUM</code></td>
+<td>Stratum assignment</td>
+</tr>
+<tr class="odd">
+<td><code>TRT</code></td>
+<td>Treatment (“control” or “experimental”)</td>
+</tr>
+<tr class="even">
+<td><code>ENRLTIME</code></td>
+<td>Enrollment time (months from study start)</td>
+</tr>
+<tr class="odd">
+<td><code>OS_TIME</code></td>
+<td>Time from randomization to death</td>
+</tr>
+<tr class="even">
+<td><code>PFS_TIME</code></td>
+<td>Time from randomization to progression or death</td>
+</tr>
+<tr class="odd">
+<td><code>TTR</code></td>
+<td>Time to response (Inf if no response)</td>
+</tr>
+<tr class="even">
+<td><code>ORR</code></td>
+<td>1 if responded, 0 otherwise</td>
+</tr>
+<tr class="odd">
+<td><code>DROPOUT_TIME</code></td>
+<td>Time to dropout (independent exponential)</td>
+</tr>
+<tr class="even">
+<td><code>CTE_OS</code></td>
+<td>Calendar time of OS event (<code>ENRLTIME + min(OS_TIME, DROPOUT_TIME)</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>CTE_PFS</code></td>
+<td>Calendar time of PFS event</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="single-stratum-simulation" class="level3">
+<h3 class="anchored" data-anchor-id="single-stratum-simulation">Single-stratum simulation</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sim_data <span class="ot">&lt;-</span> <span class="fu">sim_illness_death</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">400</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="fu">data.frame</span>(<span class="at">stratum =</span> <span class="st">"All"</span>, <span class="at">p =</span> <span class="dv">1</span>),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">block =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"control"</span>, <span class="st">"experimental"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="dv">30</span>, <span class="at">duration =</span> <span class="dv">14</span>),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">transition_rate =</span> transition_rate</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="cut-dates" class="level2">
+<h2 class="anchored" data-anchor-id="cut-dates">Analysis cut dates</h2>
+<p><code>get_analysis_dates()</code> computes calendar cut dates from timing rules that combine minimum follow-up, event-driven triggers, and maximum extension caps.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Target event counts from group sequential designs</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>target_pfs_events_bm <span class="ot">&lt;-</span> <span class="fu">ceiling</span>(<span class="fu">max</span>(pfssub<span class="sc">$</span>analysis<span class="sc">$</span>event))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>target_os_events_bm <span class="ot">&lt;-</span> <span class="fu">ceiling</span>(<span class="fu">max</span>(ossub<span class="sc">$</span>analysis<span class="sc">$</span>event))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>analyses <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># IA1: 6 months after FPE (calendar-only, no event trigger)</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">min_followup =</span> <span class="dv">6</span>, <span class="at">endpoint =</span> <span class="cn">NULL</span>, <span class="at">event_target =</span> <span class="cn">NULL</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">target_stratum =</span> <span class="cn">NULL</span>, <span class="at">max_followup =</span> <span class="cn">NULL</span>),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># IA2: 14 months after FPE OR targeted PFS events in BM+, capped at 17 months</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">min_followup =</span> <span class="dv">14</span>, <span class="at">endpoint =</span> <span class="st">"PFS"</span>, <span class="at">event_target =</span> target_pfs_events_bm,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">target_stratum =</span> <span class="st">"BM+"</span>, <span class="at">max_followup =</span> <span class="dv">17</span>),</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Final: 24 months after FPE OR targeted OS events in BM+, capped at 30 months</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">min_followup =</span> <span class="dv">24</span>, <span class="at">endpoint =</span> <span class="st">"OS"</span>, <span class="at">event_target =</span> target_os_events_bm,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">target_stratum =</span> <span class="st">"BM+"</span>, <span class="at">max_followup =</span> <span class="dv">30</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>cut_dates <span class="ot">&lt;-</span> <span class="fu">get_analysis_dates</span>(sim_data, analyses)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(cut_dates)) {</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Analysis %d: %.1f months (FPE + %.1f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>              i, cut_dates[i], cut_dates[i] <span class="sc">-</span> fpe))</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="timing-logic" class="level3">
+<h3 class="anchored" data-anchor-id="timing-logic">Timing logic</h3>
+<p>For each analysis: 1. <code>calendar_min = FPE + min_followup</code> 2. If event-driven: find the calendar time when <code>event_target</code> events accumulate in <code>target_stratum</code> 3. <code>cut_date = max(calendar_min, event_date)</code> — both conditions must be met 4. If <code>max_followup</code> set: <code>cut_date = min(cut_date, FPE + max_followup)</code> — cap the delay</p>
+<hr>
+</section>
+</section>
+<section id="cut-data" class="level2">
+<h2 class="anchored" data-anchor-id="cut-data">Cutting data to ADTTE format</h2>
+<p><code>cut_illness_death()</code> applies administrative censoring and produces long-format ADTTE datasets.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>adtte <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">seq_along</span>(cut_dates), <span class="cf">function</span>(i) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">cut_illness_death</span>(sim_data, cut_dates[i])</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  d<span class="sc">$</span>ANALYSIS <span class="ot">&lt;-</span> i</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  d</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(adtte) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"IA"</span>, <span class="fu">seq_along</span>(cut_dates))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="output-format-1" class="level3">
+<h3 class="anchored" data-anchor-id="output-format-1">Output format</h3>
+<p>Each row represents one patient-endpoint combination:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>USUBJID</code></td>
+<td>Patient ID</td>
+</tr>
+<tr class="even">
+<td><code>STRATUM</code></td>
+<td>Stratum</td>
+</tr>
+<tr class="odd">
+<td><code>TRT</code></td>
+<td>Treatment</td>
+</tr>
+<tr class="even">
+<td><code>PARAMCD</code></td>
+<td>Endpoint code: “OS”, “PFS”, “TTR”, “ORR”</td>
+</tr>
+<tr class="odd">
+<td><code>PARAM</code></td>
+<td>Endpoint name</td>
+</tr>
+<tr class="even">
+<td><code>AVAL</code></td>
+<td>Analysis value (months for TTE; 0/1 for ORR)</td>
+</tr>
+<tr class="odd">
+<td><code>AVALU</code></td>
+<td>Units</td>
+</tr>
+<tr class="even">
+<td><code>CNSR</code></td>
+<td>Censoring indicator (0 = event, 1 = censored; NA for ORR)</td>
+</tr>
+<tr class="odd">
+<td><code>EVNTDESC</code></td>
+<td>Event description</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="selecting-endpoints" class="level3">
+<h3 class="anchored" data-anchor-id="selecting-endpoints">Selecting endpoints</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Only OS and PFS (no ORR/TTR)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>adtte_tte <span class="ot">&lt;-</span> <span class="fu">cut_illness_death</span>(sim_data, <span class="at">cut_date =</span> <span class="dv">36</span>, <span class="at">paramcd =</span> <span class="fu">c</span>(<span class="st">"OS"</span>, <span class="st">"PFS"</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Only ORR</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>adtte_orr <span class="ot">&lt;-</span> <span class="fu">cut_illness_death</span>(sim_data, <span class="at">cut_date =</span> <span class="dv">24</span>, <span class="at">paramcd =</span> <span class="st">"ORR"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="event-counts-summary" class="level3">
+<h3 class="anchored" data-anchor-id="event-counts-summary">Event counts summary</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>event_summary <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, <span class="fu">lapply</span>(<span class="fu">seq_along</span>(adtte), <span class="cf">function</span>(i) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  endpoints <span class="ot">&lt;-</span> <span class="cf">if</span> (i <span class="sc">==</span> <span class="dv">1</span>) <span class="fu">c</span>(<span class="st">"OS"</span>, <span class="st">"PFS"</span>, <span class="st">"ORR"</span>) <span class="cf">else</span> <span class="cf">if</span> (i <span class="sc">==</span> <span class="dv">2</span>) <span class="fu">c</span>(<span class="st">"OS"</span>, <span class="st">"PFS"</span>) <span class="cf">else</span> <span class="st">"OS"</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  adtte[[i]] <span class="sc">%&gt;%</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(PARAMCD <span class="sc">%in%</span> endpoints) <span class="sc">%&gt;%</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(PARAMCD, STRATUM) <span class="sc">%&gt;%</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">count =</span> <span class="cf">if</span> (<span class="fu">first</span>(PARAMCD) <span class="sc">==</span> <span class="st">"ORR"</span>) <span class="fu">n</span>() <span class="cf">else</span> <span class="fu">sum</span>(CNSR <span class="sc">==</span> <span class="dv">0</span>),</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Analysis =</span> i)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="p-values" class="level2">
+<h2 class="anchored" data-anchor-id="p-values">Nominal p-values (logrank and risk difference)</h2>
+<section id="one-sided-logrank-test-os-pfs" class="level3">
+<h3 class="anchored" data-anchor-id="one-sided-logrank-test-os-pfs">One-sided logrank test (OS, PFS)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>logrank_pval <span class="ot">&lt;-</span> <span class="cf">function</span>(data, <span class="at">stratified =</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  data<span class="sc">$</span>event <span class="ot">&lt;-</span> <span class="dv">1</span>L <span class="sc">-</span> data<span class="sc">$</span>CNSR</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (stratified) {</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">survdiff</span>(<span class="fu">Surv</span>(AVAL, event) <span class="sc">~</span> TRT <span class="sc">+</span> <span class="fu">strata</span>(STRATUM), <span class="at">data =</span> data)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">survdiff</span>(<span class="fu">Surv</span>(AVAL, event) <span class="sc">~</span> TRT, <span class="at">data =</span> data)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># IMPORTANT: with strata(), obs and exp are matrices (groups x strata)</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Must sum across strata columns</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  obs_ctrl <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">is.matrix</span>(fit<span class="sc">$</span>obs)) <span class="fu">sum</span>(fit<span class="sc">$</span>obs[<span class="dv">1</span>, ]) <span class="cf">else</span> fit<span class="sc">$</span>obs[<span class="dv">1</span>]</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  exp_ctrl <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">is.matrix</span>(fit<span class="sc">$</span>exp)) <span class="fu">sum</span>(fit<span class="sc">$</span>exp[<span class="dv">1</span>, ]) <span class="cf">else</span> fit<span class="sc">$</span>exp[<span class="dv">1</span>]</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  z_sign <span class="ot">&lt;-</span> <span class="fu">sign</span>(obs_ctrl <span class="sc">-</span> exp_ctrl)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  z <span class="ot">&lt;-</span> z_sign <span class="sc">*</span> <span class="fu">sqrt</span>(fit<span class="sc">$</span>chisq)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pnorm</span>(<span class="sc">-</span>z)  <span class="co"># 1-sided: small when experimental is better</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Key pitfall</strong>: <code>survdiff()</code> with <code>strata()</code> returns <code>obs</code> and <code>exp</code> as matrices (treatment groups x strata). Using <code>fit$obs[1]</code> extracts just the first stratum’s control group value. Always check <code>is.matrix()</code> and sum.</p>
+</section>
+<section id="stratified-risk-difference-test-orr" class="level3">
+<h3 class="anchored" data-anchor-id="stratified-risk-difference-test-orr">Stratified risk difference test (ORR)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>rd_pval <span class="ot">&lt;-</span> <span class="cf">function</span>(data, <span class="at">stratified =</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>stratified) {</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    n_exp <span class="ot">&lt;-</span> <span class="fu">sum</span>(data<span class="sc">$</span>TRT <span class="sc">==</span> <span class="st">"experimental"</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    n_ctrl <span class="ot">&lt;-</span> <span class="fu">sum</span>(data<span class="sc">$</span>TRT <span class="sc">==</span> <span class="st">"control"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    resp_exp <span class="ot">&lt;-</span> <span class="fu">sum</span>(data<span class="sc">$</span>AVAL[data<span class="sc">$</span>TRT <span class="sc">==</span> <span class="st">"experimental"</span>])</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    resp_ctrl <span class="ot">&lt;-</span> <span class="fu">sum</span>(data<span class="sc">$</span>AVAL[data<span class="sc">$</span>TRT <span class="sc">==</span> <span class="st">"control"</span>])</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    p_exp <span class="ot">&lt;-</span> resp_exp <span class="sc">/</span> n_exp</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    p_ctrl <span class="ot">&lt;-</span> resp_ctrl <span class="sc">/</span> n_ctrl</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    p_pool <span class="ot">&lt;-</span> (resp_exp <span class="sc">+</span> resp_ctrl) <span class="sc">/</span> (n_exp <span class="sc">+</span> n_ctrl)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(p_pool <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> p_pool) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">/</span> n_exp <span class="sc">+</span> <span class="dv">1</span> <span class="sc">/</span> n_ctrl))</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (se <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">return</span>(<span class="fl">0.5</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    z <span class="ot">&lt;-</span> (p_exp <span class="sc">-</span> p_ctrl) <span class="sc">/</span> se</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">pnorm</span>(<span class="sc">-</span>z))</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Stratified: combine stratum-specific RDs with sample size weights</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  strata <span class="ot">&lt;-</span> <span class="fu">unique</span>(data<span class="sc">$</span>STRATUM)</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>  n_s <span class="ot">&lt;-</span> rd_s <span class="ot">&lt;-</span> var_s <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="fu">length</span>(strata))</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (k <span class="cf">in</span> <span class="fu">seq_along</span>(strata)) {</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    ds <span class="ot">&lt;-</span> data[data<span class="sc">$</span>STRATUM <span class="sc">==</span> strata[k], ]</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    n_exp <span class="ot">&lt;-</span> <span class="fu">sum</span>(ds<span class="sc">$</span>TRT <span class="sc">==</span> <span class="st">"experimental"</span>)</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    n_ctrl <span class="ot">&lt;-</span> <span class="fu">sum</span>(ds<span class="sc">$</span>TRT <span class="sc">==</span> <span class="st">"control"</span>)</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    n_s[k] <span class="ot">&lt;-</span> n_exp <span class="sc">+</span> n_ctrl</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    p_exp <span class="ot">&lt;-</span> <span class="fu">sum</span>(ds<span class="sc">$</span>AVAL[ds<span class="sc">$</span>TRT <span class="sc">==</span> <span class="st">"experimental"</span>]) <span class="sc">/</span> n_exp</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    p_ctrl <span class="ot">&lt;-</span> <span class="fu">sum</span>(ds<span class="sc">$</span>AVAL[ds<span class="sc">$</span>TRT <span class="sc">==</span> <span class="st">"control"</span>]) <span class="sc">/</span> n_ctrl</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    rd_s[k] <span class="ot">&lt;-</span> p_exp <span class="sc">-</span> p_ctrl</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    var_s[k] <span class="ot">&lt;-</span> p_exp <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> p_exp) <span class="sc">/</span> n_exp <span class="sc">+</span> p_ctrl <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> p_ctrl) <span class="sc">/</span> n_ctrl</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>  w <span class="ot">&lt;-</span> n_s <span class="sc">/</span> <span class="fu">sum</span>(n_s)</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>  rd_combined <span class="ot">&lt;-</span> <span class="fu">sum</span>(w <span class="sc">*</span> rd_s)</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>  se_combined <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> var_s))</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (se_combined <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">return</span>(<span class="fl">0.5</span>)</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>  z <span class="ot">&lt;-</span> rd_combined <span class="sc">/</span> se_combined</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pnorm</span>(<span class="sc">-</span>z)</span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="computing-p-values-across-analyses" class="level3">
+<h3 class="anchored" data-anchor-id="computing-p-values-across-analyses">Computing p-values across analyses</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pvals <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(cut_dates)) {</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> adtte[[i]]</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># BM+ subgroup (unstratified within subgroup)</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  pvals[[<span class="fu">paste0</span>(<span class="st">"H1_"</span>, i)]] <span class="ot">&lt;-</span> <span class="fu">logrank_pval</span>(d <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PARAMCD <span class="sc">==</span> <span class="st">"OS"</span>, STRATUM <span class="sc">==</span> <span class="st">"BM+"</span>))</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Overall population (stratified by BM+/BM-)</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  pvals[[<span class="fu">paste0</span>(<span class="st">"H2_"</span>, i)]] <span class="ot">&lt;-</span> <span class="fu">logrank_pval</span>(d <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PARAMCD <span class="sc">==</span> <span class="st">"OS"</span>), <span class="at">stratified =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">&lt;=</span> <span class="dv">2</span>) {</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    pvals[[<span class="fu">paste0</span>(<span class="st">"H3_"</span>, i)]] <span class="ot">&lt;-</span> <span class="fu">logrank_pval</span>(d <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PARAMCD <span class="sc">==</span> <span class="st">"PFS"</span>, STRATUM <span class="sc">==</span> <span class="st">"BM+"</span>))</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    pvals[[<span class="fu">paste0</span>(<span class="st">"H4_"</span>, i)]] <span class="ot">&lt;-</span> <span class="fu">logrank_pval</span>(d <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PARAMCD <span class="sc">==</span> <span class="st">"PFS"</span>), <span class="at">stratified =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">==</span> <span class="dv">1</span>) {</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    pvals[[<span class="fu">paste0</span>(<span class="st">"H5_"</span>, i)]] <span class="ot">&lt;-</span> <span class="fu">rd_pval</span>(d <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PARAMCD <span class="sc">==</span> <span class="st">"ORR"</span>, STRATUM <span class="sc">==</span> <span class="st">"BM+"</span>))</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    pvals[[<span class="fu">paste0</span>(<span class="st">"H6_"</span>, i)]] <span class="ot">&lt;-</span> <span class="fu">rd_pval</span>(d <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PARAMCD <span class="sc">==</span> <span class="st">"ORR"</span>), <span class="at">stratified =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="theoretical-curves" class="level2">
+<h2 class="anchored" data-anchor-id="theoretical-curves">Theoretical survival curves</h2>
+<p>The internal CDF helpers (<code>.pfs_cdf()</code>, <code>.os_cdf()</code>) compute marginal PFS and OS survival curves analytically from the transition rates, without simulation.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>get_theoretical_surv <span class="ot">&lt;-</span> <span class="cf">function</span>(transition_rate, stratum_val, trt_val, t_grid) {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  tr <span class="ot">&lt;-</span> transition_rate[transition_rate<span class="sc">$</span>stratum <span class="sc">==</span> stratum_val <span class="sc">&amp;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                          transition_rate<span class="sc">$</span>treatment <span class="sc">==</span> trt_val, ]</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  get_rate <span class="ot">&lt;-</span> <span class="cf">function</span>(trans) tr<span class="sc">$</span>rate[tr<span class="sc">$</span>transition <span class="sc">==</span> trans]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  lambda_resp <span class="ot">&lt;-</span> <span class="fu">get_rate</span>(<span class="st">"response"</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  lambda_prog0 <span class="ot">&lt;-</span> <span class="fu">get_rate</span>(<span class="st">"prog_0"</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  lambda_death0 <span class="ot">&lt;-</span> <span class="fu">get_rate</span>(<span class="st">"death_0"</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  lambda_prog1 <span class="ot">&lt;-</span> <span class="fu">get_rate</span>(<span class="st">"prog_1"</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  lambda_death1 <span class="ot">&lt;-</span> <span class="fu">get_rate</span>(<span class="st">"death_1"</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  lambda_death2 <span class="ot">&lt;-</span> <span class="fu">get_rate</span>(<span class="st">"death_2"</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  lambda_0 <span class="ot">&lt;-</span> lambda_resp <span class="sc">+</span> lambda_prog0 <span class="sc">+</span> lambda_death0</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  orr_param <span class="ot">&lt;-</span> lambda_resp <span class="sc">/</span> lambda_0</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  lambda_1 <span class="ot">&lt;-</span> lambda_prog1 <span class="sc">+</span> lambda_death1</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  pfs_surv <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">sapply</span>(t_grid, <span class="cf">function</span>(t)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">.pfs_cdf</span>(t, lambda_0, orr_param, lambda_1))</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>  os_surv <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">sapply</span>(t_grid, <span class="cf">function</span>(t)</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">.os_cdf</span>(t, lambda_0, orr_param, lambda_1,</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>            lambda_death0, lambda_prog0, lambda_death1,</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>            lambda_prog1, lambda_death2))</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">time =</span> <span class="fu">rep</span>(t_grid, <span class="dv">2</span>), <span class="at">surv =</span> <span class="fu">c</span>(pfs_surv, os_surv),</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>         <span class="at">endpoint =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"PFS"</span>, <span class="st">"OS"</span>), <span class="at">each =</span> <span class="fu">length</span>(t_grid)),</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>         <span class="at">stratum =</span> stratum_val, <span class="at">treatment =</span> trt_val)</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute curves for each stratum and treatment</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>t_grid <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">42</span>, <span class="at">by =</span> <span class="fl">0.25</span>)</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>curves <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_theoretical_surv</span>(transition_rate, <span class="st">"BM+"</span>, <span class="st">"control"</span>, t_grid),</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_theoretical_surv</span>(transition_rate, <span class="st">"BM+"</span>, <span class="st">"experimental"</span>, t_grid),</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_theoretical_surv</span>(transition_rate, <span class="st">"BM-"</span>, <span class="st">"control"</span>, t_grid),</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_theoretical_surv</span>(transition_rate, <span class="st">"BM-"</span>, <span class="st">"experimental"</span>, t_grid)</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(curves, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> surv, <span class="at">color =</span> treatment, <span class="at">linetype =</span> stratum)) <span class="sc">+</span></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> endpoint) <span class="sc">+</span></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"Survival probability"</span>, <span class="at">x =</span> <span class="st">"Time (months)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="overall-curves" class="level2">
+<h2 class="anchored" data-anchor-id="overall-curves">Overall population curves (prevalence-weighted)</h2>
+<p>The overall population survival curve is a prevalence-weighted mixture of stratum-specific curves:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>bm_prev <span class="ot">&lt;-</span> <span class="fl">0.50</span>  <span class="co"># BM+ prevalence</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>bm_pos_curves <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_theoretical_surv</span>(transition_rate, <span class="st">"BM+"</span>, <span class="st">"control"</span>, t_grid),</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_theoretical_surv</span>(transition_rate, <span class="st">"BM+"</span>, <span class="st">"experimental"</span>, t_grid)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>bm_neg_curves <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_theoretical_surv</span>(transition_rate, <span class="st">"BM-"</span>, <span class="st">"control"</span>, t_grid),</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_theoretical_surv</span>(transition_rate, <span class="st">"BM-"</span>, <span class="st">"experimental"</span>, t_grid)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>overall_curves <span class="ot">&lt;-</span> bm_pos_curves <span class="sc">%&gt;%</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(time, endpoint, treatment, <span class="at">surv_pos =</span> surv) <span class="sc">%&gt;%</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    bm_neg_curves <span class="sc">%&gt;%</span> <span class="fu">select</span>(time, endpoint, treatment, <span class="at">surv_neg =</span> surv),</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"time"</span>, <span class="st">"endpoint"</span>, <span class="st">"treatment"</span>)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">surv =</span> bm_prev <span class="sc">*</span> surv_pos <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">-</span> bm_prev) <span class="sc">*</span> surv_neg,</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="st">"Overall"</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(time, surv, endpoint, stratum, treatment)</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine by-stratum and overall for a 2x2 faceted plot</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>all_curves <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>  curves <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">population =</span> <span class="st">"By stratum"</span>),</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>  overall_curves <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">population =</span> <span class="st">"Overall"</span>)</span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(all_curves, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> surv,</span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>                        <span class="at">color =</span> treatment, <span class="at">linetype =</span> stratum)) <span class="sc">+</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(population <span class="sc">~</span> endpoint) <span class="sc">+</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"Survival probability"</span>, <span class="at">x =</span> <span class="st">"Time (months)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="full-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="full-workflow">Full workflow: design assumptions to analysis</h2>
+<p>This shows the complete pipeline from design assumptions through p-value computation.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(simtrial)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"inst/simulation/sim_illness_death.R"</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"inst/simulation/cut_illness_death.R"</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Design assumptions</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>prevalence_bm <span class="ot">&lt;-</span> <span class="fl">0.50</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>osmedian <span class="ot">&lt;-</span> <span class="dv">12</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>pfsmedian <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Build transition rates</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>transition_rate <span class="ot">&lt;-</span> <span class="fu">build_transition_rates</span>(</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">strata =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>),</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatments =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_pfs =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> pfsmedian, <span class="st">"BM-"</span> <span class="ot">=</span> pfsmedian),</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_os =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> osmedian, <span class="st">"BM-"</span> <span class="ot">=</span> osmedian),</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">orr =</span> <span class="fu">list</span>(</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">"BM+"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">control =</span> <span class="fl">0.15</span>, <span class="at">experimental =</span> <span class="fl">0.35</span>),</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"BM-"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">control =</span> <span class="fl">0.15</span>, <span class="at">experimental =</span> <span class="fl">0.25</span>)</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_pfs =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="fl">0.65</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="fl">0.85</span>),</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_os =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="fl">0.65</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="fl">0.85</span>)</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Simulate trial</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>n_total <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>sim_data <span class="ot">&lt;-</span> <span class="fu">sim_illness_death</span>(</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> n_total,</span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="fu">data.frame</span>(<span class="at">stratum =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>), <span class="at">p =</span> <span class="fu">c</span>(<span class="fl">0.50</span>, <span class="fl">0.50</span>)),</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">block =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"control"</span>, <span class="st">"experimental"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> (n_total <span class="sc">/</span> <span class="dv">15</span>) <span class="sc">*</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.50</span>, <span class="fl">0.75</span>, <span class="fl">1.00</span>),</span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">12</span>)</span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">transition_rate =</span> transition_rate,</span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Determine cut dates</span></span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a>analyses <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">min_followup =</span> <span class="dv">6</span>, <span class="at">endpoint =</span> <span class="cn">NULL</span>, <span class="at">event_target =</span> <span class="cn">NULL</span>,</span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a>       <span class="at">target_stratum =</span> <span class="cn">NULL</span>, <span class="at">max_followup =</span> <span class="cn">NULL</span>),</span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">min_followup =</span> <span class="dv">14</span>, <span class="at">endpoint =</span> <span class="st">"PFS"</span>, <span class="at">event_target =</span> <span class="dv">250</span>,</span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a>       <span class="at">target_stratum =</span> <span class="st">"BM+"</span>, <span class="at">max_followup =</span> <span class="dv">17</span>),</span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">min_followup =</span> <span class="dv">24</span>, <span class="at">endpoint =</span> <span class="st">"OS"</span>, <span class="at">event_target =</span> <span class="dv">200</span>,</span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>       <span class="at">target_stratum =</span> <span class="st">"BM+"</span>, <span class="at">max_followup =</span> <span class="dv">30</span>)</span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>cut_dates <span class="ot">&lt;-</span> <span class="fu">get_analysis_dates</span>(sim_data, analyses)</span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. Cut data</span></span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a>adtte <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">seq_along</span>(cut_dates), <span class="cf">function</span>(i) {</span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">cut_illness_death</span>(sim_data, cut_dates[i])</span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>  d<span class="sc">$</span>ANALYSIS <span class="ot">&lt;-</span> i</span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a>  d</span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a><span class="co"># 6. Compute p-values</span></span>
+<span id="cb17-62"><a href="#cb17-62" aria-hidden="true" tabindex="-1"></a><span class="co"># H1: OS BM+ (logrank, unstratified)</span></span>
+<span id="cb17-63"><a href="#cb17-63" aria-hidden="true" tabindex="-1"></a>p_H1 <span class="ot">&lt;-</span> <span class="fu">logrank_pval</span>(adtte[[<span class="dv">3</span>]] <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PARAMCD <span class="sc">==</span> <span class="st">"OS"</span>, STRATUM <span class="sc">==</span> <span class="st">"BM+"</span>))</span>
+<span id="cb17-64"><a href="#cb17-64" aria-hidden="true" tabindex="-1"></a><span class="co"># H2: OS All (logrank, stratified)</span></span>
+<span id="cb17-65"><a href="#cb17-65" aria-hidden="true" tabindex="-1"></a>p_H2 <span class="ot">&lt;-</span> <span class="fu">logrank_pval</span>(adtte[[<span class="dv">3</span>]] <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PARAMCD <span class="sc">==</span> <span class="st">"OS"</span>), <span class="at">stratified =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-66"><a href="#cb17-66" aria-hidden="true" tabindex="-1"></a><span class="co"># H5: ORR BM+ (risk difference, unstratified)</span></span>
+<span id="cb17-67"><a href="#cb17-67" aria-hidden="true" tabindex="-1"></a>p_H5 <span class="ot">&lt;-</span> <span class="fu">rd_pval</span>(adtte[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PARAMCD <span class="sc">==</span> <span class="st">"ORR"</span>, STRATUM <span class="sc">==</span> <span class="st">"BM+"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="piecewise-rates" class="level2">
+<h2 class="anchored" data-anchor-id="piecewise-rates">Piecewise transition rate modification</h2>
+<p><code>build_transition_rates()</code> produces constant rates. To implement piecewise hazards (e.g., progression rate that halves after 8 months, or response rate that varies over time), modify the output data frame by splitting rows into multiple time periods.</p>
+<section id="piecewise-progression-rates" class="level3">
+<h3 class="anchored" data-anchor-id="piecewise-progression-rates">Piecewise progression rates</h3>
+<p>Model PFS with median 8 months for <span class="math inline">\(t &lt; 8\)</span>, median 16 months for <span class="math inline">\(t \geq 8\)</span>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>transition_rate <span class="ot">&lt;-</span> <span class="fu">build_transition_rates</span>(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">strata =</span> <span class="st">"All"</span>,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatments =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_pfs =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="dv">8</span>),     <span class="co"># Calibrate with first-period median</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_os =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="dv">14</span>),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">orr =</span> <span class="fu">list</span>(<span class="at">All =</span> <span class="fu">c</span>(<span class="at">control =</span> <span class="fl">0.15</span>, <span class="at">experimental =</span> <span class="fl">0.25</span>)),</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_pfs =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="fl">0.75</span>),</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_os =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="fl">0.75</span>)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Split prog_0 and prog_1 into two periods</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>prog_transitions <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"prog_0"</span>, <span class="st">"prog_1"</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>pw_rows <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(transition_rate))) {</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>  row <span class="ot">&lt;-</span> transition_rate[i, ]</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (row<span class="sc">$</span>transition <span class="sc">%in%</span> prog_transitions) {</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Period 1: original rate, duration = changepoint</span></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>    row1 <span class="ot">&lt;-</span> row; row1<span class="sc">$</span>duration <span class="ot">&lt;-</span> <span class="dv">8</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    pw_rows[[<span class="fu">length</span>(pw_rows) <span class="sc">+</span> <span class="dv">1</span>]] <span class="ot">&lt;-</span> row1</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Period 2: half the rate, duration = Inf</span></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    row2 <span class="ot">&lt;-</span> row; row2<span class="sc">$</span>rate <span class="ot">&lt;-</span> row<span class="sc">$</span>rate <span class="sc">/</span> <span class="dv">2</span>; row2<span class="sc">$</span>duration <span class="ot">&lt;-</span> <span class="cn">Inf</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    pw_rows[[<span class="fu">length</span>(pw_rows) <span class="sc">+</span> <span class="dv">1</span>]] <span class="ot">&lt;-</span> row2</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>    pw_rows[[<span class="fu">length</span>(pw_rows) <span class="sc">+</span> <span class="dv">1</span>]] <span class="ot">&lt;-</span> row</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>transition_rate_pw <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, pw_rows)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="piecewise-response-rates" class="level3">
+<h3 class="anchored" data-anchor-id="piecewise-response-rates">Piecewise response rates</h3>
+<p>Model early high response rate (first 6 months) with low late response:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>orr_changepoint <span class="ot">&lt;-</span> <span class="dv">6</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>orr_rate_mult <span class="ot">&lt;-</span> <span class="fl">2.25</span>     <span class="co"># Multiply base rate for t &lt; 6</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>orr_rate_late <span class="ot">&lt;-</span> <span class="fl">0.1</span>      <span class="co"># 10% of base rate for t &gt;= 6</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Add to the piecewise loop above</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (row<span class="sc">$</span>transition <span class="sc">==</span> <span class="st">"response"</span>) {</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  row1 <span class="ot">&lt;-</span> row</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  row1<span class="sc">$</span>rate <span class="ot">&lt;-</span> row<span class="sc">$</span>rate <span class="sc">*</span> orr_rate_mult</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  row1<span class="sc">$</span>duration <span class="ot">&lt;-</span> orr_changepoint</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  pw_rows[[<span class="fu">length</span>(pw_rows) <span class="sc">+</span> <span class="dv">1</span>]] <span class="ot">&lt;-</span> row1</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  row2 <span class="ot">&lt;-</span> row</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  row2<span class="sc">$</span>rate <span class="ot">&lt;-</span> row<span class="sc">$</span>rate <span class="sc">*</span> orr_rate_late</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  row2<span class="sc">$</span>duration <span class="ot">&lt;-</span> <span class="cn">Inf</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  pw_rows[[<span class="fu">length</span>(pw_rows) <span class="sc">+</span> <span class="dv">1</span>]] <span class="ot">&lt;-</span> row2</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="separate-design-vs-simulation-transition-rates" class="level3">
+<h3 class="anchored" data-anchor-id="separate-design-vs-simulation-transition-rates">Separate design vs simulation transition rates</h3>
+<p>Use different HRs for design (optimistic) and simulation (weaker effect):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Design rates: HR = 0.75 (for sample size and bounds)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>transition_rate_design <span class="ot">&lt;-</span> <span class="fu">build_transition_rates</span>(</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  ..., <span class="at">hr_pfs =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="fl">0.75</span>), <span class="at">hr_os =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="fl">0.75</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulation rates: HR = 0.80 (weaker, for operating characteristics)</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>transition_rate_sim <span class="ot">&lt;-</span> <span class="fu">build_transition_rates</span>(</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  ..., <span class="at">hr_pfs =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="fl">0.80</span>), <span class="at">hr_os =</span> <span class="fu">c</span>(<span class="at">All =</span> <span class="fl">0.80</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the same piecewise modifications to both</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/illness-death.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

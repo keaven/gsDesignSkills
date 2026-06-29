@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-html/tabby.min.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-065a5179aebd64318d7ea99d77b64a9e.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.8.25">
+
+  <meta name="author" content="Keaven M. Anderson">
+  <meta name="dcterms.date" content="2025-12-31">
+  <title>gsDesignSkills – AI Skills for Group Sequential Design</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="site_libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="site_libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+      }
+    pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+    div.sourceCode
+      { color: #24292e;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #24292e; } /* Normal */
+    code span.al { color: #ff5555; font-weight: bold; } /* Alert */
+    code span.an { color: #6a737d; } /* Annotation */
+    code span.at { color: #d73a49; } /* Attribute */
+    code span.bn { color: #005cc5; } /* BaseN */
+    code span.bu { color: #d73a49; } /* BuiltIn */
+    code span.cf { color: #d73a49; } /* ControlFlow */
+    code span.ch { color: #032f62; } /* Char */
+    code span.cn { color: #005cc5; } /* Constant */
+    code span.co { color: #6a737d; } /* Comment */
+    code span.cv { color: #6a737d; } /* CommentVar */
+    code span.do { color: #6a737d; } /* Documentation */
+    code span.dt { color: #d73a49; } /* DataType */
+    code span.dv { color: #005cc5; } /* DecVal */
+    code span.er { color: #ff5555; text-decoration: underline; } /* Error */
+    code span.ex { color: #d73a49; font-weight: bold; } /* Extension */
+    code span.fl { color: #005cc5; } /* Float */
+    code span.fu { color: #6f42c1; } /* Function */
+    code span.im { color: #032f62; } /* Import */
+    code span.in { color: #6a737d; } /* Information */
+    code span.kw { color: #d73a49; } /* Keyword */
+    code span.op { color: #24292e; } /* Operator */
+    code span.ot { color: #6f42c1; } /* Other */
+    code span.pp { color: #d73a49; } /* Preprocessor */
+    code span.re { color: #6a737d; } /* RegionMarker */
+    code span.sc { color: #005cc5; } /* SpecialChar */
+    code span.ss { color: #032f62; } /* SpecialString */
+    code span.st { color: #032f62; } /* String */
+    code span.va { color: #e36209; } /* Variable */
+    code span.vs { color: #032f62; } /* VerbatimString */
+    code span.wa { color: #ff5555; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="site_libs/revealjs/dist/theme/quarto-534cd8e3a96973385dffff3f4709048d.css">
+  <link href="site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="site_libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+  <script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+  <link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">AI Skills for Group Sequential Design</h1>
+  <p class="subtitle">Teaching Claude Code to Design Clinical Trials</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Keaven M. Anderson 
+</div>
+</div>
+</div>
+
+  <p class="date">2025-12-31</p>
+</section>
+<section id="motivation" class="slide level2">
+<h2>Motivation</h2>
+<ul>
+<li><strong>Group sequential design</strong> (GSD) for clinical trials involves complex R code across multiple specialized packages</li>
+<li>Statistical programmers and biostatisticians spend significant time on routine coding tasks</li>
+<li><strong>AI coding assistants</strong> like Claude Code can accelerate this — if they understand the domain</li>
+<li><strong>Problem:</strong> General-purpose AI lacks reliable knowledge of clinical trial design APIs and conventions</li>
+</ul>
+<div class="fragment">
+<p><strong>Solution:</strong> Curated <em>AI skills</em> that encode package-specific knowledge, code patterns, and statistical conventions</p>
+</div>
+</section>
+<section id="the-shift-delegation-and-verification" class="slide level2 scrollable">
+<h2>The Shift: Delegation and Verification</h2>
+<p><a href="https://github.blog/news-insights/the-library/developers-reinvented/">Dohmke &amp; Kalliamvakou (2025)</a> describe software development evolving through stages:</p>
+<ol type="1">
+<li><strong>Stage 1:</strong> AI autocompletes lines of code</li>
+<li><strong>Stage 2:</strong> AI as pair programmer (chat-driven coding)</li>
+<li><strong>Stage 3:</strong> AI agent executes multi-step tasks autonomously</li>
+<li><strong>Stage 4:</strong> Fully agentic — multiple AI agents collaborate</li>
+</ol>
+<div class="fragment">
+<p>For biostatisticians, the key shift is from <strong>writing code</strong> to <strong>delegating and verifying</strong>:</p>
+<ul>
+<li>Skills encode the domain knowledge needed for reliable delegation</li>
+<li>Biostatisticians focus on <em>design decisions</em> and <em>verification</em>, not syntax</li>
+<li>Reproducibility improves: skills are version-controlled, shared, and testable</li>
+</ul>
+</div>
+</section>
+<section id="what-are-ai-skills" class="slide level2">
+<h2>What Are AI Skills?</h2>
+<p>Skills are structured knowledge files that give an AI assistant expertise in a specific domain:</p>
+<pre><code>.claude/skills/&lt;skill-name&gt;/
+├── SKILL.md              # Triggers, workflow, key concepts
+└── references/
+    ├── code_patterns.md  # Verified code templates
+    └── llms.txt          # API documentation</code></pre>
+<ul>
+<li><strong>SKILL.md</strong> — When to activate, what the package does, critical gotchas</li>
+<li><strong>Code patterns</strong> — Tested, working code templates for common tasks</li>
+<li><strong>llms.txt</strong> — Machine-readable API reference from <a href="https://gsDesign.ai">gsDesign.ai</a></li>
+</ul>
+</section>
+<section id="the-gsdesignskills-repository" class="slide level2">
+<h2>The gsDesignSkills Repository</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h3 id="individual-package-skills">Individual Package Skills</h3>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Skill</th>
+<th>Package</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>gsDesign</code></td>
+<td>Classical GSD</td>
+</tr>
+<tr class="even">
+<td><code>gsDesign2</code></td>
+<td>Next-gen GSD (NPH)</td>
+</tr>
+<tr class="odd">
+<td><code>graphicalMCP</code></td>
+<td>Multiplicity graphs</td>
+</tr>
+<tr class="even">
+<td><code>rpact</code></td>
+<td>Adaptive designs</td>
+</tr>
+<tr class="odd">
+<td><code>simtrial</code></td>
+<td>Trial simulation</td>
+</tr>
+<tr class="even">
+<td><code>wpgsd</code></td>
+<td>Weighted parametric GSD</td>
+</tr>
+<tr class="odd">
+<td><code>gsDesignNB</code></td>
+<td>Negative binomial</td>
+</tr>
+<tr class="even">
+<td><code>gMCPLite</code></td>
+<td>Legacy MCP</td>
+</tr>
+</tbody>
+</table>
+</div><div class="column" style="width:50%;">
+<h3 id="cross-package-skills">Cross-Package Skills</h3>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Skill</th>
+<th>Integration</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>graphicalMCP-gsDesign2</code></td>
+<td>GSD + multiplicity</td>
+</tr>
+<tr class="even">
+<td><code>illness-death</code></td>
+<td>Multi-state oncology</td>
+</tr>
+<tr class="odd">
+<td><code>multi-endpoint-sim</code></td>
+<td>GSD + simulation + multiplicity</td>
+</tr>
+</tbody>
+</table>
+<h3 id="api-documentation">API Documentation</h3>
+<ul>
+<li><code>llms.txt</code> files from <a href="https://gsDesign.ai">gsDesign.ai</a></li>
+<li>Machine-readable format optimized for AI consumption</li>
+</ul>
+</div></div>
+</section>
+<section id="anatomy-of-a-skill-gsdesign" class="slide level2">
+<h2>Anatomy of a Skill: gsDesign</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a aria-hidden="true" tabindex="-1"></a><span class="co"># SKILL.md frontmatter</span></span>
+<span id="cb2-2"><a aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> gsDesign</span></span>
+<span id="cb2-3"><a aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> Classical group sequential trial design</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Trigger patterns</strong> tell Claude <em>when</em> to activate:</p>
+<blockquote>
+<p>Group sequential boundaries, spending functions, sample size for time-to-event trials, gsSurv, gsSurvPower, harm bounds (test.type 7/8)…</p>
+</blockquote>
+<p><strong>Key concepts</strong> encode domain knowledge:</p>
+<ul>
+<li>Non-binding futility <code>test.type = 4</code> or one-sided <code>test.type = 1</code> are standard for confirmatory trials</li>
+<li>Always round to integers with <code>toInteger()</code> before reporting</li>
+<li>Spending time supported</li>
+<li>Can skip futility or efficacy assessment at any analysis</li>
+<li>Harm bounds available</li>
+<li><code>gsBoundSummary()</code> produces gt-ready data frames</li>
+<li>7 plot types available (new conditional power capabilities planned)</li>
+<li>Standard and flexible spending function families available (Anderson &amp; Clark 2009)</li>
+<li>Sequential p-value theory (Liu &amp; Anderson 2008)</li>
+</ul>
+</section>
+<section id="code-patterns-verified-templates" class="slide level2">
+<h2>Code Patterns: Verified Templates</h2>
+<p>Each skill includes tested code templates, e.g., a confirmatory survival design:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">gsSurv</span>(</span>
+<span id="cb3-2"><a aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">3</span>, <span class="at">test.type =</span> <span class="dv">4</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">beta =</span> <span class="fl">0.1</span>,</span>
+<span id="cb3-3"><a aria-hidden="true" tabindex="-1"></a>  <span class="at">lambdaC =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="dv">12</span>, <span class="at">hr =</span> <span class="fl">0.7</span>, <span class="at">hr0 =</span> <span class="dv">1</span>,</span>
+<span id="cb3-4"><a aria-hidden="true" tabindex="-1"></a>  <span class="at">eta =</span> <span class="fl">0.01</span>, <span class="at">gamma =</span> <span class="dv">10</span>, <span class="at">R =</span> <span class="dv">12</span>, <span class="at">T =</span> <span class="dv">36</span>, <span class="at">minfup =</span> <span class="dv">24</span>,</span>
+<span id="cb3-5"><a aria-hidden="true" tabindex="-1"></a>  <span class="at">sfu =</span> sfLDOF, <span class="at">sfl =</span> sfHSD, <span class="at">sflpar =</span> <span class="sc">-</span><span class="dv">2</span></span>
+<span id="cb3-6"><a aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="fu">toInteger</span>()</span>
+<span id="cb3-7"><a aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a aria-hidden="true" tabindex="-1"></a>design <span class="sc">|&gt;</span> <span class="fu">gsBoundSummary</span>() <span class="sc">|&gt;</span> gt<span class="sc">::</span><span class="fu">gt</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Without the skill, Claude might use wrong parameter names, forget <code>toInteger()</code>, or misapply spending functions.</p>
+</section>
+<section id="the-cross-package-skill-gsd-multiplicity" class="slide level2 scrollable">
+<h2>The Cross-Package Skill: GSD + Multiplicity</h2>
+<p>The <code>graphicalMCP-gsDesign2</code> skill encodes a <strong>4-phase workflow</strong> for multi-endpoint trials (e.g., OS + PFS + ORR in subgroup + all):</p>
+<ol type="1">
+<li class="fragment"><strong>Design specification</strong> — Build multiplicity graph, design the sample-size-driving hypothesis (H1), derive enrollment, compute power for remaining hypotheses</li>
+<li class="fragment"><strong>Results entry</strong> — Record event counts, nominal p-values, compute spending times</li>
+<li class="fragment"><strong>Hypothesis testing</strong> — Compute sequential p-values, test with <code>graph_test_shortcut()</code></li>
+<li class="fragment"><strong>Verification</strong> — Update group sequential bounds per the graph, compare nominal p-values to updated bounds</li>
+</ol>
+</section>
+<section id="example-1-ask-claude-to-design-a-trial" class="slide level2">
+<h2>Example 1: Ask Claude to Design a Trial</h2>
+<p><strong>Prompt:</strong></p>
+<blockquote>
+<p>Design a 3-analysis group sequential survival trial with non-binding futility. Control median PFS is 8 months, target HR 0.65, 90% power, enrollment over 18 months, 24 months minimum follow-up.</p>
+</blockquote>
+<p>With the gsDesign skill loaded, Claude produces:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">gsSurv</span>(</span>
+<span id="cb4-2"><a aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">3</span>, <span class="at">test.type =</span> <span class="dv">4</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">beta =</span> <span class="fl">0.1</span>,</span>
+<span id="cb4-3"><a aria-hidden="true" tabindex="-1"></a>  <span class="at">lambdaC =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="dv">8</span>, <span class="at">hr =</span> <span class="fl">0.65</span>, <span class="at">hr0 =</span> <span class="dv">1</span>,</span>
+<span id="cb4-4"><a aria-hidden="true" tabindex="-1"></a>  <span class="at">eta =</span> <span class="fl">0.01</span>, <span class="at">gamma =</span> <span class="dv">10</span>, <span class="at">R =</span> <span class="dv">18</span>, <span class="at">T =</span> <span class="dv">42</span>, <span class="at">minfup =</span> <span class="dv">24</span>,</span>
+<span id="cb4-5"><a aria-hidden="true" tabindex="-1"></a>  <span class="at">sfu =</span> sfLDOF, <span class="at">sfl =</span> sfHSD, <span class="at">sflpar =</span> <span class="sc">-</span><span class="dv">2</span></span>
+<span id="cb4-6"><a aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="fu">toInteger</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Correct spending functions for efficacy and futility</li>
+<li>Proper parameterization (<code>lambdaC</code>, not median directly)</li>
+<li>Integer rounding included</li>
+</ul>
+</section>
+<section id="example-1-reporting-and-sensitivity" class="slide level2">
+<h2>Example 1: Reporting and Sensitivity</h2>
+<p>Claude also generates reporting and sensitivity analysis:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a aria-hidden="true" tabindex="-1"></a>design <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a aria-hidden="true" tabindex="-1"></a>  <span class="fu">gsBoundSummary</span>(<span class="at">deltaname =</span> <span class="st">"HR"</span>, <span class="at">logdelta =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-3"><a aria-hidden="true" tabindex="-1"></a>                  <span class="at">Nname =</span> <span class="st">"Events"</span>, <span class="at">timename =</span> <span class="st">"Month"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">gt</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-5"><a aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">tab_header</span>(<span class="at">title =</span> <span class="st">"Group Sequential Design: PFS Endpoint"</span>,</span>
+<span id="cb5-6"><a aria-hidden="true" tabindex="-1"></a>                  <span class="at">subtitle =</span> <span class="st">"Non-binding futility, LD-OF efficacy spending"</span>)</span>
+<span id="cb5-7"><a aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a aria-hidden="true" tabindex="-1"></a><span class="co"># What-if: power under HR = 0.75?</span></span>
+<span id="cb5-9"><a aria-hidden="true" tabindex="-1"></a><span class="fu">gsSurvPower</span>(<span class="at">x =</span> design, <span class="at">hr =</span> <span class="fl">0.75</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Plus natural language summary of sample size, events, and timing.</p>
+</section>
+<section id="example-2-multiplicity-adjusted-testing" class="slide level2 scrollable">
+<h2>Example 2: Multiplicity-Adjusted Testing</h2>
+<p><strong>Prompt:</strong></p>
+<blockquote>
+<p>We have a Phase III trial with OS and PFS in a biomarker subgroup and overall population. Set up the multiplicity graph and compute sequential p-values from interim results.</p>
+</blockquote>
+<p>With the <code>graphicalMCP-gsDesign2</code> skill, Claude:</p>
+<ol type="1">
+<li>Creates the multiplicity graph with proper alpha allocation</li>
+<li>Designs the sample-size-driving hypothesis</li>
+<li>Computes <code>sequential_pval()</code> for each hypothesis at each analysis</li>
+<li>Tests using <code>graph_test_shortcut()</code> with adjusted significance levels</li>
+</ol>
+<div class="fragment">
+<p><strong>Without the skill</strong>, Claude would not know:</p>
+<ul>
+<li>That <code>info_frac = NULL</code> with <code>analysis_time</code> is the correct approach</li>
+<li>How spending time decouples from information fraction</li>
+<li>The <code>event = NULL</code> requirement in <code>gs_power_ahr()</code> when using timing</li>
+</ul>
+</div>
+</section>
+<section id="multi-endpoint-simulation-pipeline" class="slide level2">
+<h2>Multi-Endpoint Simulation Pipeline</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<p>The <code>multi-endpoint-sim</code> skill orchestrates <strong>5 packages</strong> for simulation-based operating characteristics:</p>
+<pre><code>gsDesign (bounds) →
+  illness-death (data generation) →
+    simtrial (cutting + analysis) →
+      gsDesign (sequential p-values) →
+        graphicalMCP (multiplicity testing)</code></pre>
+<ul>
+<li><strong>Sequential p-values</strong> (Liu &amp; Anderson 2008) enable valid testing at each analysis</li>
+<li><strong>graphicalMCP</strong> controls familywise error using Maurer-Bretz Algorithm 1</li>
+</ul>
+</div><div class="column" style="width:45%;">
+<div class="cell" data-reveal="true" data-fig-height="3" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '18px'}}}%%
+graph LR
+  S0["&lt;b&gt;State 0&lt;/b&gt;&lt;br/&gt;Stable&lt;br/&gt;No Response"] --&gt;|response| S1["&lt;b&gt;State 1&lt;/b&gt;&lt;br/&gt;Responded"]
+  S0 --&gt;|prog_0| S2["&lt;b&gt;State 2&lt;/b&gt;&lt;br/&gt;Progressed"]
+  S0 --&gt;|death_0| S3["&lt;b&gt;State 3&lt;/b&gt;&lt;br/&gt;Dead"]
+  S1 --&gt;|prog_1| S2
+  S1 --&gt;|death_1| S3
+  S2 --&gt;|death_2| S3
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>Illness-death model simulates correlated OS, PFS, ORR from 6 transition rates</p>
+</div></div>
+</section>
+<section id="beyond-gsdesign-specialized-skills" class="slide level2">
+<h2>Beyond gsDesign: Specialized Skills</h2>
+<h3 id="negative-binomial-gsdesignnb">Negative Binomial (gsDesignNB)</h3>
+<ul>
+<li>Recurrent event trial design</li>
+<li>Event gaps, variable accrual</li>
+<li>Blinded sample size re-estimation</li>
+</ul>
+<h3 id="rpact">rpact</h3>
+<ul>
+<li>Adaptive designs with sample size reassessment</li>
+<li>Inverse normal and Fisher combination tests</li>
+<li>Multi-arm and enrichment designs</li>
+</ul>
+</section>
+<section id="theoretical-foundations-encoded-in-skills" class="slide level2">
+<h2>Theoretical Foundations Encoded in Skills</h2>
+<p>Skills don’t just encode <em>code</em> — they encode <em>theory</em>:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 31%">
+<col style="width: 48%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Paper</th>
+<th>Encoded In</th>
+<th>What It Enables</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Anderson et al.&nbsp;(2022)</td>
+<td><code>wpgsd</code></td>
+<td>Unified framework for weighted parametric GSD</td>
+</tr>
+<tr class="even">
+<td>Anderson &amp; Clark (2009)</td>
+<td><code>gsDesign</code></td>
+<td>Two-parameter spending function families with closed-form fitting</td>
+</tr>
+<tr class="odd">
+<td>Anderson et al.&nbsp;(2026)</td>
+<td><code>gsDesign2</code>, <code>graphicalMCP-gsDesign2</code></td>
+<td>Spending time theory for sequential p-values</td>
+</tr>
+<tr class="even">
+<td>FDA OS Guidance (2025)</td>
+<td><code>gsDesign</code></td>
+<td>Harm bounds design for OS safety assessment in oncology</td>
+</tr>
+<tr class="odd">
+<td>Liu &amp; Anderson (2008)</td>
+<td><code>gsDesign</code>, <code>graphicalMCP-gsDesign2</code></td>
+<td>Sequential p-value validity (Theorems 1–2)</td>
+</tr>
+<tr class="even">
+<td>Maurer &amp; Bretz (2013)</td>
+<td><code>graphicalMCP-gsDesign2</code></td>
+<td>Algorithm 1 for closed testing with group sequential designs</td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<p>This means Claude can explain <em>why</em> a spending function is well-ordered, <em>when</em> spending time should differ from information fraction, and <em>how</em> sequential p-values maintain Type I error control — not just produce code that calls the right function.</p>
+</div>
+</section>
+<section id="how-skills-are-used" class="slide level2">
+<h2>How Skills Are Used</h2>
+<p><strong>1. Copy skills</strong> into your project:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-r</span> gsDesignSkills/.claude/skills/<span class="pp">*</span> my-project/.claude/skills/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>2. Reference</strong> skills for your AI assistant:</p>
+<div class="columns">
+<div class="column" style="width:33%;">
+<h3 id="claude-code">Claude Code</h3>
+<p>In <code>CLAUDE.md</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb8-1"><a aria-hidden="true" tabindex="-1"></a>When working on group sequential</span>
+<span id="cb8-2"><a aria-hidden="true" tabindex="-1"></a>designs, read</span>
+<span id="cb8-3"><a aria-hidden="true" tabindex="-1"></a><span class="in">`.claude/skills/gsDesign/SKILL.md`</span>.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div><div class="column" style="width:33%;">
+<h3 id="vs-code-copilot">VS Code / Copilot</h3>
+<p>In <code>.github/copilot-instructions.md</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a aria-hidden="true" tabindex="-1"></a>For group sequential designs,</span>
+<span id="cb9-2"><a aria-hidden="true" tabindex="-1"></a>follow instructions in</span>
+<span id="cb9-3"><a aria-hidden="true" tabindex="-1"></a><span class="in">`.claude/skills/gsDesign/SKILL.md`</span>.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div><div class="column" style="width:33%;">
+<h3 id="cline">Cline</h3>
+<p>In <code>.clinerules</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb10-1"><a aria-hidden="true" tabindex="-1"></a>When working on group sequential</span>
+<span id="cb10-2"><a aria-hidden="true" tabindex="-1"></a>designs, read</span>
+<span id="cb10-3"><a aria-hidden="true" tabindex="-1"></a><span class="in">`.claude/skills/gsDesign/SKILL.md`</span>.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></div>
+<p><strong>3. Use naturally</strong> — the assistant reads the skill when triggered, applies code patterns as verified starting points, and consults <code>llms.txt</code> for full API details when needed.</p>
+</section>
+<section id="what-skills-prevent" class="slide level2">
+<h2>What Skills Prevent</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h3 id="common-ai-mistakes">Common AI Mistakes</h3>
+<ul>
+<li>Wrong parameter names (<code>ssmethod</code> vs <code>method</code>)</li>
+<li>Hallucinated functions (<code>as_gt()</code> on wrong object type)</li>
+<li>Wrong API conventions (rpact dropout as percentage vs proportion)</li>
+<li>Missing critical steps (no <code>toInteger()</code>, wrong <code>test.type</code>)</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<h3 id="what-skills-provide">What Skills Provide</h3>
+<ul>
+<li>Verified parameter names and defaults</li>
+<li>Tested code patterns that work</li>
+<li>Cross-package conventions (gsDesign vs rpact mapping)</li>
+<li>Domain knowledge (when to use non-binding futility, spending time vs information fraction)</li>
+</ul>
+</div></div>
+</section>
+<section id="ai-readable-documentation-llms.txt" class="slide level2">
+<h2>AI-Readable Documentation: llms.txt</h2>
+<p><a href="https://gsDesign.ai">gsDesign.ai</a> provides machine-optimized documentation:</p>
+<ul>
+<li>Function signatures with all parameters</li>
+<li>Return value structures</li>
+<li>Cross-references between related functions</li>
+<li>Compact format designed for AI context windows</li>
+</ul>
+<div class="fragment">
+<p>Included in skills for: gsDesign, gsDesign2, graphicalMCP, rpact, simtrial, wpgsd, gsDesignNB</p>
+</div>
+</section>
+<section id="practical-impact" class="slide level2">
+<h2>Practical Impact</h2>
+<p>Skills have been used to:</p>
+<ul>
+<li><strong>Update the gsDesign Technical Manual</strong> — Claude incorporated substantial package updates across 13 files, adding 5 new chapters and sections with assistance from these skills</li>
+<li><strong>Generate cross-validation code</strong> between gsDesign and rpact with correct parameter mapping</li>
+<li><strong>Design complex multi-endpoint trials</strong> with graphical multiplicity following the Maurer-Bretz framework</li>
+<li><strong>Simulate multi-endpoint group sequential trials</strong> — 5-package pipeline from design through illness-death simulation to multiplicity-adjusted testing</li>
+<li><strong>Create simulation studies</strong> for negative binomial and illness-death models</li>
+</ul>
+<div class="fragment">
+<p>The key insight: <strong>domain-specific knowledge</strong> turns a general-purpose AI into a reliable statistical programming assistant.</p>
+</div>
+</section>
+<section id="future-directions" class="slide level2">
+<h2>Future Directions</h2>
+<ul>
+<li><strong>Expanding skills</strong> for additional packages and design types</li>
+<li><strong>Delegation and verification</strong> — biostatisticians shift from writing code to reviewing AI-generated designs (Dohmke &amp; Kalliamvakou 2025)</li>
+<li><strong>Validation workflows</strong> — skills that check designs against simulation</li>
+<li><strong>Interactive design exploration</strong> — iterative refinement of designs through conversation</li>
+<li><strong>Community contributions</strong> — open-source skills that improve with collective expertise</li>
+</ul>
+</section>
+<section id="summary" class="slide level2">
+<h2>Summary</h2>
+<table class="caption-top">
+<tbody>
+<tr class="odd">
+<td><strong>What</strong></td>
+<td>Curated knowledge files for AI coding assistants</td>
+</tr>
+<tr class="even">
+<td><strong>Why</strong></td>
+<td>Clinical trial design requires domain expertise that general AI lacks</td>
+</tr>
+<tr class="odd">
+<td><strong>How</strong></td>
+<td>SKILL.md + code patterns + llms.txt API references</td>
+</tr>
+<tr class="even">
+<td><strong>Where</strong></td>
+<td><a href="https://github.com/keaven/gsDesignSkills">github.com/keaven/gsDesignSkills</a></td>
+</tr>
+<tr class="odd">
+<td><strong>Coverage</strong></td>
+<td>11 skills across 8+ R packages for GSD, multiplicity, simulation</td>
+</tr>
+<tr class="even">
+<td><strong>Impact</strong></td>
+<td>Reliable code generation, fewer errors, faster workflows</td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<p><strong>Repository:</strong> <a href="https://github.com/keaven/gsDesignSkills">github.com/keaven/gsDesignSkills</a></p>
+<p><strong>API docs:</strong> <a href="https://gsDesign.ai">gsDesign.ai</a></p>
+</div>
+</section>
+<section id="references" class="slide level2">
+<h2>References</h2>
+<div style="font-size: 0.7em;">
+<ul>
+<li>Anderson, K. M., Guo, Z., Zhao, J., &amp; Sun, L. Z. (2022). A unified framework for weighted parametric group sequential design. <em>Biometrical Journal</em>, 64(7), 1219–1239. <a href="https://doi.org/10.1002/bimj.202100085" class="uri">https://doi.org/10.1002/bimj.202100085</a></li>
+<li>Anderson, K. M., &amp; Clark, J. W. (2009). Fitting spending functions. <em>Statistics in Medicine</em>, 29(3), 321–327.</li>
+<li>Anderson, K. M. et al.&nbsp;(2026). Spending time in group sequential design. Accepted for publication.</li>
+<li>Dohmke, T., &amp; Kalliamvakou, E. (2025). Developers, reinvented. <a href="https://github.blog/news-insights/the-library/developers-reinvented/" class="uri">https://github.blog/news-insights/the-library/developers-reinvented/</a></li>
+<li>FDA. (2025). Approaches to assessment of overall survival in oncology clinical trials. Draft guidance for industry. <a href="https://www.fda.gov/media/188274/download" class="uri">https://www.fda.gov/media/188274/download</a></li>
+<li>Liu, Q., &amp; Anderson, K. M. (2008). On adaptive extensions of group sequential trials for clinical investigations. <em>JASA</em>, 103(484), 1621–1630.</li>
+<li>Maurer, W., &amp; Bretz, F. (2013). Multiple testing in group sequential trials using graphical approaches. <em>Statistics in Biopharmaceutical Research</em>, 5(4), 311–320.</li>
+</ul>
+</div>
+</section>
+<section id="discussion" class="slide level2 center">
+<h2>Discussion</h2>
+<p><br></p>
+<h3 id="questions">Questions?</h3>
+<ul>
+<li><strong>Needed:</strong> Volunteers to try out gsDesignSkills</li>
+</ul>
+<p><br></p>
+<p><strong>Repository:</strong> <a href="https://github.com/keaven/gsDesignSkills">github.com/keaven/gsDesignSkills</a></p>
+<p><strong>Technical manual:</strong> <a href="https://keaven.github.io/gsd-tech-manual/">keaven.github.io/gsd-tech-manual</a></p>
+<p><strong>API documentation:</strong> <a href="https://gsDesign.ai">gsDesign.ai</a></p>
+
+
+</section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+<p>AI Skills for Group Sequential Design</p>
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="site_libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="site_libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="site_libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="site_libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="site_libs/revealjs/plugin/search/search.js"></script>
+  <script src="site_libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="site_libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': true,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1280,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

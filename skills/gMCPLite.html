@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Guide users through graphical MCP procedures using the gMCPLite R package (legacy). Use this skill when the user asks about: hGraph for multiplicity graph visualization, gMCP for closed testing, or legacy graphical MCP workflows. For new projects, prefer graphicalMCP.">
+
+<title>gMCPLite – gsDesignSkills</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-2e5cbef59756d87313a778b4017e2694.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">gsDesignSkills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../skills/index.html"> 
+<span class="menu-text">Skills</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../ai-skills-gsd.html"> 
+<span class="menu-text">Presentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../multi-endpoint-sim.html"> 
+<span class="menu-text">Simulation Example</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../news.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/keaven/gsDesignSkills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/gsDesign.html">Individual Packages</a></li><li class="breadcrumb-item"><a href="../skills/gMCPLite.html">gMCPLite</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Skills Catalog</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Individual Packages</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/rpact.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rpact</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/simtrial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">simtrial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/wpgsd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">wpgsd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesignNB.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesignNB</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gMCPLite.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">gMCPLite</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-Package</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP-gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP-gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/illness-death.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">illness-death</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/multi-endpoint-sim.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">multi-endpoint-sim</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#graphical-mcp-with-gmcplite-legacy" id="toc-graphical-mcp-with-gmcplite-legacy" class="nav-link active" data-scroll-target="#graphical-mcp-with-gmcplite-legacy">Graphical MCP with gMCPLite (Legacy)</a>
+  <ul class="collapse">
+  <li><a href="#api-reference" id="toc-api-reference" class="nav-link" data-scroll-target="#api-reference">API reference</a></li>
+  <li><a href="#key-functions" id="toc-key-functions" class="nav-link" data-scroll-target="#key-functions">Key functions</a>
+  <ul class="collapse">
+  <li><a href="#graph-creation" id="toc-graph-creation" class="nav-link" data-scroll-target="#graph-creation">Graph creation</a></li>
+  <li><a href="#testing" id="toc-testing" class="nav-link" data-scroll-target="#testing">Testing</a></li>
+  <li><a href="#visualization" id="toc-visualization" class="nav-link" data-scroll-target="#visualization">Visualization</a></li>
+  <li><a href="#test-functions" id="toc-test-functions" class="nav-link" data-scroll-target="#test-functions">Test functions</a></li>
+  <li><a href="#utilities" id="toc-utilities" class="nav-link" data-scroll-target="#utilities">Utilities</a></li>
+  </ul></li>
+  <li><a href="#workflow-patterns" id="toc-workflow-patterns" class="nav-link" data-scroll-target="#workflow-patterns">Workflow patterns</a></li>
+  <li><a href="#important-design-considerations" id="toc-important-design-considerations" class="nav-link" data-scroll-target="#important-design-considerations">Important design considerations</a></li>
+  <li><a href="#code-patterns" id="toc-code-patterns" class="nav-link" data-scroll-target="#code-patterns">Code Patterns</a></li>
+  </ul></li>
+  <li><a href="#code-patterns-for-gmcplite" id="toc-code-patterns-for-gmcplite" class="nav-link" data-scroll-target="#code-patterns-for-gmcplite">Code Patterns for gMCPLite</a>
+  <ul class="collapse">
+  <li><a href="#table-of-contents" id="toc-table-of-contents" class="nav-link" data-scroll-target="#table-of-contents">Table of Contents</a></li>
+  <li><a href="#hgraph" id="toc-hgraph" class="nav-link" data-scroll-target="#hgraph">Creating multiplicity graphs with hGraph</a>
+  <ul class="collapse">
+  <li><a href="#basic-graph-equal-weights" id="toc-basic-graph-equal-weights" class="nav-link" data-scroll-target="#basic-graph-equal-weights">Basic graph (equal weights)</a></li>
+  <li><a href="#custom-hypotheses-and-weights" id="toc-custom-hypotheses-and-weights" class="nav-link" data-scroll-target="#custom-hypotheses-and-weights">Custom hypotheses and weights</a></li>
+  <li><a href="#using-weights-that-sum-to-1-instead-of-alpha" id="toc-using-weights-that-sum-to-1-instead-of-alpha" class="nav-link" data-scroll-target="#using-weights-that-sum-to-1-instead-of-alpha">Using weights that sum to 1 (instead of alpha)</a></li>
+  <li><a href="#two-hypothesis-graph" id="toc-two-hypothesis-graph" class="nav-link" data-scroll-target="#two-hypothesis-graph">Two-hypothesis graph</a></li>
+  </ul></li>
+  <li><a href="#hgraph-custom" id="toc-hgraph-custom" class="nav-link" data-scroll-target="#hgraph-custom">Customizing hGraph layout and appearance</a>
+  <ul class="collapse">
+  <li><a href="#custom-node-positions-x-y" id="toc-custom-node-positions-x-y" class="nav-link" data-scroll-target="#custom-node-positions-x-y">Custom node positions (x, y)</a></li>
+  <li><a href="#controlling-radianstart-circular-layout" id="toc-controlling-radianstart-circular-layout" class="nav-link" data-scroll-target="#controlling-radianstart-circular-layout">Controlling radianStart (circular layout)</a></li>
+  <li><a href="#ellipse-and-text-sizing" id="toc-ellipse-and-text-sizing" class="nav-link" data-scroll-target="#ellipse-and-text-sizing">Ellipse and text sizing</a></li>
+  <li><a href="#colors-and-legends" id="toc-colors-and-legends" class="nav-link" data-scroll-target="#colors-and-legends">Colors and legends</a></li>
+  <li><a href="#transition-line-placement" id="toc-transition-line-placement" class="nav-link" data-scroll-target="#transition-line-placement">Transition line placement</a></li>
+  </ul></li>
+  <li><a href="#graph-create" id="toc-graph-create" class="nav-link" data-scroll-target="#graph-create">Creating graphMCP objects</a>
+  <ul class="collapse">
+  <li><a href="#from-transition-matrix" id="toc-from-transition-matrix" class="nav-link" data-scroll-target="#from-transition-matrix">From transition matrix</a></li>
+  <li><a href="#accessing-graph-properties" id="toc-accessing-graph-properties" class="nav-link" data-scroll-target="#accessing-graph-properties">Accessing graph properties</a></li>
+  <li><a href="#converting-back-to-matrix" id="toc-converting-back-to-matrix" class="nav-link" data-scroll-target="#converting-back-to-matrix">Converting back to matrix</a></li>
+  </ul></li>
+  <li><a href="#gmcp-test" id="toc-gmcp-test" class="nav-link" data-scroll-target="#gmcp-test">Testing with gMCP</a>
+  <ul class="collapse">
+  <li><a href="#bonferroni-based-testing-default" id="toc-bonferroni-based-testing-default" class="nav-link" data-scroll-target="#bonferroni-based-testing-default">Bonferroni-based testing (default)</a></li>
+  <li><a href="#with-verbose-output" id="toc-with-verbose-output" class="nav-link" data-scroll-target="#with-verbose-output">With verbose output</a></li>
+  <li><a href="#testing-with-simes-test" id="toc-testing-with-simes-test" class="nav-link" data-scroll-target="#testing-with-simes-test">Testing with Simes test</a></li>
+  <li><a href="#testing-with-parametric-test-known-correlation" id="toc-testing-with-parametric-test-known-correlation" class="nav-link" data-scroll-target="#testing-with-parametric-test-known-correlation">Testing with parametric test (known correlation)</a></li>
+  <li><a href="#using-upscale" id="toc-using-upscale" class="nav-link" data-scroll-target="#using-upscale">Using upscale</a></li>
+  </ul></li>
+  <li><a href="#gmcp-extended" id="toc-gmcp-extended" class="nav-link" data-scroll-target="#gmcp-extended">Extended testing with gMCP.extended</a></li>
+  <li><a href="#generate-weights" id="toc-generate-weights" class="nav-link" data-scroll-target="#generate-weights">Generating intersection weights</a></li>
+  <li><a href="#reject-node" id="toc-reject-node" class="nav-link" data-scroll-target="#reject-node">Updating graphs (rejecting hypotheses)</a></li>
+  <li><a href="#sim-confint" id="toc-sim-confint" class="nav-link" data-scroll-target="#sim-confint">Simultaneous confidence intervals</a></li>
+  <li><a href="#example-graphs" id="toc-example-graphs" class="nav-link" data-scroll-target="#example-graphs">Example graphs</a></li>
+  <li><a href="#gsdesign-integration" id="toc-gsdesign-integration" class="nav-link" data-scroll-target="#gsdesign-integration">Integration with gsDesign (sequential p-values)</a>
+  <ul class="collapse">
+  <li><a href="#workflow-overview" id="toc-workflow-overview" class="nav-link" data-scroll-target="#workflow-overview">Workflow overview</a></li>
+  <li><a href="#computing-sequential-p-values" id="toc-computing-sequential-p-values" class="nav-link" data-scroll-target="#computing-sequential-p-values">Computing sequential p-values</a></li>
+  <li><a href="#full-testing-workflow" id="toc-full-testing-workflow" class="nav-link" data-scroll-target="#full-testing-workflow">Full testing workflow</a></li>
+  </ul></li>
+  <li><a href="#oncology-template" id="toc-oncology-template" class="nav-link" data-scroll-target="#oncology-template">Complex oncology trial template</a>
+  <ul class="collapse">
+  <li><a href="#define-the-multiplicity-graph" id="toc-define-the-multiplicity-graph" class="nav-link" data-scroll-target="#define-the-multiplicity-graph">Define the multiplicity graph</a></li>
+  <li><a href="#design-each-hypothesis" id="toc-design-each-hypothesis" class="nav-link" data-scroll-target="#design-each-hypothesis">Design each hypothesis</a></li>
+  <li><a href="#test-at-analysis-time" id="toc-test-at-analysis-time" class="nav-link" data-scroll-target="#test-at-analysis-time">Test at analysis time</a></li>
+  </ul></li>
+  <li><a href="#join-subgraph" id="toc-join-subgraph" class="nav-link" data-scroll-target="#join-subgraph">Combining and subsetting graphs</a>
+  <ul class="collapse">
+  <li><a href="#joining-two-graphs" id="toc-joining-two-graphs" class="nav-link" data-scroll-target="#joining-two-graphs">Joining two graphs</a></li>
+  <li><a href="#extracting-subgraph" id="toc-extracting-subgraph" class="nav-link" data-scroll-target="#extracting-subgraph">Extracting subgraph</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/gMCPLite.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/gsDesign.html">Individual Packages</a></li><li class="breadcrumb-item"><a href="../skills/gMCPLite.html">gMCPLite</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">gMCPLite</h1>
+<p class="subtitle lead">Graphical MCP (Legacy)</p>
+</div>
+
+<div>
+  <div class="description">
+    <p>Guide users through graphical MCP procedures using the gMCPLite R package (legacy). Use this skill when the user asks about: hGraph for multiplicity graph visualization, gMCP for closed testing, or legacy graphical MCP workflows. For new projects, prefer graphicalMCP.</p>
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="graphical-mcp-with-gmcplite-legacy" class="level1">
+<h1>Graphical MCP with gMCPLite (Legacy)</h1>
+<p>For new projects, prefer the <code>graphicalMCP</code> package which has a cleaner API.</p>
+<section id="api-reference" class="level2">
+<h2 class="anchored" data-anchor-id="api-reference">API reference</h2>
+<ul>
+<li>Full function docs: <code>references/llms.txt</code> (built from local man pages)</li>
+<li>Workflow patterns: <code>references/code_patterns.md</code></li>
+</ul>
+</section>
+<section id="key-functions" class="level2">
+<h2 class="anchored" data-anchor-id="key-functions">Key functions</h2>
+<section id="graph-creation" class="level3">
+<h3 class="anchored" data-anchor-id="graph-creation">Graph creation</h3>
+<ul>
+<li><code>matrix2graph()</code> - Create graphMCP object from transition matrix</li>
+<li><code>graphMCP</code> class - Core graph representation (hypotheses, weights, transitions)</li>
+<li><code>joinGraphs()</code> - Combine multiple graphs</li>
+<li><code>subgraph()</code> - Extract subgraph</li>
+</ul>
+</section>
+<section id="testing" class="level3">
+<h3 class="anchored" data-anchor-id="testing">Testing</h3>
+<ul>
+<li><code>gMCP()</code> - Graphical MCP testing procedure</li>
+<li><code>gMCP.extended()</code> - Extended testing with parametric tests</li>
+<li><code>graphTest()</code> - Test hypotheses on a graph</li>
+</ul>
+</section>
+<section id="visualization" class="level3">
+<h3 class="anchored" data-anchor-id="visualization">Visualization</h3>
+<ul>
+<li><code>hGraph()</code> - Create multiplicity graph visualization (ggplot2-based)</li>
+<li><code>placeNodes()</code> - Compute node positions for graph layout</li>
+</ul>
+</section>
+<section id="test-functions" class="level3">
+<h3 class="anchored" data-anchor-id="test-functions">Test functions</h3>
+<ul>
+<li><code>bonferroni.test()</code> - Bonferroni test</li>
+<li><code>bonferroni.trimmed.simes.test()</code> - Bonferroni-trimmed Simes test</li>
+<li><code>parametric.test()</code> - Parametric test using correlation</li>
+<li><code>simes.test()</code> - Simes test</li>
+<li><code>simes.on.subsets.test()</code> - Simes test on subsets</li>
+</ul>
+</section>
+<section id="utilities" class="level3">
+<h3 class="anchored" data-anchor-id="utilities">Utilities</h3>
+<ul>
+<li><code>generateWeights()</code> - Generate weights for intersection hypotheses</li>
+<li><code>generatePvals()</code> - Generate p-values for simulation</li>
+<li><code>simConfint()</code> - Simultaneous confidence intervals</li>
+<li><code>rejectNode()</code> - Reject a hypothesis and update graph</li>
+<li><code>exampleGraphs()</code> - Pre-built example graphs</li>
+<li><code>checkCorrelation()</code> - Validate correlation matrix</li>
+</ul>
+</section>
+</section>
+<section id="workflow-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="workflow-patterns">Workflow patterns</h2>
+<p>For detailed code templates, read <code>references/code_patterns.md</code>.</p>
+<p>Topics covered: - Creating multiplicity graphs with <code>hGraph()</code> (basic and custom) - Customizing hGraph layout (positions, colors, legends, sizing, radianStart) - Creating graphMCP objects with <code>matrix2graph()</code> - Bonferroni, Simes, and parametric testing with <code>gMCP()</code> - Extended testing with <code>gMCP.extended()</code> and custom test functions - Generating intersection weights with <code>generateWeights()</code> - Updating graphs after rejection with <code>rejectNode()</code> - Simultaneous confidence intervals with <code>simConfint()</code> - Built-in example graphs (BonferroniHolm, fixedSequence, fallback, etc.) - Integration with gsDesign sequential p-values (<code>sequentialPValue()</code>) - Complex oncology trial template (6 hypotheses: OS/PFS/ORR x Subgroup/All) - Combining and subsetting graphs (<code>joinGraphs()</code>, <code>subgraph()</code>)</p>
+</section>
+<section id="important-design-considerations" class="level2">
+<h2 class="anchored" data-anchor-id="important-design-considerations">Important design considerations</h2>
+<ul>
+<li><strong>For new projects, prefer <code>graphicalMCP</code></strong>: It has a cleaner S3 API (<code>graph_create</code>, <code>graph_test_shortcut</code>, <code>graph_test_closure</code>) and is actively maintained</li>
+<li><strong><code>hGraph()</code> remains widely used</strong>: Even with graphicalMCP for testing, <code>hGraph()</code> from gMCPLite is commonly used for visualization in publications and presentations</li>
+<li><strong>Sequential p-values workflow</strong>: Use <code>gsDesign::sequentialPValue()</code> to convert nominal p-values from group sequential analyses into sequential p-values, then pass to <code>gMCP()</code> for multiplicity control</li>
+<li><strong><code>upscale = TRUE</code></strong>: Required for parametric tests (Bretz et al.&nbsp;2011) to rescale subgraph weights to sum to 1</li>
+<li><strong><code>correlation</code> with NA</strong>: gMCPLite supports partially specified correlation matrices (NA for unknown entries)</li>
+<li><strong>Time travel for alpha</strong>: When a hypothesis is rejected at a later analysis, previously tested hypotheses can be re-tested at updated alpha levels — this controls Type I error but requires careful bound re-derivation</li>
+<li><strong><code>gMCP()</code> returns <code>gMCPResult</code></strong>: Access <code>@rejected</code> (logical), <code>@adjPValues</code> (adjusted p-values), and <code>@graphs</code> (sequence of updated graphs)</li>
+</ul>
+</section>
+<section id="code-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="code-patterns">Code Patterns</h2>
+</section>
+</section>
+<section id="code-patterns-for-gmcplite" class="level1">
+<h1>Code Patterns for gMCPLite</h1>
+<p><strong>Note</strong>: For new projects, prefer <code>graphicalMCP</code> which has a cleaner API. gMCPLite is the legacy package and remains useful for <code>hGraph()</code> visualization and integration with existing gsDesign workflows.</p>
+<section id="table-of-contents" class="level2">
+<h2 class="anchored" data-anchor-id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#hgraph">Creating multiplicity graphs with hGraph</a></li>
+<li><a href="#hgraph-custom">Customizing hGraph layout and appearance</a></li>
+<li><a href="#graph-create">Creating graphMCP objects</a></li>
+<li><a href="#gmcp-test">Testing with gMCP</a></li>
+<li><a href="#gmcp-extended">Extended testing with gMCP.extended</a></li>
+<li><a href="#generate-weights">Generating intersection weights</a></li>
+<li><a href="#reject-node">Updating graphs (rejecting hypotheses)</a></li>
+<li><a href="#sim-confint">Simultaneous confidence intervals</a></li>
+<li><a href="#example-graphs">Example graphs</a></li>
+<li><a href="#gsdesign-integration">Integration with gsDesign (sequential p-values)</a></li>
+<li><a href="#oncology-template">Complex oncology trial template</a></li>
+<li><a href="#join-subgraph">Combining and subsetting graphs</a></li>
+</ol>
+<hr>
+</section>
+<section id="hgraph" class="level2">
+<h2 class="anchored" data-anchor-id="hgraph">Creating multiplicity graphs with hGraph</h2>
+<p><code>hGraph()</code> creates ggplot2-based multiplicity graph visualizations. This is the primary function most users need from gMCPLite.</p>
+<section id="basic-graph-equal-weights" class="level3">
+<h3 class="anchored" data-anchor-id="basic-graph-equal-weights">Basic graph (equal weights)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gMCPLite)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Default: 4 hypotheses, equal alpha split, equal transitions</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">hGraph</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="custom-hypotheses-and-weights" class="level3">
+<h3 class="anchored" data-anchor-id="custom-hypotheses-and-weights">Custom hypotheses and weights</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hGraph</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">nHypotheses =</span> <span class="dv">3</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">nameHypotheses =</span> <span class="fu">c</span>(<span class="st">"H1: OS"</span>, <span class="st">"H2: PFS"</span>, <span class="st">"H3: ORR"</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">alphaHypotheses =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.01</span>, <span class="fl">0.005</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">m =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="dv">0</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  ), <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="using-weights-that-sum-to-1-instead-of-alpha" class="level3">
+<h3 class="anchored" data-anchor-id="using-weights-that-sum-to-1-instead-of-alpha">Using weights that sum to 1 (instead of alpha)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hGraph</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">nHypotheses =</span> <span class="dv">3</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">nameHypotheses =</span> <span class="fu">c</span>(<span class="st">"H1"</span>, <span class="st">"H2"</span>, <span class="st">"H3"</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">alphaHypotheses =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.3</span>, <span class="fl">0.2</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">wchar =</span> <span class="st">"w"</span>   <span class="co"># Display as w1, w2, w3 instead of alpha</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="two-hypothesis-graph" class="level3">
+<h3 class="anchored" data-anchor-id="two-hypothesis-graph">Two-hypothesis graph</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hGraph</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">nHypotheses =</span> <span class="dv">2</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">nameHypotheses =</span> <span class="fu">c</span>(<span class="st">"H1: Primary"</span>, <span class="st">"H2: Secondary"</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">alphaHypotheses =</span> <span class="fu">c</span>(<span class="fl">0.02</span>, <span class="fl">0.005</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">m =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="hgraph-custom" class="level2">
+<h2 class="anchored" data-anchor-id="hgraph-custom">Customizing hGraph layout and appearance</h2>
+<section id="custom-node-positions-x-y" class="level3">
+<h3 class="anchored" data-anchor-id="custom-node-positions-x-y">Custom node positions (x, y)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 6-hypothesis oncology trial layout (3 rows x 2 columns)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hGraph</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">nHypotheses =</span> <span class="dv">6</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">nameHypotheses =</span> <span class="fu">c</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"H1: OS</span><span class="sc">\n</span><span class="st">Subgroup"</span>, <span class="st">"H2: OS</span><span class="sc">\n</span><span class="st">All"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"H3: PFS</span><span class="sc">\n</span><span class="st">Subgroup"</span>, <span class="st">"H4: PFS</span><span class="sc">\n</span><span class="st">All"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"H5: ORR</span><span class="sc">\n</span><span class="st">Subgroup"</span>, <span class="st">"H6: ORR</span><span class="sc">\n</span><span class="st">All"</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">alphaHypotheses =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.01</span>, <span class="fl">0.004</span>, <span class="dv">0</span>, <span class="fl">0.0005</span>, <span class="fl">0.0005</span>),</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">m =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">0</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="dv">0</span>,   <span class="dv">0</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">0</span>,   <span class="dv">0</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="fl">0.5</span>, <span class="fl">0.5</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">1</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="dv">0</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  ), <span class="at">nrow =</span> <span class="dv">6</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.25</span>, <span class="fl">1.25</span>, <span class="sc">-</span><span class="fl">2.5</span>, <span class="fl">2.5</span>, <span class="sc">-</span><span class="fl">1.25</span>, <span class="fl">1.25</span>),</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>),</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">halfWid =</span> <span class="dv">1</span>,</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">halfHgt =</span> <span class="fl">0.35</span>,</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">trhw =</span> <span class="fl">0.15</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">trprop =</span> <span class="fl">0.4</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">offset =</span> <span class="dv">0</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="controlling-radianstart-circular-layout" class="level3">
+<h3 class="anchored" data-anchor-id="controlling-radianstart-circular-layout">Controlling radianStart (circular layout)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Place first hypothesis at top center</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hGraph</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">nHypotheses =</span> <span class="dv">3</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">radianStart =</span> pi <span class="sc">/</span> <span class="dv">2</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">offset =</span> pi <span class="sc">/</span> <span class="dv">20</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Default formula: pi * (1/2 + 1/n) for odd n, pi * (1 + 2/n)/2 for even n</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="ellipse-and-text-sizing" class="level3">
+<h3 class="anchored" data-anchor-id="ellipse-and-text-sizing">Ellipse and text sizing</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hGraph</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">nHypotheses =</span> <span class="dv">4</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> <span class="dv">5</span>,           <span class="co"># Hypothesis text size (default 6)</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">boxtextsize =</span> <span class="dv">3</span>,    <span class="co"># Transition weight text size (default 4)</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">halfWid =</span> <span class="dv">1</span>,        <span class="co"># Ellipse half-width (default 0.5)</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">halfHgt =</span> <span class="fl">0.35</span>,     <span class="co"># Ellipse half-height (default 0.5)</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">trhw =</span> <span class="fl">0.15</span>,        <span class="co"># Transition box half-width (default 0.1)</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">trhh =</span> <span class="fl">0.1</span>,         <span class="co"># Transition box half-height (default 0.075)</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">4</span>,         <span class="co"># Digits for alpha display (default 5)</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">trdigits =</span> <span class="dv">3</span>,       <span class="co"># Digits for transition weights (default 2)</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">arrowsize =</span> <span class="fl">0.03</span>,   <span class="co"># Arrow head size (default 0.02)</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">xradius =</span> <span class="fl">2.5</span>,      <span class="co"># X-radius of circular layout (default 2)</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">yradius =</span> <span class="fl">1.5</span>       <span class="co"># Y-radius of circular layout (default = xradius)</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="colors-and-legends" class="level3">
+<h3 class="anchored" data-anchor-id="colors-and-legends">Colors and legends</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Color by endpoint group</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>cbPalette <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#999999"</span>, <span class="st">"#E69F00"</span>, <span class="st">"#56B4E9"</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">hGraph</span>(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">nHypotheses =</span> <span class="dv">6</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">nameHypotheses =</span> <span class="fu">c</span>(<span class="st">"H1: OS Sub"</span>, <span class="st">"H2: OS All"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"H3: PFS Sub"</span>, <span class="st">"H4: PFS All"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"H5: ORR Sub"</span>, <span class="st">"H6: ORR All"</span>),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">alphaHypotheses =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.01</span>, <span class="fl">0.004</span>, <span class="dv">0</span>, <span class="fl">0.0005</span>, <span class="fl">0.0005</span>),</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">fill =</span> <span class="fu">as.character</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">3</span>)),   <span class="co"># Group by endpoint</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">palette =</span> cbPalette,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"OS"</span>, <span class="st">"PFS"</span>, <span class="st">"ORR"</span>),              <span class="co"># Legend labels</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">legend.name =</span> <span class="st">"Endpoint"</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">legend.position =</span> <span class="st">"right"</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="transition-line-placement" class="level3">
+<h3 class="anchored" data-anchor-id="transition-line-placement">Transition line placement</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hGraph</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">nHypotheses =</span> <span class="dv">4</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">trprop =</span> <span class="fl">0.15</span>,   <span class="co"># Slide boxes closer to source (default 1/3)</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">offset =</span> <span class="dv">0</span>       <span class="co"># No offset for single-direction transitions</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="graph-create" class="level2">
+<h2 class="anchored" data-anchor-id="graph-create">Creating graphMCP objects</h2>
+<p><code>graphMCP</code> objects are needed for <code>gMCP()</code> testing. Create from a transition matrix with <code>matrix2graph()</code>.</p>
+<section id="from-transition-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="from-transition-matrix">From transition matrix</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="dv">0</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>), <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.3</span>, <span class="fl">0.2</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>graph <span class="ot">&lt;-</span> <span class="fu">matrix2graph</span>(m, <span class="at">weights =</span> w)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>graph</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="accessing-graph-properties" class="level3">
+<h3 class="anchored" data-anchor-id="accessing-graph-properties">Accessing graph properties</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>graph<span class="sc">@</span>m         <span class="co"># Transition matrix</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>graph<span class="sc">@</span>weights   <span class="co"># Hypothesis weights</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Or use accessor methods</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">getMatrix</span>(graph)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">getWeights</span>(graph)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="converting-back-to-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="converting-back-to-matrix">Converting back to matrix</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>m_back <span class="ot">&lt;-</span> <span class="fu">graph2matrix</span>(graph)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="gmcp-test" class="level2">
+<h2 class="anchored" data-anchor-id="gmcp-test">Testing with gMCP</h2>
+<p><code>gMCP()</code> performs the Maurer-Bretz graphical testing procedure.</p>
+<section id="bonferroni-based-testing-default" class="level3">
+<h3 class="anchored" data-anchor-id="bonferroni-based-testing-default">Bonferroni-based testing (default)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.5</span>, <span class="dv">0</span>, <span class="fl">0.5</span>,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="dv">0</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>), <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>graph <span class="ot">&lt;-</span> <span class="fu">matrix2graph</span>(m, <span class="at">weights =</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>))</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>pvalues <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.007</span>, <span class="fl">0.1</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">gMCP</span>(graph, <span class="at">pvalues =</span> pvalues, <span class="at">alpha =</span> <span class="fl">0.025</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>result</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Access results</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>result<span class="sc">@</span>rejected       <span class="co"># Logical vector of rejections</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>result<span class="sc">@</span>adjPValues     <span class="co"># Adjusted p-values</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>result<span class="sc">@</span>graphs         <span class="co"># Sequence of updated graphs</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="with-verbose-output" class="level3">
+<h3 class="anchored" data-anchor-id="with-verbose-output">With verbose output</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">gMCP</span>(graph, <span class="at">pvalues =</span> pvalues, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Shows step-by-step rejection sequence</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="testing-with-simes-test" class="level3">
+<h3 class="anchored" data-anchor-id="testing-with-simes-test">Testing with Simes test</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">gMCP</span>(graph, <span class="at">pvalues =</span> pvalues, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">test =</span> <span class="st">"Simes"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="testing-with-parametric-test-known-correlation" class="level3">
+<h3 class="anchored" data-anchor-id="testing-with-parametric-test-known-correlation">Testing with parametric test (known correlation)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>corr <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.5</span>, <span class="fl">0.3</span>,</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                 <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="fl">0.4</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                 <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">3</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">gMCP</span>(graph, <span class="at">pvalues =</span> pvalues, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">test =</span> <span class="st">"parametric"</span>, <span class="at">correlation =</span> corr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="using-upscale" class="level3">
+<h3 class="anchored" data-anchor-id="using-upscale">Using upscale</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># upscale = TRUE: rescale weights in subgraphs to sum to 1</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Required for parametric tests (Bretz et al. 2011)</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">gMCP</span>(graph, <span class="at">pvalues =</span> pvalues, <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">test =</span> <span class="st">"parametric"</span>, <span class="at">correlation =</span> corr, <span class="at">upscale =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="gmcp-extended" class="level2">
+<h2 class="anchored" data-anchor-id="gmcp-extended">Extended testing with gMCP.extended</h2>
+<p><code>gMCP.extended()</code> allows specifying custom test functions.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using Simes test</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">gMCP.extended</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  graph,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">pvalues =</span> pvalues,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">test =</span> simes.test,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>result<span class="sc">@</span>rejected</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Using parametric test with correlation</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">gMCP.extended</span>(</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  graph,</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">pvalues =</span> pvalues,</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">test =</span> parametric.test,</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">correlation =</span> corr</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Using bonferroni.trimmed.simes.test</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">gMCP.extended</span>(</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>  graph,</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">pvalues =</span> pvalues,</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">test =</span> bonferroni.trimmed.simes.test,</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="generate-weights" class="level2">
+<h2 class="anchored" data-anchor-id="generate-weights">Generating intersection weights</h2>
+<p><code>generateWeights()</code> computes the weighting strategy for all 2^m - 1 intersection hypotheses.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.5</span>, <span class="dv">0</span>, <span class="fl">0.5</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="dv">0</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>), <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>weights <span class="ot">&lt;-</span> <span class="fu">generateWeights</span>(m, w)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>weights</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrix: first m columns = membership (1/0), last m columns = allocated weights</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Row per intersection hypothesis (2^m - 1 = 7 rows for 3 hypotheses)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="reject-node" class="level2">
+<h2 class="anchored" data-anchor-id="reject-node">Updating graphs (rejecting hypotheses)</h2>
+<p><code>rejectNode()</code> updates a graph after rejecting a specific hypothesis, reallocating its alpha according to transition weights.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>graph <span class="ot">&lt;-</span> <span class="fu">matrix2graph</span>(m, <span class="at">weights =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.3</span>, <span class="fl">0.2</span>))</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Reject H1</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>updated <span class="ot">&lt;-</span> <span class="fu">rejectNode</span>(graph, <span class="st">"H1"</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">getWeights</span>(updated)  <span class="co"># H1 weight redistributed to H2, H3</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Reject H1 then H2</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>updated2 <span class="ot">&lt;-</span> <span class="fu">rejectNode</span>(updated, <span class="st">"H2"</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="fu">getWeights</span>(updated2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="sim-confint" class="level2">
+<h2 class="anchored" data-anchor-id="sim-confint">Simultaneous confidence intervals</h2>
+<p><code>simConfint()</code> computes simultaneous confidence intervals consistent with the graphical testing procedure.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>graph <span class="ot">&lt;-</span> <span class="fu">matrix2graph</span>(m, <span class="at">weights =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.3</span>, <span class="fl">0.2</span>))</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>pvalues <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.02</span>, <span class="fl">0.05</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal-based simultaneous CIs</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>ci <span class="ot">&lt;-</span> <span class="fu">simConfint</span>(</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">object =</span> graph,</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">pvalues =</span> pvalues,</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">confint =</span> <span class="st">"normal"</span>,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">alternative =</span> <span class="st">"greater"</span>,</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimates =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.3</span>, <span class="fl">0.1</span>),   <span class="co"># Point estimates</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>ci  <span class="co"># Matrix: lower bound, estimate, upper bound</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="co"># t-based CIs (specify degrees of freedom)</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>ci_t <span class="ot">&lt;-</span> <span class="fu">simConfint</span>(</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">object =</span> graph,</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">pvalues =</span> pvalues,</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">confint =</span> <span class="st">"t"</span>,</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">alternative =</span> <span class="st">"greater"</span>,</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimates =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.3</span>, <span class="fl">0.1</span>),</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">df =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">100</span>, <span class="dv">100</span>),</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="example-graphs" class="level2">
+<h2 class="anchored" data-anchor-id="example-graphs">Example graphs</h2>
+<p>gMCPLite provides many pre-built example graphs as <code>graphMCP</code> objects.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bonferroni-Holm</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">BonferroniHolm</span>(<span class="dv">3</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed sequence</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">fixedSequence</span>(<span class="dv">3</span>)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Fallback</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">fallback</span>(<span class="at">weights =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.3</span>, <span class="fl">0.2</span>))</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Bretz et al. 2011 (two primary + two secondary)</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">BretzEtAl2011</span>()</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Cycle graph</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">cycleGraph</span>(<span class="at">nodes =</span> <span class="fu">c</span>(<span class="st">"H1"</span>, <span class="st">"H2"</span>, <span class="st">"H3"</span>), <span class="at">weights =</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>))</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Parallel gatekeeping</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">parallelGatekeeping</span>()</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">improvedParallelGatekeeping</span>()</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Truncated Holm</span></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">truncatedHolm</span>(<span class="at">gamma =</span> <span class="fl">0.5</span>)</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Other examples</span></span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">BauerEtAl2001</span>()</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">HommelEtAl2007</span>()</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">MaurerEtAl1995</span>()</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">HungEtWang2010</span>()</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">improvedFallbackI</span>()</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">improvedFallbackII</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="gsdesign-integration" class="level2">
+<h2 class="anchored" data-anchor-id="gsdesign-integration">Integration with gsDesign (sequential p-values)</h2>
+<p>The main use case for gMCPLite with group sequential designs: compute sequential p-values from gsDesign, then test with gMCP.</p>
+<section id="workflow-overview" class="level3">
+<h3 class="anchored" data-anchor-id="workflow-overview">Workflow overview</h3>
+<ol type="1">
+<li>Design each hypothesis with <code>gsDesign::gsSurv()</code> at its allocated alpha</li>
+<li>At analysis, compute nominal p-values for each hypothesis</li>
+<li>Compute sequential p-values using <code>gsDesign::sequentialPValue()</code></li>
+<li>Pass sequential p-values to <code>gMCP()</code> for multiplicity testing</li>
+<li>If hypotheses are rejected, update alpha and re-test with updated bounds</li>
+</ol>
+</section>
+<section id="computing-sequential-p-values" class="level3">
+<h3 class="anchored" data-anchor-id="computing-sequential-p-values">Computing sequential p-values</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gsDesign)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gMCPLite)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Design for a hypothesis (e.g., OS in subgroup)</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">gsSurv</span>(</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">3</span>, <span class="at">test.type =</span> <span class="dv">1</span>, <span class="at">alpha =</span> <span class="fl">0.01</span>, <span class="at">beta =</span> <span class="fl">0.1</span>,</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fl">0.65</span>, <span class="at">timing =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.8</span>),</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">sfu =</span> sfLDOF,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambdaC =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="dv">12</span>,</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">eta =</span> <span class="fl">0.001</span>,</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">gamma =</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="dv">5</span>, <span class="fl">7.5</span>, <span class="dv">10</span>),</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">R =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">12</span>),</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">T =</span> <span class="dv">42</span>, <span class="at">minfup =</span> <span class="dv">24</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co"># At analysis: observed events and nominal p-values</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="co"># (from logrank test or similar)</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>observed_events <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">150</span>, <span class="dv">200</span>, <span class="dv">260</span>)</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>nominal_p <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.015</span>, <span class="fl">0.005</span>, <span class="fl">0.001</span>)</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute sequential p-value at analysis k</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Sequential p-value = minimum alpha at which the boundary would be crossed</span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>seq_p <span class="ot">&lt;-</span> <span class="fu">sequentialPValue</span>(</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">gsD =</span> design,</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">n.I =</span> observed_events,</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">Z =</span> <span class="sc">-</span><span class="fu">qnorm</span>(nominal_p),</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">usTime =</span> observed_events <span class="sc">/</span> <span class="fu">max</span>(design<span class="sc">$</span>n.I)  <span class="co"># Spending time</span></span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="full-testing-workflow" class="level3">
+<h3 class="anchored" data-anchor-id="full-testing-workflow">Full testing workflow</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Multiplicity graph</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">1</span>,</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>, <span class="dv">0</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>graph <span class="ot">&lt;-</span> <span class="fu">matrix2graph</span>(m, <span class="at">weights =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>))</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Sequential p-values for each hypothesis</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>seq_p <span class="ot">&lt;-</span> <span class="fu">c</span>(seq_p_H1, seq_p_H2)  <span class="co"># From sequentialPValue() calls</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Test with gMCP</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">gMCP</span>(graph, <span class="at">pvalues =</span> seq_p, <span class="at">alpha =</span> <span class="fl">0.025</span>)</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>result<span class="sc">@</span>rejected</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a><span class="co"># If H1 rejected, update design for H2 with increased alpha</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (result<span class="sc">@</span>rejected[<span class="dv">1</span>]) {</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># H2 now tested at full alpha (0.025)</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Re-derive bounds for H2 at alpha = 0.025</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>  design_H2_updated <span class="ot">&lt;-</span> <span class="fu">gsDesign</span>(</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">k =</span> <span class="fu">length</span>(observed_events_H2),</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">test.type =</span> <span class="dv">1</span>,</span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">sfu =</span> sfLDOF,</span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">n.I =</span> observed_events_H2,</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">maxn.IPlan =</span> <span class="fu">max</span>(design_H2<span class="sc">$</span>n.I)</span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="oncology-template" class="level2">
+<h2 class="anchored" data-anchor-id="oncology-template">Complex oncology trial template</h2>
+<p>Full template for a multi-endpoint, multi-population oncology trial (6 hypotheses: OS/PFS/ORR x Subgroup/All).</p>
+<section id="define-the-multiplicity-graph" class="level3">
+<h3 class="anchored" data-anchor-id="define-the-multiplicity-graph">Define the multiplicity graph</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gsDesign)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gMCPLite)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>nameHypotheses <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H1: OS</span><span class="sc">\n</span><span class="st">Subgroup"</span>, <span class="st">"H2: OS</span><span class="sc">\n</span><span class="st">All"</span>,</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H3: PFS</span><span class="sc">\n</span><span class="st">Subgroup"</span>, <span class="st">"H4: PFS</span><span class="sc">\n</span><span class="st">All"</span>,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H5: ORR</span><span class="sc">\n</span><span class="st">Subgroup"</span>, <span class="st">"H6: ORR</span><span class="sc">\n</span><span class="st">All"</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>alphaHypotheses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.01</span>, <span class="fl">0.004</span>, <span class="dv">0</span>, <span class="fl">0.0005</span>, <span class="fl">0.0005</span>)</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">0</span>,</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="dv">0</span>,   <span class="dv">0</span>,</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">0</span>,   <span class="dv">0</span>,</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="fl">0.5</span>, <span class="fl">0.5</span>,</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">1</span>,</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="dv">0</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>), <span class="at">nrow =</span> <span class="dv">6</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>cbPalette <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#999999"</span>, <span class="st">"#E69F00"</span>, <span class="st">"#56B4E9"</span>)</span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">hGraph</span>(<span class="dv">6</span>,</span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">alphaHypotheses =</span> alphaHypotheses, <span class="at">m =</span> m,</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">nameHypotheses =</span> nameHypotheses,</span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">palette =</span> cbPalette,</span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">halfWid =</span> <span class="dv">1</span>, <span class="at">halfHgt =</span> <span class="fl">0.35</span>, <span class="at">xradius =</span> <span class="fl">2.5</span>, <span class="at">yradius =</span> <span class="dv">1</span>,</span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">offset =</span> <span class="dv">0</span>, <span class="at">trhw =</span> <span class="fl">0.15</span>,</span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.25</span>, <span class="fl">1.25</span>, <span class="sc">-</span><span class="fl">2.5</span>, <span class="fl">2.5</span>, <span class="sc">-</span><span class="fl">1.25</span>, <span class="fl">1.25</span>),</span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>),</span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">trprop =</span> <span class="fl">0.4</span>,</span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">fill =</span> <span class="fu">as.character</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">3</span>))</span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(g)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="design-each-hypothesis" class="level3">
+<h3 class="anchored" data-anchor-id="design-each-hypothesis">Design each hypothesis</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># OS Subgroup (H1): 3-analysis GSD</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>ossub <span class="ot">&lt;-</span> <span class="fu">gsSurv</span>(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">3</span>, <span class="at">test.type =</span> <span class="dv">1</span>, <span class="at">alpha =</span> alphaHypotheses[<span class="dv">1</span>], <span class="at">beta =</span> <span class="fl">0.1</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fl">0.65</span>, <span class="at">timing =</span> <span class="fu">c</span>(<span class="fl">0.61</span>, <span class="fl">0.82</span>), <span class="at">sfu =</span> sfLDOF,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambdaC =</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span><span class="dv">12</span>, <span class="at">eta =</span> <span class="fl">0.001</span>,</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">gamma =</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="dv">5</span>, <span class="fl">7.5</span>, <span class="dv">10</span>), <span class="at">R =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">12</span>),</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">T =</span> <span class="dv">42</span>, <span class="at">minfup =</span> <span class="dv">24</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="co"># PFS Subgroup (H3): 2-analysis GSD with futility</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>pfssub <span class="ot">&lt;-</span> <span class="fu">gsSurv</span>(</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">2</span>, <span class="at">test.type =</span> <span class="dv">4</span>, <span class="at">alpha =</span> alphaHypotheses[<span class="dv">3</span>], <span class="at">beta =</span> <span class="fl">0.1</span>,</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fl">0.65</span>, <span class="at">timing =</span> <span class="fl">0.7</span>, <span class="at">sfu =</span> sfLDOF, <span class="at">sfl =</span> sfHSD, <span class="at">sflpar =</span> <span class="sc">-</span><span class="dv">2</span>,</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambdaC =</span> <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span><span class="dv">5</span>, <span class="at">eta =</span> <span class="fl">0.001</span>,</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">gamma =</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="dv">5</span>, <span class="fl">7.5</span>, <span class="dv">10</span>), <span class="at">R =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">12</span>),</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">T =</span> <span class="dv">32</span>, <span class="at">minfup =</span> <span class="dv">14</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a><span class="co"># ORR Subgroup (H5): single analysis (fixed design)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="test-at-analysis-time" class="level3">
+<h3 class="anchored" data-anchor-id="test-at-analysis-time">Test at analysis time</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sequential p-values for each hypothesis</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># (computed from nominal p-values and gsDesign objects)</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>graph_mcp <span class="ot">&lt;-</span> <span class="fu">matrix2graph</span>(m, <span class="at">weights =</span> alphaHypotheses <span class="sc">/</span> <span class="fu">sum</span>(alphaHypotheses))</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Test</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">gMCP</span>(graph_mcp, <span class="at">pvalues =</span> seq_p_all, <span class="at">alpha =</span> <span class="fu">sum</span>(alphaHypotheses))</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>result<span class="sc">@</span>rejected</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize result sequence</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(result<span class="sc">@</span>graphs)) {</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  g_i <span class="ot">&lt;-</span> result<span class="sc">@</span>graphs[[i]]</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">hGraph</span>(</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">nHypotheses =</span> <span class="dv">6</span>,</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">alphaHypotheses =</span> <span class="fu">getWeights</span>(g_i) <span class="sc">*</span> <span class="fu">sum</span>(alphaHypotheses),</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">m =</span> <span class="fu">getMatrix</span>(g_i),</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">nameHypotheses =</span> nameHypotheses</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="join-subgraph" class="level2">
+<h2 class="anchored" data-anchor-id="join-subgraph">Combining and subsetting graphs</h2>
+<section id="joining-two-graphs" class="level3">
+<h3 class="anchored" data-anchor-id="joining-two-graphs">Joining two graphs</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>g1 <span class="ot">&lt;-</span> <span class="fu">BonferroniHolm</span>(<span class="dv">2</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">fixedSequence</span>(<span class="dv">2</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine (weights rescaled if needed)</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>combined <span class="ot">&lt;-</span> <span class="fu">joinGraphs</span>(g1, g2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="extracting-subgraph" class="level3">
+<h3 class="anchored" data-anchor-id="extracting-subgraph">Extracting subgraph</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">BonferroniHolm</span>(<span class="dv">4</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Keep only H1 and H3</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>sub <span class="ot">&lt;-</span> <span class="fu">subgraph</span>(g, <span class="fu">c</span>(<span class="st">"H1"</span>, <span class="st">"H3"</span>))</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="fu">getWeights</span>(sub)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="fu">getMatrix</span>(sub)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/gMCPLite.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

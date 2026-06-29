@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Guide users through group sequential design with graphical multiplicity control using the graphicalMCP and gsDesign2 R packages. Use this skill whenever the user asks about: group sequential designs with multiple hypotheses, graphical multiplicity testing, sequential p-values with gsDesign2, combining graphicalMCP with gsDesign2, clinical trial designs with multiple endpoints and populations, Maurer-Bretz procedures, alpha-spending with multiplicity graphs, or adapting the gMCPLite vignette template. Also trigger when users mention spending time, information fraction, or sequential p-values in the context of group sequential or graphical testing.">
+
+<title>graphicalMCP-gsDesign2 – gsDesignSkills</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-2e5cbef59756d87313a778b4017e2694.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">gsDesignSkills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../skills/index.html"> 
+<span class="menu-text">Skills</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../ai-skills-gsd.html"> 
+<span class="menu-text">Presentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../multi-endpoint-sim.html"> 
+<span class="menu-text">Simulation Example</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../news.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/keaven/gsDesignSkills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/graphicalMCP-gsDesign2.html">Cross-Package</a></li><li class="breadcrumb-item"><a href="../skills/graphicalMCP-gsDesign2.html">graphicalMCP-gsDesign2</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Skills Catalog</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Individual Packages</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/rpact.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rpact</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/simtrial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">simtrial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/wpgsd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">wpgsd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesignNB.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesignNB</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gMCPLite.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gMCPLite</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-Package</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP-gsDesign2.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">graphicalMCP-gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/illness-death.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">illness-death</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/multi-endpoint-sim.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">multi-endpoint-sim</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#group-sequential-design-with-graphicalmcp-gsdesign2" id="toc-group-sequential-design-with-graphicalmcp-gsdesign2" class="nav-link active" data-scroll-target="#group-sequential-design-with-graphicalmcp-gsdesign2">Group Sequential Design with graphicalMCP + gsDesign2</a>
+  <ul class="collapse">
+  <li><a href="#when-to-use-this-skill" id="toc-when-to-use-this-skill" class="nav-link" data-scroll-target="#when-to-use-this-skill">When to use this skill</a></li>
+  <li><a href="#required-packages" id="toc-required-packages" class="nav-link" data-scroll-target="#required-packages">Required packages</a></li>
+  <li><a href="#workflow-overview" id="toc-workflow-overview" class="nav-link" data-scroll-target="#workflow-overview">Workflow overview</a>
+  <ul class="collapse">
+  <li><a href="#phase-1-design-specification" id="toc-phase-1-design-specification" class="nav-link" data-scroll-target="#phase-1-design-specification">Phase 1: Design specification</a></li>
+  <li><a href="#phase-2-results-entry" id="toc-phase-2-results-entry" class="nav-link" data-scroll-target="#phase-2-results-entry">Phase 2: Results entry</a></li>
+  <li><a href="#phase-3-hypothesis-testing" id="toc-phase-3-hypothesis-testing" class="nav-link" data-scroll-target="#phase-3-hypothesis-testing">Phase 3: Hypothesis testing</a></li>
+  <li><a href="#phase-4-verification" id="toc-phase-4-verification" class="nav-link" data-scroll-target="#phase-4-verification">Phase 4: Verification</a></li>
+  </ul></li>
+  <li><a href="#key-code-patterns" id="toc-key-code-patterns" class="nav-link" data-scroll-target="#key-code-patterns">Key code patterns</a></li>
+  <li><a href="#related-skills" id="toc-related-skills" class="nav-link" data-scroll-target="#related-skills">Related skills</a></li>
+  <li><a href="#important-design-considerations" id="toc-important-design-considerations" class="nav-link" data-scroll-target="#important-design-considerations">Important design considerations</a></li>
+  <li><a href="#key-references" id="toc-key-references" class="nav-link" data-scroll-target="#key-references">Key references</a></li>
+  <li><a href="#code-patterns" id="toc-code-patterns" class="nav-link" data-scroll-target="#code-patterns">Code Patterns</a></li>
+  </ul></li>
+  <li><a href="#code-patterns-for-graphicalmcp-gsdesign2" id="toc-code-patterns-for-graphicalmcp-gsdesign2" class="nav-link" data-scroll-target="#code-patterns-for-graphicalmcp-gsdesign2">Code Patterns for graphicalMCP + gsDesign2</a>
+  <ul class="collapse">
+  <li><a href="#table-of-contents" id="toc-table-of-contents" class="nav-link" data-scroll-target="#table-of-contents">Table of Contents</a></li>
+  <li><a href="#multiplicity-graph-setup" id="toc-multiplicity-graph-setup" class="nav-link" data-scroll-target="#multiplicity-graph-setup">Multiplicity graph setup</a></li>
+  <li><a href="#sample-size-driving-design" id="toc-sample-size-driving-design" class="nav-link" data-scroll-target="#sample-size-driving-design">Sample-size-driving design (H1)</a>
+  <ul class="collapse">
+  <li><a href="#analysis-timing-rules" id="toc-analysis-timing-rules" class="nav-link" data-scroll-target="#analysis-timing-rules">Analysis timing rules</a></li>
+  </ul></li>
+  <li><a href="#deriving-enrollment" id="toc-deriving-enrollment" class="nav-link" data-scroll-target="#deriving-enrollment">Deriving enrollment from H1</a></li>
+  <li><a href="#power-remaining" id="toc-power-remaining" class="nav-link" data-scroll-target="#power-remaining">Power for remaining hypotheses</a>
+  <ul class="collapse">
+  <li><a href="#time-to-event-in-subgroup-gs_power_ahr" id="toc-time-to-event-in-subgroup-gs_power_ahr" class="nav-link" data-scroll-target="#time-to-event-in-subgroup-gs_power_ahr">Time-to-event in subgroup — <code>gs_power_ahr()</code></a></li>
+  <li><a href="#time-to-event-in-overall-population-stratified-gs_power_ahr" id="toc-time-to-event-in-overall-population-stratified-gs_power_ahr" class="nav-link" data-scroll-target="#time-to-event-in-overall-population-stratified-gs_power_ahr">Time-to-event in overall population — stratified <code>gs_power_ahr()</code></a></li>
+  <li><a href="#zero-initial-alpha-workaround" id="toc-zero-initial-alpha-workaround" class="nav-link" data-scroll-target="#zero-initial-alpha-workaround">Zero initial alpha workaround</a></li>
+  <li><a href="#binary-endpoint-fixed_design_rd" id="toc-binary-endpoint-fixed_design_rd" class="nav-link" data-scroll-target="#binary-endpoint-fixed_design_rd">Binary endpoint — <code>fixed_design_rd()</code></a></li>
+  <li><a href="#design-list-ordered-to-match-graph-hypotheses" id="toc-design-list-ordered-to-match-graph-hypotheses" class="nav-link" data-scroll-target="#design-list-ordered-to-match-graph-hypotheses">Design list (ordered to match graph hypotheses)</a></li>
+  </ul></li>
+  <li><a href="#results-entry" id="toc-results-entry" class="nav-link" data-scroll-target="#results-entry">Results entry template</a></li>
+  <li><a href="#sequential-p-values" id="toc-sequential-p-values" class="nav-link" data-scroll-target="#sequential-p-values">Sequential p-value computation</a></li>
+  <li><a href="#hypothesis-testing" id="toc-hypothesis-testing" class="nav-link" data-scroll-target="#hypothesis-testing">Hypothesis testing with graphicalMCP</a></li>
+  <li><a href="#verification" id="toc-verification" class="nav-link" data-scroll-target="#verification">Verification with updated bounds</a>
+  <ul class="collapse">
+  <li><a href="#extract-graph-update-sequence" id="toc-extract-graph-update-sequence" class="nav-link" data-scroll-target="#extract-graph-update-sequence">Extract graph update sequence</a></li>
+  <li><a href="#plot-graph-sequence-with-alpha-labels" id="toc-plot-graph-sequence-with-alpha-labels" class="nav-link" data-scroll-target="#plot-graph-sequence-with-alpha-labels">Plot graph sequence with alpha labels</a></li>
+  <li><a href="#update-bounds-for-verification" id="toc-update-bounds-for-verification" class="nav-link" data-scroll-target="#update-bounds-for-verification">Update bounds for verification</a></li>
+  </ul></li>
+  <li><a href="#spending-time-rules" id="toc-spending-time-rules" class="nav-link" data-scroll-target="#spending-time-rules">Spending time rules</a>
+  <ul class="collapse">
+  <li><a href="#the-min-rule" id="toc-the-min-rule" class="nav-link" data-scroll-target="#the-min-rule">The min() rule</a></li>
+  <li><a href="#alignment-across-populations" id="toc-alignment-across-populations" class="nav-link" data-scroll-target="#alignment-across-populations">Alignment across populations</a></li>
+  </ul></li>
+  <li><a href="#stratified-orr" id="toc-stratified-orr" class="nav-link" data-scroll-target="#stratified-orr">Stratified ORR power with gs_power_rd()</a></li>
+  <li><a href="#display-bounds" id="toc-display-bounds" class="nav-link" data-scroll-target="#display-bounds">Displaying design bounds</a></li>
+  <li><a href="#repeated-p-values" id="toc-repeated-p-values" class="nav-link" data-scroll-target="#repeated-p-values">Repeated p-values for verification</a></li>
+  <li><a href="#simulation" id="toc-simulation" class="nav-link" data-scroll-target="#simulation">Simulation with illness-death model</a></li>
+  <li><a href="#p-value-computation" id="toc-p-value-computation" class="nav-link" data-scroll-target="#p-value-computation">P-value computation, theoretical curves, and KM plots</a></li>
+  <li><a href="#wpgsd" id="toc-wpgsd" class="nav-link" data-scroll-target="#wpgsd">WPGSD analysis</a>
+  <ul class="collapse">
+  <li><a href="#correlation-matrix-construction" id="toc-correlation-matrix-construction" class="nav-link" data-scroll-target="#correlation-matrix-construction">Correlation matrix construction</a></li>
+  <li><a href="#generate_bounds-and-closed_test" id="toc-generate_bounds-and-closed_test" class="nav-link" data-scroll-target="#generate_bounds-and-closed_test">generate_bounds and closed_test</a></li>
+  </ul></li>
+  <li><a href="#theoretical-basis" id="toc-theoretical-basis" class="nav-link" data-scroll-target="#theoretical-basis">Theoretical basis: Maurer-Bretz framework</a>
+  <ul class="collapse">
+  <li><a href="#algorithm-1-sequentially-rejective-graphical-procedure-for-gsd" id="toc-algorithm-1-sequentially-rejective-graphical-procedure-for-gsd" class="nav-link" data-scroll-target="#algorithm-1-sequentially-rejective-graphical-procedure-for-gsd">Algorithm 1: Sequentially rejective graphical procedure for GSD</a></li>
+  <li><a href="#equivalence-with-sequential-p-values" id="toc-equivalence-with-sequential-p-values" class="nav-link" data-scroll-target="#equivalence-with-sequential-p-values">Equivalence with sequential p-values</a></li>
+  <li><a href="#well-ordered-spending-functions" id="toc-well-ordered-spending-functions" class="nav-link" data-scroll-target="#well-ordered-spending-functions">Well-ordered spending functions</a></li>
+  <li><a href="#why-naive-hierarchical-testing-fails-in-gsd" id="toc-why-naive-hierarchical-testing-fails-in-gsd" class="nav-link" data-scroll-target="#why-naive-hierarchical-testing-fails-in-gsd">Why naive hierarchical testing fails in GSD</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/graphicalMCP-gsDesign2.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/graphicalMCP-gsDesign2.html">Cross-Package</a></li><li class="breadcrumb-item"><a href="../skills/graphicalMCP-gsDesign2.html">graphicalMCP-gsDesign2</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">graphicalMCP-gsDesign2</h1>
+<p class="subtitle lead">GSD with Graphical Multiplicity Control</p>
+</div>
+
+<div>
+  <div class="description">
+    <p>Guide users through group sequential design with graphical multiplicity control using the graphicalMCP and gsDesign2 R packages. Use this skill whenever the user asks about: group sequential designs with multiple hypotheses, graphical multiplicity testing, sequential p-values with gsDesign2, combining graphicalMCP with gsDesign2, clinical trial designs with multiple endpoints and populations, Maurer-Bretz procedures, alpha-spending with multiplicity graphs, or adapting the gMCPLite vignette template. Also trigger when users mention spending time, information fraction, or sequential p-values in the context of group sequential or graphical testing.</p>
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="group-sequential-design-with-graphicalmcp-gsdesign2" class="level1">
+<h1>Group Sequential Design with graphicalMCP + gsDesign2</h1>
+<p>This skill helps users design and analyze clinical trials that combine <strong>graphical multiplicity control</strong> (graphicalMCP) with <strong>group sequential designs</strong> (gsDesign2). The workflow follows the Maurer-Bretz (2013) framework.</p>
+<section id="when-to-use-this-skill" class="level2">
+<h2 class="anchored" data-anchor-id="when-to-use-this-skill">When to use this skill</h2>
+<ul>
+<li>Setting up a multiplicity graph for multiple hypotheses (endpoints x populations)</li>
+<li>Designing group sequential bounds for each hypothesis using gsDesign2</li>
+<li>Computing sequential p-values from observed data</li>
+<li>Testing hypotheses using graphicalMCP with sequential p-values</li>
+<li>Verifying rejection decisions with updated group sequential bounds</li>
+</ul>
+</section>
+<section id="required-packages" class="level2">
+<h2 class="anchored" data-anchor-id="required-packages">Required packages</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gsDesign)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gsDesign2)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(graphicalMCP)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>gsDesign2 must export <code>sequential_pval()</code>. Install from GitHub if needed:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"Merck/gsDesign2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="workflow-overview" class="level2">
+<h2 class="anchored" data-anchor-id="workflow-overview">Workflow overview</h2>
+<p>The workflow has 4 phases:</p>
+<section id="phase-1-design-specification" class="level3">
+<h3 class="anchored" data-anchor-id="phase-1-design-specification">Phase 1: Design specification</h3>
+<ol type="1">
+<li><strong>Define hypotheses</strong> — typically endpoints (OS, PFS, ORR) crossed with populations (subgroup, overall).</li>
+<li><strong>Build the multiplicity graph</strong> — assign initial alpha weights and transition matrix using <code>graphicalMCP::graph_create()</code>.</li>
+<li><strong>Choose a sample-size-driving hypothesis</strong> (typically OS in the subgroup). Design it with <code>gsDesign2::gs_design_ahr()</code> targeting the desired power (e.g., 90%). Use <code>info_frac = NULL</code> and specify <code>analysis_time</code> as calendar months; gsDesign2 derives the information fraction from the enrollment/failure rate assumptions and analysis timing.</li>
+<li><strong>Derive enrollment rates</strong> from the driving hypothesis. The subgroup enrollment rate comes directly from the design output. The complement enrollment rate is scaled by prevalence: <code>rate_complement = rate_sub * (1 - prevalence) / prevalence</code>. Build stratified enrollment for overall population designs using <code>define_enroll_rate()</code> with stratum columns.</li>
+<li><strong>Compute power for remaining hypotheses</strong>:
+<ul>
+<li>Time-to-event hypotheses (OS, PFS) in the subgroup or overall: use <code>gsDesign2::gs_power_ahr()</code> with the derived enrollment rates. Pass <code>event = NULL</code> so <code>analysis_time</code> drives the design. For overall population, use stratified <code>fail_rate</code> with different HRs per stratum.</li>
+<li>Binary endpoints (ORR): use <code>gsDesign2::fixed_design_rd()</code> with sample sizes derived from the driving hypothesis. These get <code>NULL</code> in the design list.</li>
+</ul></li>
+<li><strong>Specify analysis timing rules</strong> — document when each analysis is triggered (minimum follow-up after FPE, event count thresholds, maximum extensions).</li>
+<li><strong>Store designs</strong> in an ordered list matching the hypothesis order in the graph. Use <code>NULL</code> for non-GSD hypotheses.</li>
+</ol>
+</section>
+<section id="phase-2-results-entry" class="level3">
+<h3 class="anchored" data-anchor-id="phase-2-results-entry">Phase 2: Results entry</h3>
+<ol type="1">
+<li><strong>Record event counts</strong> at each analysis for each hypothesis.</li>
+<li><strong>Record nominal one-sided p-values</strong> for each analysis of each hypothesis.</li>
+<li><strong>Compute spending times</strong> — typically <code>events / max(events)</code> using the subgroup information fraction. The spending time must reach 1 at the final analysis of each hypothesis.</li>
+</ol>
+</section>
+<section id="phase-3-hypothesis-testing" class="level3">
+<h3 class="anchored" data-anchor-id="phase-3-hypothesis-testing">Phase 3: Hypothesis testing</h3>
+<ol type="1">
+<li><strong>Compute sequential p-values</strong> using <code>gsDesign2::sequential_pval()</code> for each group sequential hypothesis. For non-GSD hypotheses, the nominal p-value is the sequential p-value.</li>
+<li><strong>Test with graphicalMCP</strong> using <code>graphicalMCP::graph_test_shortcut()</code> with the sequential p-values and total FWER alpha.</li>
+</ol>
+</section>
+<section id="phase-4-verification" class="level3">
+<h3 class="anchored" data-anchor-id="phase-4-verification">Phase 4: Verification</h3>
+<ol type="1">
+<li><strong>Extract the graph update sequence</strong> using <code>graphicalMCP::graph_update()</code> to see the multiplicity graph at each rejection step.</li>
+<li><strong>Update group sequential bounds</strong> at the maximum alpha allocated to each hypothesis using <code>gsDesign2::gs_update_ahr()</code>.</li>
+<li><strong>Compare nominal p-values</strong> to updated bounds to confirm rejection decisions.</li>
+</ol>
+</section>
+</section>
+<section id="key-code-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="key-code-patterns">Key code patterns</h2>
+<p>For detailed code templates covering each phase, read <code>references/code_patterns.md</code>.</p>
+</section>
+<section id="related-skills" class="level2">
+<h2 class="anchored" data-anchor-id="related-skills">Related skills</h2>
+<ul>
+<li><strong>illness-death model</strong>: For simulating correlated OS, PFS, and ORR endpoints used in the vignette template. See the <code>illness-death</code> skill.</li>
+</ul>
+</section>
+<section id="important-design-considerations" class="level2">
+<h2 class="anchored" data-anchor-id="important-design-considerations">Important design considerations</h2>
+<ul>
+<li><strong>H1 drives sample size</strong>: One hypothesis (typically OS in the subgroup) is designed with <code>gs_design_ahr()</code> to determine enrollment rates and sample sizes. All other hypotheses derive their enrollment from H1 using <code>gs_power_ahr()</code> (time-to-event) or <code>fixed_design_rd()</code> (binary).</li>
+<li><strong>Stratified overall designs</strong>: Overall population designs use stratified <code>define_enroll_rate()</code> and <code>define_fail_rate()</code> with separate stratum rows (e.g., “BM+” and “BM-”) and stratum-specific HRs or rates.</li>
+<li><strong><code>gs_power_ahr()</code> API</strong>: Does not accept <code>info_frac</code>. Use <code>event = NULL</code> with <code>analysis_time</code> to let timing drive the design. If <code>event</code> is not set to <code>NULL</code>, the default <code>c(30, 40, 50)</code> may cause length mismatches for designs with fewer analyses.</li>
+<li><strong><code>fixed_design_rd()</code> output</strong>: Returns a <code>fixed_design</code> object. Wrap with <code>summary()</code> before piping to <code>gt()</code> or <code>kable()</code>.</li>
+<li><strong>Zero initial alpha</strong>: If a hypothesis starts with alpha=0 (receives alpha only through reallocation), use another hypothesis’s alpha for the bounds structure in the design. The actual testing uses the reallocated alpha from the graph.</li>
+<li><strong>Spending time vs information fraction</strong>: Spending time determines how alpha is allocated across analyses. Information fraction drives the correlation structure. Both are needed for bound computation.</li>
+<li><strong>Non-binding futility</strong>: Use <code>binding = FALSE</code> so efficacy bounds are computed ignoring the futility bound, preserving Type I error control even if the trial continues past a futility crossing. Theoretical basis: Liu &amp; Anderson (2008) Theorem 1.</li>
+<li><strong>Hung-Wang-O’Neill warning</strong>: Naively testing a secondary endpoint at level α whenever the primary is significant does NOT control FWER in a group sequential trial (Hung, Wang &amp; O’Neill, 2007). Must use sequential p-values with a proper closed testing or graphical procedure.</li>
+<li><strong>Well-ordered spending functions</strong>: For the Maurer-Bretz graphical procedure to be consonant (sequentially rejective), the nominal significance levels α*_t(γ) must be non-decreasing in γ. Qualified families: power (αt^ρ, all ρ &gt; 0), Pocock-type, OBF-type (for γ &lt; 0.318, covering all practical significance levels). See Maurer &amp; Bretz (2013).</li>
+<li><strong>Time travel</strong>: If OS hypotheses are rejected and alpha passes to previously-tested PFS hypotheses, those PFS tests can be re-evaluated with updated bounds. This controls Type I error per Liu &amp; Anderson (2008).</li>
+<li><strong>One-sided testing</strong>: Maurer-Bretz designs assume one-sided testing or non-binding futility bounds.</li>
+<li><strong>Alpha spending function</strong>: Lan-DeMets spending approximating O’Brien-Fleming (<code>sfLDOF</code>) is a common default.</li>
+</ul>
+</section>
+<section id="key-references" class="level2">
+<h2 class="anchored" data-anchor-id="key-references">Key references</h2>
+<ul>
+<li>Maurer W, Bretz F. Multiple testing in group sequential trials using graphical approaches. <em>Stat Biopharm Res</em> 2013; 5:311–320.</li>
+<li>Liu Q, Anderson KM. On adaptive extensions of group sequential trials for clinical investigations. <em>JASA</em> 2008; 103:1621–1630.</li>
+<li>Hung HMJ, Wang SJ, O’Neill R. Statistical considerations for testing multiple endpoints in group sequential or adaptive clinical trials. <em>J Biopharm Stat</em> 2007; 17:1201–1210.</li>
+<li><strong>Spending time rules</strong>: Use <code>pmin(planned_IF, actual_IF)</code> at interim analyses to protect against over-spending. Align spending time across populations (H2 uses H1’s spending time). At final analysis, spending time = 1.</li>
+<li><strong>Stratified ORR</strong>: Use <code>gs_power_rd()</code> with <code>weight = "invar"</code> for stratified overall population ORR, not <code>fixed_design_rd()</code>.</li>
+<li><strong>Repeated p-values</strong>: In verification, compute both sequential p-values (cumulative evidence) and repeated p-values (single-analysis evidence) to understand each analysis’s contribution.</li>
+</ul>
+</section>
+<section id="code-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="code-patterns">Code Patterns</h2>
+</section>
+</section>
+<section id="code-patterns-for-graphicalmcp-gsdesign2" class="level1">
+<h1>Code Patterns for graphicalMCP + gsDesign2</h1>
+<section id="table-of-contents" class="level2">
+<h2 class="anchored" data-anchor-id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#multiplicity-graph-setup">Multiplicity graph setup</a></li>
+<li><a href="#sample-size-driving-design">Sample-size-driving design (H1)</a></li>
+<li><a href="#deriving-enrollment">Deriving enrollment from H1</a></li>
+<li><a href="#power-remaining">Power for remaining hypotheses</a></li>
+<li><a href="#results-entry">Results entry template</a></li>
+<li><a href="#sequential-p-values">Sequential p-value computation</a></li>
+<li><a href="#hypothesis-testing">Hypothesis testing with graphicalMCP</a></li>
+<li><a href="#verification">Verification with updated bounds</a></li>
+<li><a href="#spending-time-rules">Spending time rules</a></li>
+<li><a href="#stratified-orr">Stratified ORR power with gs_power_rd()</a></li>
+<li><a href="#display-bounds">Displaying design bounds</a></li>
+<li><a href="#repeated-p-values">Repeated p-values for verification</a></li>
+<li><a href="#simulation">Simulation with illness-death model</a></li>
+<li><a href="#p-value-computation">P-value computation, theoretical curves, and KM plots</a></li>
+<li><a href="#wpgsd">WPGSD analysis</a></li>
+</ol>
+<hr>
+</section>
+<section id="multiplicity-graph-setup" class="level2">
+<h2 class="anchored" data-anchor-id="multiplicity-graph-setup">Multiplicity graph setup</h2>
+<p>Define hypotheses, alpha allocation, and transition matrix:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Hypothesis names (endpoints x populations)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>nameHypotheses <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H1: OS</span><span class="sc">\n</span><span class="st"> Subgroup"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H2: OS</span><span class="sc">\n</span><span class="st"> All subjects"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H3: PFS</span><span class="sc">\n</span><span class="st"> Subgroup"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H4: PFS</span><span class="sc">\n</span><span class="st"> All subjects"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H5: ORR</span><span class="sc">\n</span><span class="st"> Subgroup"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H6: ORR</span><span class="sc">\n</span><span class="st"> All subjects"</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>nHypotheses <span class="ot">&lt;-</span> <span class="fu">length</span>(nameHypotheses)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Transition matrix (row i -&gt; col j reallocation weights)</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">0</span>, .<span class="dv">5</span>, .<span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">0</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, .<span class="dv">5</span>, .<span class="dv">5</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  .<span class="dv">5</span>, .<span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>), <span class="at">nrow =</span> <span class="dv">6</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Initial alpha allocation (one-sided)</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>alphaHypotheses <span class="ot">&lt;-</span> <span class="fu">c</span>(.<span class="dv">01</span>, .<span class="dv">01</span>, .<span class="dv">004</span>, <span class="fl">0.000</span>, <span class="fl">0.0005</span>, .<span class="dv">0005</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>fwer <span class="ot">&lt;-</span> <span class="fu">sum</span>(alphaHypotheses)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Create graph (weights must sum to 1, so divide by fwer)</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>g0 <span class="ot">&lt;-</span> graphicalMCP<span class="sc">::</span><span class="fu">graph_create</span>(</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">hypotheses =</span> stats<span class="sc">::</span><span class="fu">setNames</span>(alphaHypotheses <span class="sc">/</span> fwer, nameHypotheses),</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">transitions =</span> m,</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">hyp_names =</span> nameHypotheses</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot with alpha levels on vertices (using α character)</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>alphaLabels <span class="ot">&lt;-</span> <span class="fu">sprintf</span>(<span class="st">"\u03b1 = %s"</span>, <span class="fu">format</span>(alphaHypotheses, <span class="at">scientific =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>vertexLabels <span class="ot">&lt;-</span> <span class="fu">paste</span>(nameHypotheses, alphaLabels, <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g0,</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">layout =</span> layout6,</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">vertex.size =</span> <span class="dv">45</span>,</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">vertex.label =</span> vertexLabels,</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">vertex.label.cex =</span> <span class="fl">0.9</span>,</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">vertex.color =</span> vertex_colors,</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">margin =</span> <span class="fl">0.25</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="sample-size-driving-design" class="level2">
+<h2 class="anchored" data-anchor-id="sample-size-driving-design">Sample-size-driving design (H1)</h2>
+<p>One hypothesis drives sample size — typically OS in the subgroup, designed with <code>gs_design_ahr()</code> targeting the desired power. Use <code>info_frac = NULL</code> and specify <code>analysis_time</code> as calendar months from enrollment start. gsDesign2 derives the information fraction from the enrollment/failure rate assumptions and analysis timing.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fail_rate_os_sub <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">define_fail_rate</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">duration =</span> <span class="cn">Inf</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> osmedian,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fl">0.65</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Initial enrollment rate with ramp-up (gs_design_ahr will scale)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>enroll_rate_sub_init <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">define_enroll_rate</span>(</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">8</span>),</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.50</span>, <span class="fl">0.75</span>, <span class="fl">1.00</span>)  <span class="co"># Relative rates</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>ossub <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">gs_design_ahr</span>(</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> enroll_rate_sub_init,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> fail_rate_os_sub,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> alphaHypotheses[<span class="dv">1</span>],</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">beta =</span> <span class="fl">0.1</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">binding =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">analysis_time =</span> <span class="fu">c</span>(<span class="dv">20</span>, <span class="dv">28</span>, <span class="dv">38</span>),   <span class="co"># Calendar months from enrollment start</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">info_frac =</span> <span class="cn">NULL</span>,                  <span class="co"># Derived from analysis_time + enroll/fail rates</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">info_scale =</span> <span class="st">"h0_info"</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> gsDesign2<span class="sc">::</span>gs_spending_bound,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">upar =</span> <span class="fu">list</span>(<span class="at">sf =</span> gsDesign<span class="sc">::</span>sfLDOF, <span class="at">total_spend =</span> alphaHypotheses[<span class="dv">1</span>]),</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">test_lower =</span> <span class="cn">FALSE</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="analysis-timing-rules" class="level3">
+<h3 class="anchored" data-anchor-id="analysis-timing-rules">Analysis timing rules</h3>
+<p>Analysis timing should be pre-specified with rules relative to final patient enrolled (FPE):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 35%">
+<col style="width: 22%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Analysis</th>
+<th>Timing rule (after FPE)</th>
+<th>Max extension</th>
+<th>Endpoints assessed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>IA1</td>
+<td>6 months after FPE</td>
+<td>None</td>
+<td>ORR (final), PFS and OS (interim)</td>
+</tr>
+<tr class="even">
+<td>IA2</td>
+<td>14 months after FPE AND targeted PFS events in subgroup</td>
+<td>+3 months</td>
+<td>PFS (final), OS (interim)</td>
+</tr>
+<tr class="odd">
+<td>Final</td>
+<td>24 months after FPE AND targeted OS events in subgroup</td>
+<td>+6 months</td>
+<td>OS (final)</td>
+</tr>
+</tbody>
+</table>
+<p>These rules ensure adequate follow-up for each endpoint while providing flexibility for event-driven timing. The <code>analysis_time</code> values in <code>gs_design_ahr()</code> should reflect enrollment duration + follow-up (e.g., 14 months enrollment + 6 months = 20 months).</p>
+</section>
+</section>
+<section id="deriving-enrollment" class="level2">
+<h2 class="anchored" data-anchor-id="deriving-enrollment">Deriving enrollment from H1</h2>
+<p>The driving hypothesis determines enrollment rates and sample sizes for all other designs.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract subgroup enrollment rate from H1 design</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>enroll_rate_sub <span class="ot">&lt;-</span> ossub<span class="sc">$</span>enroll_rate</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>n_sub <span class="ot">&lt;-</span> <span class="fu">sum</span>(enroll_rate_sub<span class="sc">$</span>rate <span class="sc">*</span> enroll_rate_sub<span class="sc">$</span>duration)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>n_complement <span class="ot">&lt;-</span> n_sub <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prevalence) <span class="sc">/</span> prevalence</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>n_total <span class="ot">&lt;-</span> n_sub <span class="sc">+</span> n_complement</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Build stratified enrollment for overall population designs</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>enroll_rate_overall <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">define_enroll_rate</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>), <span class="at">each =</span> <span class="fu">nrow</span>(enroll_rate_sub)),</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">duration =</span> <span class="fu">rep</span>(enroll_rate_sub<span class="sc">$</span>duration, <span class="dv">2</span>),</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">rate =</span> <span class="fu">c</span>(</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    enroll_rate_sub<span class="sc">$</span>rate,                                    <span class="co"># Subgroup rates from H1</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    enroll_rate_sub<span class="sc">$</span>rate <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prevalence) <span class="sc">/</span> prevalence     <span class="co"># Complement rates</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="power-remaining" class="level2">
+<h2 class="anchored" data-anchor-id="power-remaining">Power for remaining hypotheses</h2>
+<section id="time-to-event-in-subgroup-gs_power_ahr" class="level3">
+<h3 class="anchored" data-anchor-id="time-to-event-in-subgroup-gs_power_ahr">Time-to-event in subgroup — <code>gs_power_ahr()</code></h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>pfssub <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">gs_power_ahr</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> enroll_rate_sub,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> fail_rate_pfs_sub,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">ratio =</span> <span class="dv">1</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">event =</span> <span class="cn">NULL</span>,                    <span class="co"># IMPORTANT: must be NULL to use analysis_time</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">analysis_time =</span> <span class="fu">c</span>(<span class="dv">20</span>, <span class="dv">28</span>),       <span class="co"># 2 analyses for PFS</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">info_scale =</span> <span class="st">"h0_info"</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> gsDesign2<span class="sc">::</span>gs_spending_bound,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">upar =</span> <span class="fu">list</span>(<span class="at">sf =</span> gsDesign<span class="sc">::</span>sfLDOF, <span class="at">total_spend =</span> alphaHypotheses[<span class="dv">3</span>]),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">test_lower =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">binding =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="time-to-event-in-overall-population-stratified-gs_power_ahr" class="level3">
+<h3 class="anchored" data-anchor-id="time-to-event-in-overall-population-stratified-gs_power_ahr">Time-to-event in overall population — stratified <code>gs_power_ahr()</code></h3>
+<p>Use stratified <code>define_fail_rate()</code> with different HRs per stratum:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fail_rate_os_overall <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">define_fail_rate</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">duration =</span> <span class="fu">c</span>(<span class="cn">Inf</span>, <span class="cn">Inf</span>),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> osmedian,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.65</span>, <span class="fl">0.85</span>),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>os <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">gs_power_ahr</span>(</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> enroll_rate_overall,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> fail_rate_os_overall,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">ratio =</span> <span class="dv">1</span>,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">event =</span> <span class="cn">NULL</span>,</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">analysis_time =</span> <span class="fu">c</span>(<span class="dv">20</span>, <span class="dv">28</span>, <span class="dv">38</span>),</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">info_scale =</span> <span class="st">"h0_info"</span>,</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> gsDesign2<span class="sc">::</span>gs_spending_bound,</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">upar =</span> <span class="fu">list</span>(<span class="at">sf =</span> gsDesign<span class="sc">::</span>sfLDOF, <span class="at">total_spend =</span> alphaHypotheses[<span class="dv">2</span>]),</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">test_lower =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">binding =</span> <span class="cn">FALSE</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="zero-initial-alpha-workaround" class="level3">
+<h3 class="anchored" data-anchor-id="zero-initial-alpha-workaround">Zero initial alpha workaround</h3>
+<p>If a hypothesis starts with alpha=0 (e.g., H4: PFS Overall), the spending function will error. Use another hypothesis’s alpha for the bounds structure:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># H4 starts with alpha=0; use H3's alpha for bounds structure</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>pfs <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">gs_power_ahr</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> enroll_rate_overall,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> fail_rate_pfs_overall,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ratio =</span> <span class="dv">1</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">event =</span> <span class="cn">NULL</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">analysis_time =</span> <span class="fu">c</span>(<span class="dv">20</span>, <span class="dv">28</span>),</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">info_scale =</span> <span class="st">"h0_info"</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> gsDesign2<span class="sc">::</span>gs_spending_bound,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">upar =</span> <span class="fu">list</span>(<span class="at">sf =</span> gsDesign<span class="sc">::</span>sfLDOF, <span class="at">total_spend =</span> alphaHypotheses[<span class="dv">3</span>]),  <span class="co"># H3's alpha</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">test_lower =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">binding =</span> <span class="cn">FALSE</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="binary-endpoint-fixed_design_rd" class="level3">
+<h3 class="anchored" data-anchor-id="binary-endpoint-fixed_design_rd">Binary endpoint — <code>fixed_design_rd()</code></h3>
+<p>For rate difference tests (e.g., ORR), use <code>fixed_design_rd()</code> with sample sizes from H1. Wrap with <code>summary()</code> before piping to <code>gt()</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Subgroup</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>orr_sub <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">fixed_design_rd</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> alphaHypotheses[<span class="dv">5</span>],</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="cn">NULL</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_c =</span> <span class="fl">0.30</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_e =</span> <span class="fl">0.45</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">rd0 =</span> <span class="dv">0</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">ceiling</span>(n_sub) <span class="sc">*</span> <span class="dv">2</span>  <span class="co"># Total N (both arms)</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(orr_sub) <span class="sc">%&gt;%</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">fmt_number</span>(<span class="at">columns =</span> <span class="st">"Bound"</span>, <span class="at">decimals =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">fmt_number</span>(<span class="at">columns =</span> <span class="st">"Power"</span>, <span class="at">decimals =</span> <span class="dv">3</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Overall (weighted average rates across strata)</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>orr_ctrl_overall <span class="ot">&lt;-</span> orr_ctrl_sub <span class="sc">*</span> prevalence <span class="sc">+</span> orr_ctrl_complement <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prevalence)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>orr_exp_overall <span class="ot">&lt;-</span> orr_exp_sub <span class="sc">*</span> prevalence <span class="sc">+</span> orr_exp_complement <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prevalence)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>orr_all <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">fixed_design_rd</span>(</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> alphaHypotheses[<span class="dv">6</span>],</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">power =</span> <span class="cn">NULL</span>,</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_c =</span> orr_ctrl_overall,</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_e =</span> orr_exp_overall,</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">rd0 =</span> <span class="dv">0</span>,</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">ceiling</span>(n_total) <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(orr_all) <span class="sc">%&gt;%</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">fmt_number</span>(<span class="at">columns =</span> <span class="st">"Bound"</span>, <span class="at">decimals =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">fmt_number</span>(<span class="at">columns =</span> <span class="st">"Power"</span>, <span class="at">decimals =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="design-list-ordered-to-match-graph-hypotheses" class="level3">
+<h3 class="anchored" data-anchor-id="design-list-ordered-to-match-graph-hypotheses">Design list (ordered to match graph hypotheses)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># NULL for non-GSD hypotheses (e.g., ORR tested at a single analysis)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>gsD2list <span class="ot">&lt;-</span> <span class="fu">list</span>(ossub, os, pfssub, pfs, <span class="cn">NULL</span>, <span class="cn">NULL</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="results-entry" class="level2">
+<h2 class="anchored" data-anchor-id="results-entry">Results entry template</h2>
+<p>For calendar-time-based interim timing (common interim dates across endpoints), see <a href="analysis_timing.md">analysis_timing.md</a>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Event counts per hypothesis per analysis</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>events_pfs_all <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">675</span>, <span class="dv">750</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>events_pfs_sub <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">265</span>, <span class="dv">310</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>events_os_all <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">529</span>, <span class="dv">700</span>, <span class="dv">800</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>events_os_sub <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">185</span>, <span class="dv">245</span>, <span class="dv">295</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>inputResults <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">H =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">3</span>), <span class="fu">rep</span>(<span class="dv">2</span>, <span class="dv">3</span>), <span class="fu">rep</span>(<span class="dv">3</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="dv">4</span>, <span class="dv">2</span>), <span class="dv">5</span>, <span class="dv">6</span>),</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Pop =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"Subgroup"</span>, <span class="dv">3</span>), <span class="fu">rep</span>(<span class="st">"All"</span>, <span class="dv">3</span>),</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>          <span class="fu">rep</span>(<span class="st">"Subgroup"</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">"All"</span>, <span class="dv">2</span>),</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Subgroup"</span>, <span class="st">"All"</span>),</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">Endpoint =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"OS"</span>, <span class="dv">6</span>), <span class="fu">rep</span>(<span class="st">"PFS"</span>, <span class="dv">4</span>), <span class="fu">rep</span>(<span class="st">"ORR"</span>, <span class="dv">2</span>)),</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">nominalP =</span> <span class="fu">c</span>(</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    .<span class="dv">03</span>, .<span class="dv">0001</span>, .<span class="dv">000001</span>,   <span class="co"># H1: OS Subgroup (3 analyses)</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    .<span class="dv">2</span>, .<span class="dv">15</span>, .<span class="dv">1</span>,            <span class="co"># H2: OS All (3 analyses)</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    .<span class="dv">2</span>, .<span class="dv">001</span>,               <span class="co"># H3: PFS Subgroup (2 analyses)</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    .<span class="dv">3</span>, .<span class="dv">2</span>,                 <span class="co"># H4: PFS All (2 analyses)</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    .<span class="dv">00001</span>,                 <span class="co"># H5: ORR Subgroup (1 analysis)</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    .<span class="dv">1</span>                      <span class="co"># H6: ORR All (1 analysis)</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">Analysis =</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">events =</span> <span class="fu">c</span>(events_os_sub, events_os_all,</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>             events_pfs_sub, events_pfs_all, <span class="cn">NA</span>, <span class="cn">NA</span>),</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Spending time: subgroup info fraction for all hypotheses</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">spendingTime =</span> <span class="fu">c</span>(</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    events_os_sub <span class="sc">/</span> <span class="fu">max</span>(events_os_sub),</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    events_os_sub <span class="sc">/</span> <span class="fu">max</span>(events_os_sub),</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    events_pfs_sub <span class="sc">/</span> <span class="fu">max</span>(events_pfs_sub),</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    events_pfs_sub <span class="sc">/</span> <span class="fu">max</span>(events_pfs_sub),</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    <span class="cn">NA</span>, <span class="cn">NA</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="sequential-p-values" class="level2">
+<h2 class="anchored" data-anchor-id="sequential-p-values">Sequential p-value computation</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>EOCtab <span class="ot">&lt;-</span> inputResults <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(H) <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"H"</span>, <span class="st">"Pop"</span>, <span class="st">"Endpoint"</span>, <span class="st">"nominalP"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>EOCtab<span class="sc">$</span>seqp <span class="ot">&lt;-</span> .<span class="dv">9999</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (EOCtabline <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nHypotheses) {</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  EOCtab<span class="sc">$</span>seqp[EOCtabline] <span class="ot">&lt;-</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(<span class="fu">is.null</span>(gsD2list[[EOCtabline]]),</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>      EOCtab<span class="sc">$</span>nominalP[EOCtabline],</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>      {</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        tem <span class="ot">&lt;-</span> <span class="fu">filter</span>(inputResults, H <span class="sc">==</span> EOCtabline)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>        gsDesign2<span class="sc">::</span><span class="fu">sequential_pval</span>(</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>          <span class="at">gs_design =</span> gsD2list[[EOCtabline]],</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>          <span class="at">event =</span> tem<span class="sc">$</span>events,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>          <span class="at">z =</span> <span class="sc">-</span>stats<span class="sc">::</span><span class="fu">qnorm</span>(tem<span class="sc">$</span>nominalP),</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>          <span class="at">ustime =</span> tem<span class="sc">$</span>spendingTime,</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>          <span class="at">interval =</span> <span class="fu">c</span>(<span class="fl">1e-05</span>, <span class="fl">0.9999</span>)</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>EOCtab <span class="ot">&lt;-</span> EOCtab <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="st">"nominalP"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="hypothesis-testing" class="level2">
+<h2 class="anchored" data-anchor-id="hypothesis-testing">Hypothesis testing with graphicalMCP</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> graphicalMCP<span class="sc">::</span><span class="fu">graph_test_shortcut</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">graph =</span> g0,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">p =</span> EOCtab<span class="sc">$</span>seqp,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> fwer,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">TRUE</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>adj_p <span class="ot">&lt;-</span> result<span class="sc">$</span>outputs<span class="sc">$</span>adjusted_p</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>rej <span class="ot">&lt;-</span> result<span class="sc">$</span>outputs<span class="sc">$</span>rejected</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to logical if needed</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">is.numeric</span>(rej)) {</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  rej_logical <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">FALSE</span>, nHypotheses)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  rej_logical[rej] <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  rej_logical <span class="ot">&lt;-</span> <span class="fu">as.logical</span>(rej)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>EOCtab<span class="sc">$</span>Rejected <span class="ot">&lt;-</span> rej_logical</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>EOCtab<span class="sc">$</span>adjPValues <span class="ot">&lt;-</span> adj_p</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="verification" class="level2">
+<h2 class="anchored" data-anchor-id="verification">Verification with updated bounds</h2>
+<section id="extract-graph-update-sequence" class="level3">
+<h3 class="anchored" data-anchor-id="extract-graph-update-sequence">Extract graph update sequence</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>rejected_order <span class="ot">&lt;-</span> <span class="fu">which</span>(EOCtab<span class="sc">$</span>Rejected)[<span class="fu">order</span>(EOCtab<span class="sc">$</span>adjPValues[EOCtab<span class="sc">$</span>Rejected])]</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>graphs <span class="ot">&lt;-</span> <span class="fu">list</span>(g0)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(rejected_order) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  gu <span class="ot">&lt;-</span> graphicalMCP<span class="sc">::</span><span class="fu">graph_update</span>(g0, <span class="at">delete =</span> rejected_order)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  graphs <span class="ot">&lt;-</span> gu<span class="sc">$</span>intermediate_graphs</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Get max alpha allocated to each hypothesis</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>lastWeights <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(graphs[[<span class="fu">length</span>(graphs)]]<span class="sc">$</span>hypotheses)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_along</span>(rejected_order)) {</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  h <span class="ot">&lt;-</span> rejected_order[j]</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  lastWeights[h] <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(graphs[[j]]<span class="sc">$</span>hypotheses[h])</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>EOCtab<span class="sc">$</span>lastAlpha <span class="ot">&lt;-</span> fwer <span class="sc">*</span> lastWeights</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="plot-graph-sequence-with-alpha-labels" class="level3">
+<h3 class="anchored" data-anchor-id="plot-graph-sequence-with-alpha-labels">Plot graph sequence with alpha labels</h3>
+<p>When plotting the graph update sequence, show actual alpha levels (not weights) on each vertex:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(graphs)) {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  gi_alpha <span class="ot">&lt;-</span> fwer <span class="sc">*</span> <span class="fu">as.numeric</span>(graphs[[i]]<span class="sc">$</span>hypotheses)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  gi_labels <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">names</span>(graphs[[i]]<span class="sc">$</span>hypotheses),</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"\u03b1 = %s"</span>, <span class="fu">format</span>(gi_alpha, <span class="at">scientific =</span> <span class="cn">FALSE</span>)),</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(graphs[[i]],</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">layout =</span> layout6,</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">vertex.size =</span> <span class="dv">45</span>,</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">vertex.label =</span> gi_labels,</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">vertex.label.cex =</span> <span class="fl">0.9</span>,</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">vertex.color =</span> vertex_colors,</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">margin =</span> <span class="fl">0.25</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="update-bounds-for-verification" class="level3">
+<h3 class="anchored" data-anchor-id="update-bounds-for-verification">Update bounds for verification</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nHypotheses) {</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  hresults <span class="ot">&lt;-</span> inputResults <span class="sc">%&gt;%</span> <span class="fu">filter</span>(H <span class="sc">==</span> i)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  d2 <span class="ot">&lt;-</span> gsD2list[[i]]</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(d2) <span class="sc">&amp;&amp;</span> EOCtab<span class="sc">$</span>lastAlpha[i] <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    d2_upd <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">gs_update_ahr</span>(</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> d2,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> EOCtab<span class="sc">$</span>lastAlpha[i],</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">ustime =</span> hresults<span class="sc">$</span>spendingTime,</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">event_tbl =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">analysis =</span> hresults<span class="sc">$</span>Analysis,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">event =</span> hresults<span class="sc">$</span>events</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compare nominal p-values to updated bounds</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Rejected: at least one nominal p &lt;= bound nominal p</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Not rejected: all nominal p &gt; bound nominal p</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spending-time-rules" class="level2">
+<h2 class="anchored" data-anchor-id="spending-time-rules">Spending time rules</h2>
+<p>Spending time controls how alpha is allocated across analyses. It differs from the information fraction, which drives the correlation structure.</p>
+<section id="the-min-rule" class="level3">
+<h3 class="anchored" data-anchor-id="the-min-rule">The min() rule</h3>
+<p>At interim analyses, use the minimum of the planned information fraction and the actual information fraction to protect against over-spending when events accumulate faster than planned:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Planned info fractions from H1 design</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>os_bm_info_frac <span class="ot">&lt;-</span> ossub<span class="sc">$</span>analysis<span class="sc">$</span>info_frac</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>pfs_bm_info_frac <span class="ot">&lt;-</span> pfssub<span class="sc">$</span>analysis<span class="sc">$</span>info_frac</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Actual events observed at each analysis</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>events_os_bm <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">185</span>, <span class="dv">245</span>, <span class="dv">295</span>)    <span class="co"># From simulated/observed data</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>events_pfs_bm <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">265</span>, <span class="dv">310</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Spending time: min(planned, actual) at interims; 1 at final</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>spendingTime_H1 <span class="ot">&lt;-</span> <span class="fu">pmin</span>(os_bm_info_frac, events_os_bm <span class="sc">/</span> <span class="fu">max</span>(events_os_bm))</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>spendingTime_H3 <span class="ot">&lt;-</span> <span class="fu">pmin</span>(pfs_bm_info_frac, events_pfs_bm <span class="sc">/</span> <span class="fu">max</span>(events_pfs_bm))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="alignment-across-populations" class="level3">
+<h3 class="anchored" data-anchor-id="alignment-across-populations">Alignment across populations</h3>
+<p>The overall population (H2, H4) uses the same spending time as its corresponding subgroup hypothesis (H1, H3). This ensures a consistent, pre-specified spending schedule:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>inputResults <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">H =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">3</span>), <span class="fu">rep</span>(<span class="dv">2</span>, <span class="dv">3</span>), <span class="fu">rep</span>(<span class="dv">3</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="dv">4</span>, <span class="dv">2</span>), <span class="dv">5</span>, <span class="dv">6</span>),</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">spendingTime =</span> <span class="fu">c</span>(</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pmin</span>(os_bm_info_frac, events_os_bm <span class="sc">/</span> <span class="fu">max</span>(events_os_bm)),    <span class="co"># H1: OS BM+</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pmin</span>(os_bm_info_frac, events_os_bm <span class="sc">/</span> <span class="fu">max</span>(events_os_bm)),    <span class="co"># H2: OS All (same as H1)</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pmin</span>(pfs_bm_info_frac, events_pfs_bm <span class="sc">/</span> <span class="fu">max</span>(events_pfs_bm)), <span class="co"># H3: PFS BM+</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pmin</span>(pfs_bm_info_frac, events_pfs_bm <span class="sc">/</span> <span class="fu">max</span>(events_pfs_bm)), <span class="co"># H4: PFS All (same as H3)</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="cn">NA</span>, <span class="cn">NA</span>                                                        <span class="co"># H5, H6: ORR (not GSD)</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... other columns</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="stratified-orr" class="level2">
+<h2 class="anchored" data-anchor-id="stratified-orr">Stratified ORR power with gs_power_rd()</h2>
+<p>For the overall population ORR, use <code>gs_power_rd()</code> with stratified inputs and INVAR (inverse-variance) weighting instead of <code>fixed_design_rd()</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>orr_all <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">gs_power_rd</span>(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_c =</span> <span class="fu">tibble</span>(<span class="at">stratum =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>),</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">rate =</span> <span class="fu">c</span>(orr_ctrl_bm_pos, orr_ctrl_bm_neg)),</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_e =</span> <span class="fu">tibble</span>(<span class="at">stratum =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>),</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">rate =</span> <span class="fu">c</span>(orr_exp_bm_pos, orr_exp_bm_neg)),</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">tibble</span>(<span class="at">stratum =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>),</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">n =</span> <span class="fu">c</span>(n_bm, n_bm_neg),</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">analysis =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)),</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">rd0 =</span> <span class="dv">0</span>,</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">ratio =</span> <span class="dv">1</span>,</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">weight =</span> <span class="st">"invar"</span>,</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> gsDesign2<span class="sc">::</span>gs_spending_bound,</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">upar =</span> <span class="fu">list</span>(<span class="at">sf =</span> gsDesign<span class="sc">::</span>sfLDOF, <span class="at">total_spend =</span> alphaHypotheses[<span class="dv">6</span>]),</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> gsDesign2<span class="sc">::</span>gs_b,</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">lpar =</span> <span class="sc">-</span><span class="cn">Inf</span>,</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">test_lower =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">info_scale =</span> <span class="st">"h0_h1_info"</span>,</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">binding =</span> <span class="cn">FALSE</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(orr_all) <span class="sc">%&gt;%</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">tab_header</span>(<span class="at">title =</span> <span class="st">"Power for ORR in Overall population (stratified)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="display-bounds" class="level2">
+<h2 class="anchored" data-anchor-id="display-bounds">Displaying design bounds</h2>
+<p>Use <code>gs_bound_summary()</code> to display group sequential bounds in a table:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>gsDesign2<span class="sc">::</span><span class="fu">gs_bound_summary</span>(ossub) <span class="sc">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">tab_header</span>(<span class="at">title =</span> <span class="st">"Design for OS in the BM+ population"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="repeated-p-values" class="level2">
+<h2 class="anchored" data-anchor-id="repeated-p-values">Repeated p-values for verification</h2>
+<p>In the verification step, compute both <strong>sequential p-values</strong> (cumulative evidence through analysis k) and <strong>repeated p-values</strong> (evidence at analysis k alone):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (aa <span class="cf">in</span> <span class="fu">seq_len</span>(n_analyses)) {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Sequential p-value: observed Z at analyses 1..aa, padded with 0.9999 after</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  z_seq <span class="ot">&lt;-</span> <span class="fu">c</span>(all_z[<span class="dv">1</span><span class="sc">:</span>aa], <span class="fu">rep</span>(<span class="sc">-</span><span class="fu">qnorm</span>(<span class="fl">0.9999</span>), n_analyses <span class="sc">-</span> aa))</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  seq_p_by_analysis[aa] <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">sequential_pval</span>(</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">gs_design =</span> d2,</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">event =</span> n.I,</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">z =</span> z_seq,</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">ustime =</span> usTime,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">interval =</span> <span class="fu">c</span>(<span class="fl">1e-05</span>, <span class="fl">0.9999</span>)</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Repeated p-value: observed Z at analysis aa ONLY, 0.9999 elsewhere</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  z_rep <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="sc">-</span><span class="fu">qnorm</span>(<span class="fl">0.9999</span>), n_analyses)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  z_rep[aa] <span class="ot">&lt;-</span> all_z[aa]</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  rep_p_by_analysis[aa] <span class="ot">&lt;-</span> gsDesign2<span class="sc">::</span><span class="fu">sequential_pval</span>(</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">gs_design =</span> d2,</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">event =</span> n.I,</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">z =</span> z_rep,</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">ustime =</span> usTime,</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">interval =</span> <span class="fu">c</span>(<span class="fl">1e-05</span>, <span class="fl">0.9999</span>)</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The sequential p-value is non-decreasing: it uses all evidence through analysis k. The repeated p-value isolates the contribution of a single analysis, analogous to the repeated confidence interval.</p>
+</section>
+<section id="simulation" class="level2">
+<h2 class="anchored" data-anchor-id="simulation">Simulation with illness-death model</h2>
+<p>The vignette template uses an illness-death model for realistic simulation of correlated OS, PFS, and ORR endpoints. The model has four states: 0 (alive, no response/progression), 1 (responded), 2 (progressed), 3 (dead).</p>
+<p>See the illness-death model skill for full details. Brief usage:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"inst/simulation/sim_illness_death.R"</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"inst/simulation/cut_illness_death.R"</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Build transition rates from clinical assumptions</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>transition_rate <span class="ot">&lt;-</span> <span class="fu">build_transition_rates</span>(</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">strata =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>),</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatments =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_pfs =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="dv">5</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="dv">5</span>),</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">median_os =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="dv">12</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="dv">12</span>),</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">orr =</span> <span class="fu">list</span>(</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"BM+"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">control =</span> <span class="fl">0.15</span>, <span class="at">experimental =</span> <span class="fl">0.30</span>),</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"BM-"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">control =</span> <span class="fl">0.15</span>, <span class="at">experimental =</span> <span class="fl">0.12</span>)</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_pfs =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="fl">0.65</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="fl">1.2</span>),</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr_os =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="fl">0.70</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="fl">1.1</span>)</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate one trial</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>sim_data <span class="ot">&lt;-</span> <span class="fu">sim_illness_death</span>(</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">500</span>,</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="fu">data.frame</span>(<span class="at">stratum =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>), <span class="at">p =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>)),</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">block =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"control"</span>, <span class="st">"experimental"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">6.25</span>, <span class="fl">12.5</span>, <span class="fl">18.75</span>, <span class="dv">25</span>), <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">12</span>)),</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">transition_rate =</span> transition_rate</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Determine analysis cut dates</span></span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>analyses <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">min_followup =</span> <span class="dv">6</span>, <span class="at">endpoint =</span> <span class="cn">NULL</span>, <span class="at">event_target =</span> <span class="cn">NULL</span>,</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>       <span class="at">target_stratum =</span> <span class="cn">NULL</span>, <span class="at">max_followup =</span> <span class="cn">NULL</span>),</span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">min_followup =</span> <span class="dv">14</span>, <span class="at">endpoint =</span> <span class="st">"PFS"</span>, <span class="at">event_target =</span> <span class="dv">310</span>,</span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>       <span class="at">target_stratum =</span> <span class="st">"BM+"</span>, <span class="at">max_followup =</span> <span class="dv">17</span>),</span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">min_followup =</span> <span class="dv">24</span>, <span class="at">endpoint =</span> <span class="st">"OS"</span>, <span class="at">event_target =</span> <span class="dv">295</span>,</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>       <span class="at">target_stratum =</span> <span class="st">"BM+"</span>, <span class="at">max_followup =</span> <span class="dv">30</span>)</span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>cut_dates <span class="ot">&lt;-</span> <span class="fu">get_analysis_dates</span>(sim_data, analyses)</span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Cut data to ADTTE format</span></span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>adtte <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">seq_along</span>(cut_dates), <span class="cf">function</span>(i) {</span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">cut_illness_death</span>(sim_data, cut_dates[i])</span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a>  d<span class="sc">$</span>ANALYSIS <span class="ot">&lt;-</span> i</span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a>  d</span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="p-value-computation" class="level2">
+<h2 class="anchored" data-anchor-id="p-value-computation">P-value computation, theoretical curves, and KM plots</h2>
+<p>These topics are covered in detail in the <strong>illness-death model</strong> skill: - <code>logrank_pval()</code> — 1-sided logrank test with stratification pitfall - <code>rd_pval()</code> — Stratified risk difference test (ORR) - Theoretical survival curves from <code>.pfs_cdf()</code> / <code>.os_cdf()</code> - Prevalence-weighted overall population curves - Computing p-values across analyses for the 6-hypothesis template</p>
+</section>
+<section id="wpgsd" class="level2">
+<h2 class="anchored" data-anchor-id="wpgsd">WPGSD analysis</h2>
+<p>The wpgsd package accounts for group sequential and population-induced correlations.</p>
+<section id="correlation-matrix-construction" class="level3">
+<h3 class="anchored" data-anchor-id="correlation-matrix-construction">Correlation matrix construction</h3>
+<p>For nested populations (BM+ ⊂ Overall), the event-count matrix D has entries: - D[Hi_As, Hi_At] = events_i at min(s,t) (within-hypothesis, across-analysis) - D[Hi_As, Hj_At] = intersection events at min(s,t) (cross-hypothesis) - Intersection for nested populations = subgroup events at min(s,t)</p>
+<p><strong>Bug in <code>generate_corr()</code> for k &gt; 2</strong>: The function incorrectly computes within-hypothesis cross-analysis entries for non-adjacent analyses. Use <code>generate_corr()</code> only for k = 2. For k &gt; 2, build D manually and compute <code>corr = diag(1/sqrt(diag(D))) %*% D %*% diag(1/sqrt(diag(D)))</code>.</p>
+</section>
+<section id="generate_bounds-and-closed_test" class="level3">
+<h3 class="anchored" data-anchor-id="generate_bounds-and-closed_test">generate_bounds and closed_test</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sub-graph: 2 hypotheses with full reallocation</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>m_sub <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>)  <span class="co"># weights must be &gt; 0 (gsDesign requires alpha &gt; 0)</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>bound_wpgsd <span class="ot">&lt;-</span> wpgsd<span class="sc">::</span><span class="fu">generate_bounds</span>(</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="dv">3</span>, <span class="at">k =</span> n_analyses, <span class="at">w =</span> w, <span class="at">m =</span> m_sub, <span class="at">corr =</span> corr,</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> total_alpha_for_endpoint,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">sf =</span> <span class="fu">list</span>(gsDesign<span class="sc">::</span>sfLDOF, gsDesign<span class="sc">::</span>sfLDOF),</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">sfparm =</span> <span class="fu">list</span>(<span class="dv">0</span>, <span class="dv">0</span>),</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">t =</span> <span class="fu">list</span>(info_frac_h1, info_frac_h2)</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>ct <span class="ot">&lt;-</span> wpgsd<span class="sc">::</span><span class="fu">closed_test</span>(bound_wpgsd, p_obs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="theoretical-basis" class="level2">
+<h2 class="anchored" data-anchor-id="theoretical-basis">Theoretical basis: Maurer-Bretz framework</h2>
+<p><strong>Reference</strong>: Maurer W, Bretz F. Multiple testing in group sequential trials using graphical approaches. <em>Stat Biopharm Res</em> 2013; 5:311–320.</p>
+<section id="algorithm-1-sequentially-rejective-graphical-procedure-for-gsd" class="level3">
+<h3 class="anchored" data-anchor-id="algorithm-1-sequentially-rejective-graphical-procedure-for-gsd">Algorithm 1: Sequentially rejective graphical procedure for GSD</h3>
+<p>The Maurer-Bretz algorithm extends the graphical approach of Bretz et al. (2009) to group sequential trials. At each analysis, it operates exactly like the non-sequential graphical procedure but uses group sequential nominal significance levels instead of fixed levels.</p>
+<ol type="1">
+<li><strong>Initialize</strong>: Set <span class="math inline">\(t = 1\)</span>, <span class="math inline">\(I = \{1, \ldots, h\}\)</span> (active hypotheses)</li>
+<li><strong>At analysis <span class="math inline">\(t\)</span></strong>: Compute nominal p-values <span class="math inline">\(p_{i,t}\)</span> and group sequential nominal significance levels <span class="math inline">\(\alpha^*_{i,t}(w_i(I) \cdot \alpha)\)</span> for each <span class="math inline">\(i \in I\)</span></li>
+<li><strong>If <span class="math inline">\(p_{j,t} \leq \alpha^*_{j,t}(w_j(I) \cdot \alpha)\)</span> for some <span class="math inline">\(j\)</span></strong>: Reject <span class="math inline">\(H_j\)</span>, update the graph (weights and transitions), repeat step 2</li>
+<li><strong>If no rejection and <span class="math inline">\(t &lt; k\)</span></strong>: Continue to next analysis <span class="math inline">\(t \to t + 1\)</span></li>
+</ol>
+<p><strong>Key insight</strong>: The nominal level <span class="math inline">\(\alpha^*_{i,t}(\gamma)\)</span> is the group sequential boundary at analysis <span class="math inline">\(t\)</span> for a design with total alpha <span class="math inline">\(= \gamma\)</span>. This is NOT the same as <span class="math inline">\(w_i(I) \cdot \alpha^*_{i,t}(\alpha)\)</span> — i.e., one cannot simply multiply a fixed-alpha boundary by the weight.</p>
+</section>
+<section id="equivalence-with-sequential-p-values" class="level3">
+<h3 class="anchored" data-anchor-id="equivalence-with-sequential-p-values">Equivalence with sequential p-values</h3>
+<p>Algorithm 1 can equivalently be performed using sequential p-values (Liu &amp; Anderson, 2008):</p>
+<ol type="1">
+<li>At each analysis <span class="math inline">\(t\)</span>, compute sequential p-values <span class="math inline">\(p^s_{i,t}\)</span> for each <span class="math inline">\(i\)</span></li>
+<li>Reject <span class="math inline">\(H_j\)</span> if <span class="math inline">\(p^s_{j,t} \leq \alpha \cdot w_j(I)\)</span></li>
+<li>Update graph and repeat</li>
+</ol>
+<p>This is exactly what <code>graphicalMCP::graph_test_shortcut(g, p, alpha)</code> does when called with sequential p-values at each analysis.</p>
+</section>
+<section id="well-ordered-spending-functions" class="level3">
+<h3 class="anchored" data-anchor-id="well-ordered-spending-functions">Well-ordered spending functions</h3>
+<p>For the procedure to be consonant (sequentially rejective), the spending function family must produce nominal significance levels <span class="math inline">\(\alpha^*_t(\gamma)\)</span> that are non-decreasing in <span class="math inline">\(\gamma\)</span>. This is called the <strong>well-ordering</strong> property (Liu &amp; Anderson, 2008).</p>
+<p><strong>Sufficient condition</strong>: The spent levels <span class="math inline">\(\alpha_t(\gamma) = a(\gamma, y_t) - a(\gamma, y_{t-1})\)</span> are nondecreasing in <span class="math inline">\(\gamma\)</span> for all analyses <span class="math inline">\(t\)</span>. For differentiable spending functions, <span class="math inline">\(\partial^2 a(\gamma, y) / \partial\gamma \partial y \geq 0\)</span> suffices.</p>
+<p><strong>Qualified families</strong>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 46%">
+<col style="width: 36%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Spending function</th>
+<th>Well-ordered?</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Power: <span class="math inline">\(a(\gamma,y) = \gamma y^\rho\)</span></td>
+<td>Yes (all <span class="math inline">\(\rho &gt; 0\)</span>)</td>
+<td>Includes <span class="math inline">\(\rho=3\)</span> (OBF-like) and <span class="math inline">\(\rho=1\)</span> (Pocock-like)</td>
+</tr>
+<tr class="even">
+<td>Pocock-type: <span class="math inline">\(a(\gamma,y) = \gamma \ln(1+(e-1)y)\)</span></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>OBF-type: <span class="math inline">\(a(\gamma,y) = 2(1 - \Phi(\Phi^{-1}(1-\gamma/2)/\sqrt{y}))\)</span></td>
+<td>Yes for <span class="math inline">\(\gamma &lt; 0.318\)</span></td>
+<td>Covers <span class="math inline">\(\alpha = 0.025\)</span> and all practical levels</td>
+</tr>
+<tr class="even">
+<td><code>sfLDOF</code> in gsDesign</td>
+<td>Yes for <span class="math inline">\(\gamma &lt; 0.318\)</span></td>
+<td>Same as OBF-type</td>
+</tr>
+<tr class="odd">
+<td><code>sfHSD</code> with <span class="math inline">\(\gamma &lt; 0\)</span></td>
+<td>Verify case by case</td>
+<td>Generally well-ordered for practical levels</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="why-naive-hierarchical-testing-fails-in-gsd" class="level3">
+<h3 class="anchored" data-anchor-id="why-naive-hierarchical-testing-fails-in-gsd">Why naive hierarchical testing fails in GSD</h3>
+<p><strong>Hung, Wang &amp; O’Neill (2007)</strong> showed that the following naive strategy inflates the FWER: “test the secondary endpoint at level <span class="math inline">\(\alpha\)</span> whenever the primary endpoint is significant at an interim or final analysis.”</p>
+<p>The problem: in a GSD with non-binding futility, the primary can be significant at an interim but not at the final analysis (if the trial continues and evidence weakens). Testing the secondary at a later analysis with full <span class="math inline">\(\alpha\)</span> double-counts the alpha already spent by the primary.</p>
+<p><strong>Solution</strong>: Use sequential p-values for each hypothesis and apply the graphical procedure (Algorithm 1) at each analysis. This is exactly the approach implemented in the graphicalMCP-gsDesign2 workflow.</p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/graphicalMCP-gsDesign2.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

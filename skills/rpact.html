@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Guide users through confirmatory adaptive clinical trial design and analysis using the rpact R package. Use this skill when the user asks about: adaptive designs, sample size reassessment, conditional power, inverse normal combination test, Fisher combination test, multi-stage designs, or rpact design objects.">
+
+<title>rpact – gsDesignSkills</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-2e5cbef59756d87313a778b4017e2694.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">gsDesignSkills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../skills/index.html"> 
+<span class="menu-text">Skills</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../ai-skills-gsd.html"> 
+<span class="menu-text">Presentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../multi-endpoint-sim.html"> 
+<span class="menu-text">Simulation Example</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../news.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/keaven/gsDesignSkills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/gsDesign.html">Individual Packages</a></li><li class="breadcrumb-item"><a href="../skills/rpact.html">rpact</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Skills Catalog</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Individual Packages</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/rpact.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">rpact</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/simtrial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">simtrial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/wpgsd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">wpgsd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesignNB.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesignNB</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gMCPLite.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gMCPLite</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-Package</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP-gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP-gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/illness-death.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">illness-death</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/multi-endpoint-sim.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">multi-endpoint-sim</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#adaptive-clinical-trial-design-with-rpact" id="toc-adaptive-clinical-trial-design-with-rpact" class="nav-link active" data-scroll-target="#adaptive-clinical-trial-design-with-rpact">Adaptive Clinical Trial Design with rpact</a>
+  <ul class="collapse">
+  <li><a href="#api-reference" id="toc-api-reference" class="nav-link" data-scroll-target="#api-reference">API reference</a></li>
+  <li><a href="#key-functions" id="toc-key-functions" class="nav-link" data-scroll-target="#key-functions">Key functions</a>
+  <ul class="collapse">
+  <li><a href="#trial-design" id="toc-trial-design" class="nav-link" data-scroll-target="#trial-design">Trial design</a></li>
+  <li><a href="#sample-size" id="toc-sample-size" class="nav-link" data-scroll-target="#sample-size">Sample size</a></li>
+  <li><a href="#power" id="toc-power" class="nav-link" data-scroll-target="#power">Power</a></li>
+  <li><a href="#simulation" id="toc-simulation" class="nav-link" data-scroll-target="#simulation">Simulation</a></li>
+  <li><a href="#analysis" id="toc-analysis" class="nav-link" data-scroll-target="#analysis">Analysis</a></li>
+  <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">Inference</a></li>
+  <li><a href="#utilities" id="toc-utilities" class="nav-link" data-scroll-target="#utilities">Utilities</a></li>
+  <li><a href="#plotting" id="toc-plotting" class="nav-link" data-scroll-target="#plotting">Plotting</a></li>
+  <li><a href="#io" id="toc-io" class="nav-link" data-scroll-target="#io">I/O</a></li>
+  </ul></li>
+  <li><a href="#workflow-patterns" id="toc-workflow-patterns" class="nav-link" data-scroll-target="#workflow-patterns">Workflow patterns</a></li>
+  <li><a href="#important-design-considerations" id="toc-important-design-considerations" class="nav-link" data-scroll-target="#important-design-considerations">Important design considerations</a></li>
+  <li><a href="#code-patterns" id="toc-code-patterns" class="nav-link" data-scroll-target="#code-patterns">Code Patterns</a></li>
+  </ul></li>
+  <li><a href="#code-patterns-for-rpact" id="toc-code-patterns-for-rpact" class="nav-link" data-scroll-target="#code-patterns-for-rpact">Code Patterns for rpact</a>
+  <ul class="collapse">
+  <li><a href="#table-of-contents" id="toc-table-of-contents" class="nav-link" data-scroll-target="#table-of-contents">Table of Contents</a></li>
+  <li><a href="#group-sequential" id="toc-group-sequential" class="nav-link" data-scroll-target="#group-sequential">Group sequential designs</a>
+  <ul class="collapse">
+  <li><a href="#obrien-fleming-design-default" id="toc-obrien-fleming-design-default" class="nav-link" data-scroll-target="#obrien-fleming-design-default">O’Brien-Fleming design (default)</a></li>
+  <li><a href="#pocock-design" id="toc-pocock-design" class="nav-link" data-scroll-target="#pocock-design">Pocock design</a></li>
+  <li><a href="#alpha-spending-lan-demets-obrien-fleming" id="toc-alpha-spending-lan-demets-obrien-fleming" class="nav-link" data-scroll-target="#alpha-spending-lan-demets-obrien-fleming">Alpha-spending (Lan-DeMets O’Brien-Fleming)</a></li>
+  <li><a href="#alpha-spending-with-hwang-shih-decani-gamma" id="toc-alpha-spending-with-hwang-shih-decani-gamma" class="nav-link" data-scroll-target="#alpha-spending-with-hwang-shih-decani-gamma">Alpha-spending with Hwang-Shih-DeCani (gamma)</a></li>
+  <li><a href="#non-binding-futility-with-beta-spending" id="toc-non-binding-futility-with-beta-spending" class="nav-link" data-scroll-target="#non-binding-futility-with-beta-spending">Non-binding futility with beta-spending</a></li>
+  <li><a href="#custom-futility-bounds" id="toc-custom-futility-bounds" class="nav-link" data-scroll-target="#custom-futility-bounds">Custom futility bounds</a></li>
+  <li><a href="#design-characteristics" id="toc-design-characteristics" class="nav-link" data-scroll-target="#design-characteristics">Design characteristics</a></li>
+  </ul></li>
+  <li><a href="#adaptive-designs" id="toc-adaptive-designs" class="nav-link" data-scroll-target="#adaptive-designs">Adaptive designs (inverse normal and Fisher)</a>
+  <ul class="collapse">
+  <li><a href="#inverse-normal-combination-test" id="toc-inverse-normal-combination-test" class="nav-link" data-scroll-target="#inverse-normal-combination-test">Inverse normal combination test</a></li>
+  <li><a href="#fisher-combination-test" id="toc-fisher-combination-test" class="nav-link" data-scroll-target="#fisher-combination-test">Fisher combination test</a></li>
+  <li><a href="#fisher-with-no-interaction-method" id="toc-fisher-with-no-interaction-method" class="nav-link" data-scroll-target="#fisher-with-no-interaction-method">Fisher with no interaction method</a></li>
+  </ul></li>
+  <li><a href="#ss-survival" id="toc-ss-survival" class="nav-link" data-scroll-target="#ss-survival">Sample size for survival endpoints</a>
+  <ul class="collapse">
+  <li><a href="#basic-survival-design-hazard-ratio" id="toc-basic-survival-design-hazard-ratio" class="nav-link" data-scroll-target="#basic-survival-design-hazard-ratio">Basic survival design (hazard ratio)</a></li>
+  <li><a href="#using-median-survival-times" id="toc-using-median-survival-times" class="nav-link" data-scroll-target="#using-median-survival-times">Using median survival times</a></li>
+  <li><a href="#using-event-probabilities" id="toc-using-event-probabilities" class="nav-link" data-scroll-target="#using-event-probabilities">Using event probabilities</a></li>
+  <li><a href="#piecewise-exponential-survival" id="toc-piecewise-exponential-survival" class="nav-link" data-scroll-target="#piecewise-exponential-survival">Piecewise exponential survival</a></li>
+  <li><a href="#fixed-design-no-interim" id="toc-fixed-design-no-interim" class="nav-link" data-scroll-target="#fixed-design-no-interim">Fixed design (no interim)</a></li>
+  </ul></li>
+  <li><a href="#ss-means-rates" id="toc-ss-means-rates" class="nav-link" data-scroll-target="#ss-means-rates">Sample size for means and rates</a>
+  <ul class="collapse">
+  <li><a href="#continuous-endpoint-two-sample" id="toc-continuous-endpoint-two-sample" class="nav-link" data-scroll-target="#continuous-endpoint-two-sample">Continuous endpoint (two-sample)</a></li>
+  <li><a href="#one-sample-mean" id="toc-one-sample-mean" class="nav-link" data-scroll-target="#one-sample-mean">One-sample mean</a></li>
+  <li><a href="#binary-endpoint-two-sample" id="toc-binary-endpoint-two-sample" class="nav-link" data-scroll-target="#binary-endpoint-two-sample">Binary endpoint (two-sample)</a></li>
+  <li><a href="#binary-endpoint-with-risk-ratio" id="toc-binary-endpoint-with-risk-ratio" class="nav-link" data-scroll-target="#binary-endpoint-with-risk-ratio">Binary endpoint with risk ratio</a></li>
+  </ul></li>
+  <li><a href="#power" id="toc-power" class="nav-link" data-scroll-target="#power">Power computation</a>
+  <ul class="collapse">
+  <li><a href="#power-for-survival-endpoint" id="toc-power-for-survival-endpoint" class="nav-link" data-scroll-target="#power-for-survival-endpoint">Power for survival endpoint</a></li>
+  <li><a href="#power-for-means" id="toc-power-for-means" class="nav-link" data-scroll-target="#power-for-means">Power for means</a></li>
+  <li><a href="#power-for-rates" id="toc-power-for-rates" class="nav-link" data-scroll-target="#power-for-rates">Power for rates</a></li>
+  </ul></li>
+  <li><a href="#sim-survival" id="toc-sim-survival" class="nav-link" data-scroll-target="#sim-survival">Simulation for survival</a>
+  <ul class="collapse">
+  <li><a href="#two-arm-survival-simulation" id="toc-two-arm-survival-simulation" class="nav-link" data-scroll-target="#two-arm-survival-simulation">Two-arm survival simulation</a></li>
+  <li><a href="#simulation-under-multiple-scenarios" id="toc-simulation-under-multiple-scenarios" class="nav-link" data-scroll-target="#simulation-under-multiple-scenarios">Simulation under multiple scenarios</a></li>
+  <li><a href="#simulation-with-piecewise-survival-delayed-effect" id="toc-simulation-with-piecewise-survival-delayed-effect" class="nav-link" data-scroll-target="#simulation-with-piecewise-survival-delayed-effect">Simulation with piecewise survival (delayed effect)</a></li>
+  </ul></li>
+  <li><a href="#multi-arm" id="toc-multi-arm" class="nav-link" data-scroll-target="#multi-arm">Multi-arm designs and simulation</a>
+  <ul class="collapse">
+  <li><a href="#multi-arm-survival-simulation-dunnett" id="toc-multi-arm-survival-simulation-dunnett" class="nav-link" data-scroll-target="#multi-arm-survival-simulation-dunnett">Multi-arm survival simulation (Dunnett)</a></li>
+  <li><a href="#multi-arm-with-dose-response-means" id="toc-multi-arm-with-dose-response-means" class="nav-link" data-scroll-target="#multi-arm-with-dose-response-means">Multi-arm with dose-response (means)</a></li>
+  <li><a href="#multi-arm-with-arm-dropping" id="toc-multi-arm-with-arm-dropping" class="nav-link" data-scroll-target="#multi-arm-with-arm-dropping">Multi-arm with arm dropping</a></li>
+  </ul></li>
+  <li><a href="#enrichment" id="toc-enrichment" class="nav-link" data-scroll-target="#enrichment">Enrichment designs</a>
+  <ul class="collapse">
+  <li><a href="#enrichment-survival-simulation" id="toc-enrichment-survival-simulation" class="nav-link" data-scroll-target="#enrichment-survival-simulation">Enrichment survival simulation</a></li>
+  </ul></li>
+  <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset">Entering observed data with getDataset</a>
+  <ul class="collapse">
+  <li><a href="#survival-data-cumulative-events-and-logrank-statistics" id="toc-survival-data-cumulative-events-and-logrank-statistics" class="nav-link" data-scroll-target="#survival-data-cumulative-events-and-logrank-statistics">Survival data (cumulative events and logrank statistics)</a></li>
+  <li><a href="#means-data-two-arm" id="toc-means-data-two-arm" class="nav-link" data-scroll-target="#means-data-two-arm">Means data (two-arm)</a></li>
+  <li><a href="#rates-data-two-arm" id="toc-rates-data-two-arm" class="nav-link" data-scroll-target="#rates-data-two-arm">Rates data (two-arm)</a></li>
+  <li><a href="#reading-from-csv" id="toc-reading-from-csv" class="nav-link" data-scroll-target="#reading-from-csv">Reading from CSV</a></li>
+  </ul></li>
+  <li><a href="#analysis" id="toc-analysis" class="nav-link" data-scroll-target="#analysis">Stage results and analysis</a>
+  <ul class="collapse">
+  <li><a href="#computing-stage-results" id="toc-computing-stage-results" class="nav-link" data-scroll-target="#computing-stage-results">Computing stage results</a></li>
+  <li><a href="#full-analysis-results" id="toc-full-analysis-results" class="nav-link" data-scroll-target="#full-analysis-results">Full analysis results</a></li>
+  <li><a href="#checking-test-actions" id="toc-checking-test-actions" class="nav-link" data-scroll-target="#checking-test-actions">Checking test actions</a></li>
+  </ul></li>
+  <li><a href="#conditional-power" id="toc-conditional-power" class="nav-link" data-scroll-target="#conditional-power">Conditional power and sample size reassessment</a>
+  <ul class="collapse">
+  <li><a href="#conditional-power-at-interim" id="toc-conditional-power-at-interim" class="nav-link" data-scroll-target="#conditional-power-at-interim">Conditional power at interim</a></li>
+  <li><a href="#conditional-rejection-probabilities-for-ssr" id="toc-conditional-rejection-probabilities-for-ssr" class="nav-link" data-scroll-target="#conditional-rejection-probabilities-for-ssr">Conditional rejection probabilities (for SSR)</a></li>
+  </ul></li>
+  <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">Adjusted inference (p-values and CIs)</a>
+  <ul class="collapse">
+  <li><a href="#final-p-value" id="toc-final-p-value" class="nav-link" data-scroll-target="#final-p-value">Final p-value</a></li>
+  <li><a href="#final-confidence-interval" id="toc-final-confidence-interval" class="nav-link" data-scroll-target="#final-confidence-interval">Final confidence interval</a></li>
+  <li><a href="#repeated-p-values-and-confidence-intervals" id="toc-repeated-p-values-and-confidence-intervals" class="nav-link" data-scroll-target="#repeated-p-values-and-confidence-intervals">Repeated p-values and confidence intervals</a></li>
+  </ul></li>
+  <li><a href="#piecewise" id="toc-piecewise" class="nav-link" data-scroll-target="#piecewise">Piecewise survival and accrual specification</a>
+  <ul class="collapse">
+  <li><a href="#accrual-time-with-ramp-up" id="toc-accrual-time-with-ramp-up" class="nav-link" data-scroll-target="#accrual-time-with-ramp-up">Accrual time with ramp-up</a></li>
+  <li><a href="#piecewise-exponential-survival-1" id="toc-piecewise-exponential-survival-1" class="nav-link" data-scroll-target="#piecewise-exponential-survival-1">Piecewise exponential survival</a></li>
+  <li><a href="#using-piecewise-objects-in-sample-size" id="toc-using-piecewise-objects-in-sample-size" class="nav-link" data-scroll-target="#using-piecewise-objects-in-sample-size">Using piecewise objects in sample size</a></li>
+  </ul></li>
+  <li><a href="#design-set" id="toc-design-set" class="nav-link" data-scroll-target="#design-set">Comparing designs with getDesignSet</a>
+  <ul class="collapse">
+  <li><a href="#varying-a-single-parameter" id="toc-varying-a-single-parameter" class="nav-link" data-scroll-target="#varying-a-single-parameter">Varying a single parameter</a></li>
+  <li><a href="#comparing-gamma-values" id="toc-comparing-gamma-values" class="nav-link" data-scroll-target="#comparing-gamma-values">Comparing gamma values</a></li>
+  <li><a href="#from-pre-built-designs" id="toc-from-pre-built-designs" class="nav-link" data-scroll-target="#from-pre-built-designs">From pre-built designs</a></li>
+  </ul></li>
+  <li><a href="#plotting" id="toc-plotting" class="nav-link" data-scroll-target="#plotting">Plotting</a>
+  <ul class="collapse">
+  <li><a href="#design-boundaries" id="toc-design-boundaries" class="nav-link" data-scroll-target="#design-boundaries">Design boundaries</a></li>
+  <li><a href="#sample-size-results" id="toc-sample-size-results" class="nav-link" data-scroll-target="#sample-size-results">Sample size results</a></li>
+  <li><a href="#power-curves" id="toc-power-curves" class="nav-link" data-scroll-target="#power-curves">Power curves</a></li>
+  <li><a href="#simulation-results" id="toc-simulation-results" class="nav-link" data-scroll-target="#simulation-results">Simulation results</a></li>
+  <li><a href="#available-plot-types" id="toc-available-plot-types" class="nav-link" data-scroll-target="#available-plot-types">Available plot types</a></li>
+  </ul></li>
+  <li><a href="#reproducible" id="toc-reproducible" class="nav-link" data-scroll-target="#reproducible">Reproducible code with getObjectRCode</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/rpact.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/gsDesign.html">Individual Packages</a></li><li class="breadcrumb-item"><a href="../skills/rpact.html">rpact</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">rpact</h1>
+<p class="subtitle lead">Confirmatory Adaptive Clinical Trial Design</p>
+</div>
+
+<div>
+  <div class="description">
+    <p>Guide users through confirmatory adaptive clinical trial design and analysis using the rpact R package. Use this skill when the user asks about: adaptive designs, sample size reassessment, conditional power, inverse normal combination test, Fisher combination test, multi-stage designs, or rpact design objects.</p>
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="adaptive-clinical-trial-design-with-rpact" class="level1">
+<h1>Adaptive Clinical Trial Design with rpact</h1>
+<p><strong>Note</strong>: This skill targets rpact &gt;= 4.4.0 (CRAN). Dev version 4.4.0.9305 is on GitHub.</p>
+<section id="api-reference" class="level2">
+<h2 class="anchored" data-anchor-id="api-reference">API reference</h2>
+<ul>
+<li>Full function docs: <code>references/llms.txt</code> (source: https://docs.rpact.org/reference/)</li>
+<li>Workflow patterns: <code>references/code_patterns.md</code></li>
+</ul>
+</section>
+<section id="key-functions" class="level2">
+<h2 class="anchored" data-anchor-id="key-functions">Key functions</h2>
+<section id="trial-design" class="level3">
+<h3 class="anchored" data-anchor-id="trial-design">Trial design</h3>
+<ul>
+<li><code>getDesignGroupSequential()</code> - Group sequential design (O’Brien-Fleming, Pocock, alpha-spending, etc.)</li>
+<li><code>getDesignInverseNormal()</code> - Inverse normal combination test for adaptive designs</li>
+<li><code>getDesignFisher()</code> - Fisher combination test for adaptive designs</li>
+<li><code>getDesignConditionalDunnett()</code> - Conditional Dunnett test for multi-arm</li>
+<li><code>getDesignCharacteristics()</code> - Design characteristics and properties</li>
+<li><code>getDesignSet()</code> - Compare multiple designs</li>
+<li><code>getFutilityBounds()</code> - Convert futility bounds between scales (z-value, p-value, conditional power, predictive power, reverse conditional power, effect estimate) (new in 4.3.0)</li>
+</ul>
+</section>
+<section id="sample-size" class="level3">
+<h3 class="anchored" data-anchor-id="sample-size">Sample size</h3>
+<ul>
+<li><code>getSampleSizeMeans()</code> - Continuous endpoints</li>
+<li><code>getSampleSizeRates()</code> - Binary endpoints</li>
+<li><code>getSampleSizeSurvival()</code> - Time-to-event endpoints</li>
+<li><code>getSampleSizeCounts()</code> - Count data endpoints</li>
+</ul>
+</section>
+<section id="power" class="level3">
+<h3 class="anchored" data-anchor-id="power">Power</h3>
+<ul>
+<li><code>getPowerMeans()</code> - Continuous endpoints</li>
+<li><code>getPowerRates()</code> - Binary endpoints</li>
+<li><code>getPowerSurvival()</code> - Time-to-event endpoints</li>
+<li><code>getPowerCounts()</code> - Count data endpoints</li>
+<li><code>getPowerAndAverageSampleNumber()</code> - Power and ASN</li>
+</ul>
+</section>
+<section id="simulation" class="level3">
+<h3 class="anchored" data-anchor-id="simulation">Simulation</h3>
+<ul>
+<li><code>getSimulationMeans()</code> / <code>getSimulationRates()</code> / <code>getSimulationSurvival()</code> / <code>getSimulationCounts()</code> - Two-arm</li>
+<li><code>getSimulationMultiArmMeans()</code> / <code>getSimulationMultiArmRates()</code> / <code>getSimulationMultiArmSurvival()</code> - Multi-arm</li>
+<li><code>getSimulationEnrichmentMeans()</code> / <code>getSimulationEnrichmentRates()</code> / <code>getSimulationEnrichmentSurvival()</code> - Enrichment</li>
+</ul>
+</section>
+<section id="analysis" class="level3">
+<h3 class="anchored" data-anchor-id="analysis">Analysis</h3>
+<ul>
+<li><code>getDataset()</code> - Enter stage-wise observed data</li>
+<li><code>getStageResults()</code> - Compute stage-wise test statistics</li>
+<li><code>getAnalysisResults()</code> - Final adaptive analysis results</li>
+<li><code>getClosedCombinationTestResults()</code> - Closed testing for multi-arm</li>
+<li><code>getClosedConditionalDunnettTestResults()</code> - Dunnett closed testing</li>
+<li><code>getConditionalPower()</code> - Conditional power at interim</li>
+<li><code>getConditionalRejectionProbabilities()</code> - CRP for adaptive recalculation</li>
+</ul>
+</section>
+<section id="inference" class="level3">
+<h3 class="anchored" data-anchor-id="inference">Inference</h3>
+<ul>
+<li><code>getFinalPValue()</code> - Adjusted final p-value</li>
+<li><code>getFinalConfidenceInterval()</code> - Adjusted confidence interval</li>
+<li><code>getRepeatedPValues()</code> - Repeated p-values across stages</li>
+<li><code>getRepeatedConfidenceIntervals()</code> - Repeated CIs across stages</li>
+</ul>
+</section>
+<section id="utilities" class="level3">
+<h3 class="anchored" data-anchor-id="utilities">Utilities</h3>
+<ul>
+<li><code>getAccrualTime()</code> - Define accrual period</li>
+<li><code>getPiecewiseSurvivalTime()</code> - Piecewise exponential survival</li>
+<li><code>getEventProbabilities()</code> - Event probability computation</li>
+<li><code>getNumberOfSubjects()</code> - Expected accrual over time</li>
+<li><code>getObservedInformationRates()</code> - Observed information rates</li>
+<li><code>getTestActions()</code> - Decision at each stage</li>
+<li><code>getPerformanceScore()</code> - Design performance evaluation</li>
+</ul>
+</section>
+<section id="plotting" class="level3">
+<h3 class="anchored" data-anchor-id="plotting">Plotting</h3>
+<ul>
+<li><code>plot()</code> methods for all design, power, simulation, and analysis objects</li>
+<li><code>getAvailablePlotTypes()</code> - List available plot types for an object</li>
+</ul>
+</section>
+<section id="io" class="level3">
+<h3 class="anchored" data-anchor-id="io">I/O</h3>
+<ul>
+<li><code>readDataset()</code> / <code>readDatasets()</code> - Read data from CSV</li>
+<li><code>writeDataset()</code> / <code>writeDatasets()</code> - Write data to CSV</li>
+<li><code>getObjectRCode()</code> - Generate reproducible R code for any rpact object</li>
+</ul>
+</section>
+</section>
+<section id="workflow-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="workflow-patterns">Workflow patterns</h2>
+<p>For detailed code templates, read <code>references/code_patterns.md</code>.</p>
+<p>Topics covered: - Group sequential designs (OF, Pocock, alpha-spending, HSD, custom futility) - Adaptive designs (inverse normal combination, Fisher combination) - Sample size for survival (HR, medians, event probabilities, piecewise) - Sample size for means and rates (one-sample, two-sample, risk ratio) - Power computation (survival, means, rates) - Simulation for survival (two-arm, piecewise/NPH, multiple scenarios) - Multi-arm designs and simulation (Dunnett, arm selection, dose-response) - Enrichment designs (subgroup-specific effects) - Entering observed data with <code>getDataset()</code> (survival, means, rates) - Stage results and analysis (<code>getStageResults()</code>, <code>getAnalysisResults()</code>, <code>getTestActions()</code>) - Conditional power and sample size reassessment - Adjusted inference (final p-values, CIs, repeated p-values/CIs) - Piecewise survival and accrual specification - Comparing designs with <code>getDesignSet()</code> - Plotting (boundaries, power curves, simulation results) - Reproducible code with <code>getObjectRCode()</code></p>
+</section>
+<section id="important-design-considerations" class="level2">
+<h2 class="anchored" data-anchor-id="important-design-considerations">Important design considerations</h2>
+<ul>
+<li><strong><code>typeOfDesign</code> choices</strong>: “OF” (O’Brien-Fleming), “P” (Pocock), “asOF”/“asHSD”/“asKD” (alpha-spending variants). Alpha-spending versions (“as*“) allow unequal information rate spacing</li>
+<li><strong><code>getDesignInverseNormal()</code> vs <code>getDesignGroupSequential()</code></strong>: Same signature, but inverse normal is for adaptive designs where sample size can be recalculated between stages</li>
+<li><strong><code>bindingFutility = FALSE</code></strong>: Non-binding futility is standard for confirmatory trials; efficacy bounds computed ignoring futility</li>
+<li><strong>Survival parameterization</strong>: Can specify treatment effect via <code>hazardRatio</code>, <code>median1</code>/<code>median2</code>, <code>lambda1</code>/<code>lambda2</code>, or <code>pi1</code>/<code>pi2</code> (event probabilities) — use only one</li>
+<li><strong><code>plannedEvents</code></strong> in simulation: Vector of cumulative event counts at each analysis (not information fractions)</li>
+<li><strong>Multi-arm <code>intersectionTest</code></strong>: “Dunnett” (parametric, most powerful), “Simes” (non-parametric), “Bonferroni” (conservative)</li>
+<li><strong><code>typeOfSelection</code></strong>: Controls arm selection at interim — “best” (highest effect), “rBest” (r best arms), “epsilon” (within epsilon of best), “all” (no dropping)</li>
+<li><strong><code>getObjectRCode()</code></strong>: Use to generate reproducible R code for any rpact object — invaluable for reporting and validation</li>
+<li><strong><code>futilityBoundsScale</code> (v4.3.0+)</strong>: In <code>getDesignInverseNormal()</code> and <code>getDesignGroupSequential()</code>, specify futility bounds on alternative scales (p-value, conditional power, etc.) that are internally converted</li>
+<li><strong><code>alpha0Scale</code> (v4.3.0+)</strong>: In <code>getDesignFisher()</code>, specify alpha0 bounds on alternative scales</li>
+<li><strong><code>efficacyStops</code> / <code>futilityStops</code> (v4.2.1+)</strong>: Control which stages have efficacy/futility stopping</li>
+<li><strong>Dose-response (v4.2.0+)</strong>: Multi-arm simulations support <code>doseLevels</code> for linear or sigmoid Emax models</li>
+<li><strong>Unequal variances (v4.2.0+)</strong>: <code>getSampleSizeMeans()</code>, <code>getPowerMeans()</code>, <code>getSimulationMeans()</code> support different variances per group</li>
+<li><strong>rpact defaults</strong>: <code>alpha = 0.05</code>, <code>beta = 0.2</code>, <code>kMax = NA</code> (inferred), <code>sided = 1</code> — always set explicitly for clinical trial designs</li>
+</ul>
+</section>
+<section id="code-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="code-patterns">Code Patterns</h2>
+</section>
+</section>
+<section id="code-patterns-for-rpact" class="level1">
+<h1>Code Patterns for rpact</h1>
+<p><strong>Note</strong>: These patterns target rpact &gt;= 4.x (CRAN). See https://docs.rpact.org for full documentation.</p>
+<section id="table-of-contents" class="level2">
+<h2 class="anchored" data-anchor-id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#group-sequential">Group sequential designs</a></li>
+<li><a href="#adaptive-designs">Adaptive designs (inverse normal and Fisher)</a></li>
+<li><a href="#ss-survival">Sample size for survival endpoints</a></li>
+<li><a href="#ss-means-rates">Sample size for means and rates</a></li>
+<li><a href="#power">Power computation</a></li>
+<li><a href="#sim-survival">Simulation for survival</a></li>
+<li><a href="#multi-arm">Multi-arm designs and simulation</a></li>
+<li><a href="#enrichment">Enrichment designs</a></li>
+<li><a href="#dataset">Entering observed data with getDataset</a></li>
+<li><a href="#analysis">Stage results and analysis</a></li>
+<li><a href="#conditional-power">Conditional power and sample size reassessment</a></li>
+<li><a href="#inference">Adjusted inference (p-values and CIs)</a></li>
+<li><a href="#piecewise">Piecewise survival and accrual specification</a></li>
+<li><a href="#design-set">Comparing designs with getDesignSet</a></li>
+<li><a href="#plotting">Plotting</a></li>
+<li><a href="#reproducible">Reproducible code with getObjectRCode</a></li>
+</ol>
+<hr>
+</section>
+<section id="group-sequential" class="level2">
+<h2 class="anchored" data-anchor-id="group-sequential">Group sequential designs</h2>
+<p><code>getDesignGroupSequential()</code> creates classical group sequential designs with spending functions or fixed boundary types.</p>
+<section id="obrien-fleming-design-default" class="level3">
+<h3 class="anchored" data-anchor-id="obrien-fleming-design-default">O’Brien-Fleming design (default)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rpact)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">beta =</span> <span class="fl">0.2</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"OF"</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>design</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="pocock-design" class="level3">
+<h3 class="anchored" data-anchor-id="pocock-design">Pocock design</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">beta =</span> <span class="fl">0.2</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"P"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="alpha-spending-lan-demets-obrien-fleming" class="level3">
+<h3 class="anchored" data-anchor-id="alpha-spending-lan-demets-obrien-fleming">Alpha-spending (Lan-DeMets O’Brien-Fleming)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">beta =</span> <span class="fl">0.2</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">informationRates =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span>   <span class="co"># Alpha-spending OF approximation</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="alpha-spending-with-hwang-shih-decani-gamma" class="level3">
+<h3 class="anchored" data-anchor-id="alpha-spending-with-hwang-shih-decani-gamma">Alpha-spending with Hwang-Shih-DeCani (gamma)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">informationRates =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asHSD"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">gammaA =</span> <span class="sc">-</span><span class="dv">4</span>              <span class="co"># Gamma parameter (negative = conservative early)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="non-binding-futility-with-beta-spending" class="level3">
+<h3 class="anchored" data-anchor-id="non-binding-futility-with-beta-spending">Non-binding futility with beta-spending</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">beta =</span> <span class="fl">0.2</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">informationRates =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeBetaSpending =</span> <span class="st">"bsOF"</span>,   <span class="co"># Beta-spending for futility</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">bindingFutility =</span> <span class="cn">FALSE</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="custom-futility-bounds" class="level3">
+<h3 class="anchored" data-anchor-id="custom-futility-bounds">Custom futility bounds</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">beta =</span> <span class="fl">0.2</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">informationRates =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>),</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">futilityBounds =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>),  <span class="co"># Z-scale futility bounds at IA1, IA2</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">bindingFutility =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="design-characteristics" class="level3">
+<h3 class="anchored" data-anchor-id="design-characteristics">Design characteristics</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examine properties of any design</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>chars <span class="ot">&lt;-</span> <span class="fu">getDesignCharacteristics</span>(design)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>chars  <span class="co"># Shows power, ASN, stopping probabilities</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="adaptive-designs" class="level2">
+<h2 class="anchored" data-anchor-id="adaptive-designs">Adaptive designs (inverse normal and Fisher)</h2>
+<section id="inverse-normal-combination-test" class="level3">
+<h3 class="anchored" data-anchor-id="inverse-normal-combination-test">Inverse normal combination test</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For adaptive designs where sample size can be recalculated mid-trial</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>design_in <span class="ot">&lt;-</span> <span class="fu">getDesignInverseNormal</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">2</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">beta =</span> <span class="fl">0.2</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="fisher-combination-test" class="level3">
+<h3 class="anchored" data-anchor-id="fisher-combination-test">Fisher combination test</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>design_fisher <span class="ot">&lt;-</span> <span class="fu">getDesignFisher</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">2</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">"equalAlpha"</span>,    <span class="co"># Equal alpha at each stage</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha0Vec =</span> <span class="fl">0.5</span>           <span class="co"># Futility bound (p-value scale)</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="fisher-with-no-interaction-method" class="level3">
+<h3 class="anchored" data-anchor-id="fisher-with-no-interaction-method">Fisher with no interaction method</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>design_fisher <span class="ot">&lt;-</span> <span class="fu">getDesignFisher</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">"noInteraction"</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha0Vec =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="ss-survival" class="level2">
+<h2 class="anchored" data-anchor-id="ss-survival">Sample size for survival endpoints</h2>
+<section id="basic-survival-design-hazard-ratio" class="level3">
+<h3 class="anchored" data-anchor-id="basic-survival-design-hazard-ratio">Basic survival design (hazard ratio)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>ss <span class="ot">&lt;-</span> <span class="fu">getSampleSizeSurvival</span>(</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fl">0.7</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">30</span>,      <span class="co"># 30 patients/month</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">12</span>,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropoutRate1 =</span> <span class="fl">0.025</span>,</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropoutRate2 =</span> <span class="fl">0.025</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>ss</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="using-median-survival-times" class="level3">
+<h3 class="anchored" data-anchor-id="using-median-survival-times">Using median survival times</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>ss <span class="ot">&lt;-</span> <span class="fu">getSampleSizeSurvival</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">median1 =</span> <span class="dv">18</span>,               <span class="co"># Experimental arm median</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">median2 =</span> <span class="dv">12</span>,               <span class="co"># Control arm median</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">6</span>, <span class="dv">12</span>),</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="fu">c</span>(<span class="dv">15</span>, <span class="dv">30</span>),</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">18</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropoutRate1 =</span> <span class="fl">0.025</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropoutRate2 =</span> <span class="fl">0.025</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="using-event-probabilities" class="level3">
+<h3 class="anchored" data-anchor-id="using-event-probabilities">Using event probabilities</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>ss <span class="ot">&lt;-</span> <span class="fu">getSampleSizeSurvival</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">pi1 =</span> <span class="fl">0.35</span>,                 <span class="co"># 12-month event rate, experimental</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">pi2 =</span> <span class="fl">0.50</span>,                 <span class="co"># 12-month event rate, control</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">eventTime =</span> <span class="dv">12</span>,             <span class="co"># Reference time for pi1, pi2</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">30</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">12</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="piecewise-exponential-survival" class="level3">
+<h3 class="anchored" data-anchor-id="piecewise-exponential-survival">Piecewise exponential survival</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>ss <span class="ot">&lt;-</span> <span class="fu">getSampleSizeSurvival</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">piecewiseSurvivalTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">6</span>),</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda2 =</span> <span class="fu">c</span>(<span class="fl">0.04</span>, <span class="fl">0.03</span>),   <span class="co"># Control hazard rates per period</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fl">0.7</span>,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">30</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">18</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="fixed-design-no-interim" class="level3">
+<h3 class="anchored" data-anchor-id="fixed-design-no-interim">Fixed design (no interim)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>ss_fixed <span class="ot">&lt;-</span> <span class="fu">getSampleSizeSurvival</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fl">0.7</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">30</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">12</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="ss-means-rates" class="level2">
+<h2 class="anchored" data-anchor-id="ss-means-rates">Sample size for means and rates</h2>
+<section id="continuous-endpoint-two-sample" class="level3">
+<h3 class="anchored" data-anchor-id="continuous-endpoint-two-sample">Continuous endpoint (two-sample)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>ss_means <span class="ot">&lt;-</span> <span class="fu">getSampleSizeMeans</span>(</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">groups =</span> <span class="dv">2</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">alternative =</span> <span class="fl">0.5</span>,          <span class="co"># Mean difference</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">stDev =</span> <span class="dv">1</span>,</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">normalApproximation =</span> <span class="cn">TRUE</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>ss_means</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="one-sample-mean" class="level3">
+<h3 class="anchored" data-anchor-id="one-sample-mean">One-sample mean</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ss_one <span class="ot">&lt;-</span> <span class="fu">getSampleSizeMeans</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">groups =</span> <span class="dv">1</span>,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">alternative =</span> <span class="fl">0.3</span>,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">stDev =</span> <span class="dv">1</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="binary-endpoint-two-sample" class="level3">
+<h3 class="anchored" data-anchor-id="binary-endpoint-two-sample">Binary endpoint (two-sample)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>ss_rates <span class="ot">&lt;-</span> <span class="fu">getSampleSizeRates</span>(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">groups =</span> <span class="dv">2</span>,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">pi1 =</span> <span class="fl">0.40</span>,                 <span class="co"># Experimental response rate</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">pi2 =</span> <span class="fl">0.20</span>,                 <span class="co"># Control response rate</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">normalApproximation =</span> <span class="cn">TRUE</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>ss_rates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="binary-endpoint-with-risk-ratio" class="level3">
+<h3 class="anchored" data-anchor-id="binary-endpoint-with-risk-ratio">Binary endpoint with risk ratio</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>ss_rr <span class="ot">&lt;-</span> <span class="fu">getSampleSizeRates</span>(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">groups =</span> <span class="dv">2</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">riskRatio =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">thetaH0 =</span> <span class="dv">1</span>,                <span class="co"># H0: RR = 1</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">pi1 =</span> <span class="fl">0.40</span>,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">pi2 =</span> <span class="fl">0.20</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="power" class="level2">
+<h2 class="anchored" data-anchor-id="power">Power computation</h2>
+<section id="power-for-survival-endpoint" class="level3">
+<h3 class="anchored" data-anchor-id="power-for-survival-endpoint">Power for survival endpoint</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>pwr <span class="ot">&lt;-</span> <span class="fu">getPowerSurvival</span>(</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>),  <span class="co"># Multiple HR values</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfEvents =</span> <span class="dv">300</span>,</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">500</span>,</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">42</span>,</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">12</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>pwr</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="power-for-means" class="level3">
+<h3 class="anchored" data-anchor-id="power-for-means">Power for means</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>pwr_means <span class="ot">&lt;-</span> <span class="fu">getPowerMeans</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alternative =</span> <span class="fu">seq</span>(<span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.1</span>),</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">stDev =</span> <span class="dv">1</span>,</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">200</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="power-for-rates" class="level3">
+<h3 class="anchored" data-anchor-id="power-for-rates">Power for rates</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>pwr_rates <span class="ot">&lt;-</span> <span class="fu">getPowerRates</span>(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">pi1 =</span> <span class="fu">seq</span>(<span class="fl">0.3</span>, <span class="fl">0.6</span>, <span class="fl">0.05</span>),</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">pi2 =</span> <span class="fl">0.2</span>,</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">200</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="sim-survival" class="level2">
+<h2 class="anchored" data-anchor-id="sim-survival">Simulation for survival</h2>
+<section id="two-arm-survival-simulation" class="level3">
+<h3 class="anchored" data-anchor-id="two-arm-survival-simulation">Two-arm survival simulation</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span>,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeBetaSpending =</span> <span class="st">"bsOF"</span>,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">bindingFutility =</span> <span class="cn">FALSE</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">getSimulationSurvival</span>(</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fl">0.7</span>,</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">plannedEvents =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">200</span>, <span class="dv">300</span>),</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">500</span>,</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">42</span>,</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">18</span>,</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfIterations =</span> <span class="dv">10000</span>,</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">12345</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>sim</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(sim)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="simulation-under-multiple-scenarios" class="level3">
+<h3 class="anchored" data-anchor-id="simulation-under-multiple-scenarios">Simulation under multiple scenarios</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">getSimulationSurvival</span>(</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>, <span class="fl">1.0</span>),  <span class="co"># Multiple HR values</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">plannedEvents =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">200</span>, <span class="dv">300</span>),</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">500</span>,</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">42</span>,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">18</span>,</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfIterations =</span> <span class="dv">10000</span>,</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">12345</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="simulation-with-piecewise-survival-delayed-effect" class="level3">
+<h3 class="anchored" data-anchor-id="simulation-with-piecewise-survival-delayed-effect">Simulation with piecewise survival (delayed effect)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>sim_nph <span class="ot">&lt;-</span> <span class="fu">getSimulationSurvival</span>(</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">piecewiseSurvivalTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">6</span>),</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda2 =</span> <span class="fu">c</span>(<span class="fl">0.04</span>, <span class="fl">0.03</span>),</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fu">c</span>(<span class="fl">0.04</span>, <span class="fl">0.03</span> <span class="sc">*</span> <span class="fl">0.6</span>),   <span class="co"># HR = 1 early, 0.6 after 6 months</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">plannedEvents =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">200</span>, <span class="dv">300</span>),</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">500</span>,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">42</span>,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfIterations =</span> <span class="dv">10000</span>,</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">12345</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="multi-arm" class="level2">
+<h2 class="anchored" data-anchor-id="multi-arm">Multi-arm designs and simulation</h2>
+<section id="multi-arm-survival-simulation-dunnett" class="level3">
+<h3 class="anchored" data-anchor-id="multi-arm-survival-simulation-dunnett">Multi-arm survival simulation (Dunnett)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>design_in <span class="ot">&lt;-</span> <span class="fu">getDesignInverseNormal</span>(</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">2</span>,</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>sim_ma <span class="ot">&lt;-</span> <span class="fu">getSimulationMultiArmSurvival</span>(</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design_in,</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">activeArms =</span> <span class="dv">3</span>,</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">plannedEvents =</span> <span class="fu">c</span>(<span class="dv">50</span>, <span class="dv">100</span>),</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">intersectionTest =</span> <span class="st">"Dunnett"</span>,</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfSelection =</span> <span class="st">"best"</span>,        <span class="co"># Select best arm at interim</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">effectMeasure =</span> <span class="st">"effectEstimate"</span>,</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">successCriterion =</span> <span class="st">"atLeastOne"</span>,</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>),  <span class="co"># HR for each active arm</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">400</span>,</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">40</span>,</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfIterations =</span> <span class="dv">10000</span>,</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">12345</span></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>sim_ma</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="multi-arm-with-dose-response-means" class="level3">
+<h3 class="anchored" data-anchor-id="multi-arm-with-dose-response-means">Multi-arm with dose-response (means)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>sim_dose <span class="ot">&lt;-</span> <span class="fu">getSimulationMultiArmMeans</span>(</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design_in,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">activeArms =</span> <span class="dv">4</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfShape =</span> <span class="st">"sigmoidEmax"</span>,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">muMaxVector =</span> <span class="fu">seq</span>(<span class="fl">0.2</span>, <span class="dv">1</span>, <span class="fl">0.2</span>),   <span class="co"># Maximum effect sizes</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">gED50 =</span> <span class="dv">2</span>,</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">intersectionTest =</span> <span class="st">"Dunnett"</span>,</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfSelection =</span> <span class="st">"best"</span>,</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">stDev =</span> <span class="dv">1</span>,</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">300</span>,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfIterations =</span> <span class="dv">10000</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="multi-arm-with-arm-dropping" class="level3">
+<h3 class="anchored" data-anchor-id="multi-arm-with-arm-dropping">Multi-arm with arm dropping</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>sim_drop <span class="ot">&lt;-</span> <span class="fu">getSimulationMultiArmSurvival</span>(</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design_in,</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">activeArms =</span> <span class="dv">3</span>,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">plannedEvents =</span> <span class="fu">c</span>(<span class="dv">50</span>, <span class="dv">100</span>),</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">intersectionTest =</span> <span class="st">"Simes"</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfSelection =</span> <span class="st">"epsilon"</span>,     <span class="co"># Drop if within epsilon of best</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">epsilonValue =</span> <span class="fl">0.1</span>,</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>),</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">400</span>,</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">40</span>,</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfIterations =</span> <span class="dv">10000</span></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="enrichment" class="level2">
+<h2 class="anchored" data-anchor-id="enrichment">Enrichment designs</h2>
+<section id="enrichment-survival-simulation" class="level3">
+<h3 class="anchored" data-anchor-id="enrichment-survival-simulation">Enrichment survival simulation</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>design_in <span class="ot">&lt;-</span> <span class="fu">getDesignInverseNormal</span>(</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">2</span>,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Effect sizes: rows = scenarios, columns = populations (S, F\S)</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>effectList <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">subGroups =</span> <span class="fu">c</span>(<span class="st">"S"</span>, <span class="st">"R"</span>),         <span class="co"># Subgroup and complement</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">prevalences =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.6</span>),</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">effects =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.7</span>, <span class="fl">1.0</span>,     <span class="co"># Scenario 1: effect only in subgroup</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.7</span>, <span class="fl">0.8</span>,     <span class="co"># Scenario 2: larger effect in subgroup</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.7</span>, <span class="fl">0.7</span>      <span class="co"># Scenario 3: equal effect</span></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>  ), <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>sim_enrich <span class="ot">&lt;-</span> <span class="fu">getSimulationEnrichmentSurvival</span>(</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design_in,</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">effectList =</span> effectList,</span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">intersectionTest =</span> <span class="st">"Simes"</span>,</span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfSelection =</span> <span class="st">"best"</span>,</span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">successCriterion =</span> <span class="st">"atLeastOne"</span>,</span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">plannedEvents =</span> <span class="fu">c</span>(<span class="dv">80</span>, <span class="dv">160</span>),</span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">400</span>,</span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfIterations =</span> <span class="dv">10000</span>,</span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">12345</span></span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="dataset" class="level2">
+<h2 class="anchored" data-anchor-id="dataset">Entering observed data with getDataset</h2>
+<section id="survival-data-cumulative-events-and-logrank-statistics" class="level3">
+<h3 class="anchored" data-anchor-id="survival-data-cumulative-events-and-logrank-statistics">Survival data (cumulative events and logrank statistics)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage-wise observed data</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>data_surv <span class="ot">&lt;-</span> <span class="fu">getDataset</span>(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">cumulativeEvents =</span> <span class="fu">c</span>(<span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">150</span>),</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cumulativeLogRanks =</span> <span class="fu">c</span>(<span class="fl">1.2</span>, <span class="fl">1.8</span>, <span class="fl">2.3</span>)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="means-data-two-arm" class="level3">
+<h3 class="anchored" data-anchor-id="means-data-two-arm">Means data (two-arm)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>data_means <span class="ot">&lt;-</span> <span class="fu">getDataset</span>(</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n1 =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">30</span>),             <span class="co"># Stage-wise sample sizes, arm 1</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">n2 =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">30</span>),             <span class="co"># Stage-wise sample sizes, arm 2</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">means1 =</span> <span class="fu">c</span>(<span class="fl">1.5</span>, <span class="fl">1.8</span>),      <span class="co"># Stage-wise means, arm 1</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">means2 =</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">1.1</span>),      <span class="co"># Stage-wise means, arm 2</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">stDevs1 =</span> <span class="fu">c</span>(<span class="fl">2.0</span>, <span class="fl">2.1</span>),     <span class="co"># Stage-wise SDs, arm 1</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">stDevs2 =</span> <span class="fu">c</span>(<span class="fl">1.9</span>, <span class="fl">2.0</span>)      <span class="co"># Stage-wise SDs, arm 2</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="rates-data-two-arm" class="level3">
+<h3 class="anchored" data-anchor-id="rates-data-two-arm">Rates data (two-arm)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>data_rates <span class="ot">&lt;-</span> <span class="fu">getDataset</span>(</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n1 =</span> <span class="fu">c</span>(<span class="dv">50</span>, <span class="dv">50</span>),</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">n2 =</span> <span class="fu">c</span>(<span class="dv">50</span>, <span class="dv">50</span>),</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">events1 =</span> <span class="fu">c</span>(<span class="dv">20</span>, <span class="dv">25</span>),</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">events2 =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">15</span>)</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="reading-from-csv" class="level3">
+<h3 class="anchored" data-anchor-id="reading-from-csv">Reading from CSV</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>data_csv <span class="ot">&lt;-</span> <span class="fu">readDataset</span>(<span class="st">"trial_data.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="analysis" class="level2">
+<h2 class="anchored" data-anchor-id="analysis">Stage results and analysis</h2>
+<section id="computing-stage-results" class="level3">
+<h3 class="anchored" data-anchor-id="computing-stage-results">Computing stage results</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">getDataset</span>(</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">cumulativeEvents =</span> <span class="fu">c</span>(<span class="dv">50</span>, <span class="dv">100</span>),</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">cumulativeLogRanks =</span> <span class="fu">c</span>(<span class="fl">1.5</span>, <span class="fl">2.1</span>)</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>stageResults <span class="ot">&lt;-</span> <span class="fu">getStageResults</span>(design, data)</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>stageResults</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="full-analysis-results" class="level3">
+<h3 class="anchored" data-anchor-id="full-analysis-results">Full analysis results</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">getAnalysisResults</span>(</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dataInput =</span> data,</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">directionUpper =</span> <span class="cn">FALSE</span>        <span class="co"># Lower is better (HR &lt; 1)</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>results</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="checking-test-actions" class="level3">
+<h3 class="anchored" data-anchor-id="checking-test-actions">Checking test actions</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># What decision at each stage?</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">getTestActions</span>(results)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Returns: "continue", "reject", or "accept" (futility)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="conditional-power" class="level2">
+<h2 class="anchored" data-anchor-id="conditional-power">Conditional power and sample size reassessment</h2>
+<section id="conditional-power-at-interim" class="level3">
+<h3 class="anchored" data-anchor-id="conditional-power-at-interim">Conditional power at interim</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignInverseNormal</span>(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">getDataset</span>(</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">n1 =</span> <span class="fu">c</span>(<span class="dv">50</span>),</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">n2 =</span> <span class="fu">c</span>(<span class="dv">50</span>),</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">means1 =</span> <span class="fu">c</span>(<span class="fl">1.5</span>),</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">means2 =</span> <span class="fu">c</span>(<span class="fl">1.0</span>),</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">stDevs1 =</span> <span class="fu">c</span>(<span class="fl">2.0</span>),</span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">stDevs2 =</span> <span class="fu">c</span>(<span class="fl">1.9</span>)</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>stageResults <span class="ot">&lt;-</span> <span class="fu">getStageResults</span>(design, data)</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Conditional power for planned n</span></span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>cp <span class="ot">&lt;-</span> <span class="fu">getConditionalPower</span>(</span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>  stageResults,</span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">nPlanned =</span> <span class="fu">c</span>(<span class="dv">100</span>)           <span class="co"># Planned total n for stage 2</span></span>
+<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-22"><a href="#cb37-22" aria-hidden="true" tabindex="-1"></a>cp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="conditional-rejection-probabilities-for-ssr" class="level3">
+<h3 class="anchored" data-anchor-id="conditional-rejection-probabilities-for-ssr">Conditional rejection probabilities (for SSR)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>crp <span class="ot">&lt;-</span> <span class="fu">getConditionalRejectionProbabilities</span>(stageResults)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>crp</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample size reassessment: increase stage 2 n to achieve target CP</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Use conditional power to determine new n</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="inference" class="level2">
+<h2 class="anchored" data-anchor-id="inference">Adjusted inference (p-values and CIs)</h2>
+<section id="final-p-value" class="level3">
+<h3 class="anchored" data-anchor-id="final-p-value">Final p-value</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">getDataset</span>(</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">n1 =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">30</span>, <span class="dv">30</span>),</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">n2 =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">30</span>, <span class="dv">30</span>),</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">means1 =</span> <span class="fu">c</span>(<span class="fl">1.5</span>, <span class="fl">1.8</span>, <span class="fl">2.0</span>),</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">means2 =</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">1.1</span>, <span class="fl">1.0</span>),</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">stDevs1 =</span> <span class="fu">c</span>(<span class="fl">2.0</span>, <span class="fl">2.1</span>, <span class="fl">1.9</span>),</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">stDevs2 =</span> <span class="fu">c</span>(<span class="fl">1.9</span>, <span class="fl">2.0</span>, <span class="fl">2.0</span>)</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>stageResults <span class="ot">&lt;-</span> <span class="fu">getStageResults</span>(design, data)</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage-wise adjusted p-value</span></span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>pval <span class="ot">&lt;-</span> <span class="fu">getFinalPValue</span>(stageResults)</span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>pval</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="final-confidence-interval" class="level3">
+<h3 class="anchored" data-anchor-id="final-confidence-interval">Final confidence interval</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>ci <span class="ot">&lt;-</span> <span class="fu">getFinalConfidenceInterval</span>(</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dataInput =</span> data,</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">directionUpper =</span> <span class="cn">TRUE</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>ci</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="repeated-p-values-and-confidence-intervals" class="level3">
+<h3 class="anchored" data-anchor-id="repeated-p-values-and-confidence-intervals">Repeated p-values and confidence intervals</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">getAnalysisResults</span>(design, data, <span class="at">directionUpper =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Repeated p-values (available at each stage)</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>results<span class="sc">$</span>repeatedPValues</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Repeated CIs</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>results<span class="sc">$</span>repeatedConfidenceIntervalLowerBounds</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>results<span class="sc">$</span>repeatedConfidenceIntervalUpperBounds</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="piecewise" class="level2">
+<h2 class="anchored" data-anchor-id="piecewise">Piecewise survival and accrual specification</h2>
+<section id="accrual-time-with-ramp-up" class="level3">
+<h3 class="anchored" data-anchor-id="accrual-time-with-ramp-up">Accrual time with ramp-up</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Vector specification</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>accrual <span class="ot">&lt;-</span> <span class="fu">getAccrualTime</span>(</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">12</span>),</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>),   <span class="co"># Patients/month per period</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">500</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a><span class="co"># List specification (more readable)</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>accrual <span class="ot">&lt;-</span> <span class="fu">getAccrualTime</span>(</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"0 - &lt;3"</span>  <span class="ot">=</span> <span class="dv">10</span>,</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"3 - &lt;6"</span>  <span class="ot">=</span> <span class="dv">20</span>,</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"6 - 12"</span>  <span class="ot">=</span> <span class="dv">30</span></span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">500</span></span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="piecewise-exponential-survival-1" class="level3">
+<h3 class="anchored" data-anchor-id="piecewise-exponential-survival-1">Piecewise exponential survival</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Delayed treatment effect</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>pw_surv <span class="ot">&lt;-</span> <span class="fu">getPiecewiseSurvivalTime</span>(</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">piecewiseSurvivalTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">6</span>),</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda2 =</span> <span class="fu">c</span>(<span class="fl">0.04</span>, <span class="fl">0.03</span>),            <span class="co"># Control hazard</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda1 =</span> <span class="fu">c</span>(<span class="fl">0.04</span>, <span class="fl">0.03</span> <span class="sc">*</span> <span class="fl">0.6</span>)       <span class="co"># Experimental hazard (HR = 1, then 0.6)</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Using hazard ratio (applied to all periods)</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>pw_surv <span class="ot">&lt;-</span> <span class="fu">getPiecewiseSurvivalTime</span>(</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">piecewiseSurvivalTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">6</span>),</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda2 =</span> <span class="fu">c</span>(<span class="fl">0.04</span>, <span class="fl">0.03</span>),</span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fl">0.7</span></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a><span class="co"># List specification</span></span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>pw_surv <span class="ot">&lt;-</span> <span class="fu">getPiecewiseSurvivalTime</span>(</span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"0 - &lt;6"</span>  <span class="ot">=</span> <span class="fl">0.04</span>,</span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"&gt;=6"</span>     <span class="ot">=</span> <span class="fl">0.03</span></span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fl">0.7</span></span>
+<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="using-piecewise-objects-in-sample-size" class="level3">
+<h3 class="anchored" data-anchor-id="using-piecewise-objects-in-sample-size">Using piecewise objects in sample size</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>ss <span class="ot">&lt;-</span> <span class="fu">getSampleSizeSurvival</span>(</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> <span class="fu">getDesignGroupSequential</span>(<span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span>),</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">piecewiseSurvivalTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">6</span>),</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda2 =</span> <span class="fu">c</span>(<span class="fl">0.04</span>, <span class="fl">0.03</span>),</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fl">0.7</span>,</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">12</span>),</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>),</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">18</span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="design-set" class="level2">
+<h2 class="anchored" data-anchor-id="design-set">Comparing designs with getDesignSet</h2>
+<section id="varying-a-single-parameter" class="level3">
+<h3 class="anchored" data-anchor-id="varying-a-single-parameter">Varying a single parameter</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare O'Brien-Fleming, Pocock, and HSD designs</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>ds <span class="ot">&lt;-</span> <span class="fu">getDesignSet</span>(</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> <span class="fu">getDesignGroupSequential</span>(<span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>),</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="fu">c</span>(<span class="st">"OF"</span>, <span class="st">"P"</span>, <span class="st">"asHSD"</span>)</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ds)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="comparing-gamma-values" class="level3">
+<h3 class="anchored" data-anchor-id="comparing-gamma-values">Comparing gamma values</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>ds <span class="ot">&lt;-</span> <span class="fu">getDesignSet</span>(</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">typeOfDesign =</span> <span class="st">"asHSD"</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">gammaA =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">4</span>, <span class="sc">-</span><span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">2</span>)</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ds)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="from-pre-built-designs" class="level3">
+<h3 class="anchored" data-anchor-id="from-pre-built-designs">From pre-built designs</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>d1 <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(<span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">typeOfDesign =</span> <span class="st">"OF"</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>d2 <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(<span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">typeOfDesign =</span> <span class="st">"P"</span>)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>d3 <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(<span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span>)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>ds <span class="ot">&lt;-</span> <span class="fu">getDesignSet</span>(<span class="at">designs =</span> <span class="fu">c</span>(d1, d2, d3))</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ds)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="plotting" class="level2">
+<h2 class="anchored" data-anchor-id="plotting">Plotting</h2>
+<section id="design-boundaries" class="level3">
+<h3 class="anchored" data-anchor-id="design-boundaries">Design boundaries</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">4</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span>,</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeBetaSpending =</span> <span class="st">"bsOF"</span>,</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">bindingFutility =</span> <span class="cn">FALSE</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Default: boundary plot</span></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(design)</span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Specific plot type</span></span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(design, <span class="at">type =</span> <span class="dv">1</span>)   <span class="co"># Boundaries (Z-scale)</span></span>
+<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(design, <span class="at">type =</span> <span class="dv">3</span>)   <span class="co"># Stage levels (adjusted significance levels)</span></span>
+<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(design, <span class="at">type =</span> <span class="dv">4</span>)   <span class="co"># Error spending</span></span>
+<span id="cb48-15"><a href="#cb48-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(design, <span class="at">type =</span> <span class="dv">5</span>)   <span class="co"># Power and early stopping</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="sample-size-results" class="level3">
+<h3 class="anchored" data-anchor-id="sample-size-results">Sample size results</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>ss <span class="ot">&lt;-</span> <span class="fu">getSampleSizeSurvival</span>(</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fu">seq</span>(<span class="fl">0.5</span>, <span class="fl">0.9</span>, <span class="fl">0.05</span>),</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">30</span>,</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">12</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ss)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="power-curves" class="level3">
+<h3 class="anchored" data-anchor-id="power-curves">Power curves</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>pwr <span class="ot">&lt;-</span> <span class="fu">getPowerSurvival</span>(</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fu">seq</span>(<span class="fl">0.5</span>, <span class="dv">1</span>, <span class="fl">0.05</span>),</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfEvents =</span> <span class="dv">300</span>,</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">500</span>,</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">42</span>,</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">followUpTime =</span> <span class="dv">12</span></span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pwr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="simulation-results" class="level3">
+<h3 class="anchored" data-anchor-id="simulation-results">Simulation results</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">getSimulationSurvival</span>(</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> design,</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">hazardRatio =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>, <span class="fl">1.0</span>),</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">plannedEvents =</span> <span class="fu">c</span>(<span class="dv">75</span>, <span class="dv">150</span>, <span class="dv">225</span>, <span class="dv">300</span>),</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfSubjects =</span> <span class="dv">500</span>,</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualTime =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>),</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">accrualIntensity =</span> <span class="dv">42</span>,</span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxNumberOfIterations =</span> <span class="dv">10000</span></span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(sim)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="available-plot-types" class="level3">
+<h3 class="anchored" data-anchor-id="available-plot-types">Available plot types</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check what plot types are available for any object</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">getAvailablePlotTypes</span>(design)</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="fu">getAvailablePlotTypes</span>(ss)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="reproducible" class="level2">
+<h2 class="anchored" data-anchor-id="reproducible">Reproducible code with getObjectRCode</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">getDesignGroupSequential</span>(</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">kMax =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">sided =</span> <span class="dv">1</span>,</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">typeOfDesign =</span> <span class="st">"asOF"</span></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Print reproducible R code</span></span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a><span class="fu">getObjectRCode</span>(design, <span class="at">output =</span> <span class="st">"cat"</span>)</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Include default parameters too</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a><span class="fu">getObjectRCode</span>(design, <span class="at">includeDefaultParameters =</span> <span class="cn">TRUE</span>, <span class="at">output =</span> <span class="st">"cat"</span>)</span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Get as character vector</span></span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>code <span class="ot">&lt;-</span> <span class="fu">getObjectRCode</span>(design, <span class="at">output =</span> <span class="st">"vector"</span>)</span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Markdown output (for reports)</span></span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a><span class="fu">getObjectRCode</span>(design, <span class="at">output =</span> <span class="st">"markdown"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/rpact.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

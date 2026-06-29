@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Guide users through clinical trial simulation using the simtrial R package. Use this skill when the user asks about: simulating survival trials, simfix, sim_pw_surv, cutting data at calendar or event times, weighted logrank tests, MaxCombo tests, or simulation-based power.">
+
+<title>simtrial – gsDesignSkills</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-2e5cbef59756d87313a778b4017e2694.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">gsDesignSkills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../skills/index.html"> 
+<span class="menu-text">Skills</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../ai-skills-gsd.html"> 
+<span class="menu-text">Presentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../multi-endpoint-sim.html"> 
+<span class="menu-text">Simulation Example</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../news.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/keaven/gsDesignSkills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/gsDesign.html">Individual Packages</a></li><li class="breadcrumb-item"><a href="../skills/simtrial.html">simtrial</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Skills Catalog</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Individual Packages</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/rpact.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rpact</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/simtrial.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">simtrial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/wpgsd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">wpgsd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gsDesignNB.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsDesignNB</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/gMCPLite.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gMCPLite</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-Package</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/graphicalMCP-gsDesign2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">graphicalMCP-gsDesign2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/illness-death.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">illness-death</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../skills/multi-endpoint-sim.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">multi-endpoint-sim</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#clinical-trial-simulation-with-simtrial" id="toc-clinical-trial-simulation-with-simtrial" class="nav-link active" data-scroll-target="#clinical-trial-simulation-with-simtrial">Clinical Trial Simulation with simtrial</a>
+  <ul class="collapse">
+  <li><a href="#api-reference" id="toc-api-reference" class="nav-link" data-scroll-target="#api-reference">API reference</a></li>
+  <li><a href="#key-functions" id="toc-key-functions" class="nav-link" data-scroll-target="#key-functions">Key functions</a>
+  <ul class="collapse">
+  <li><a href="#simulation" id="toc-simulation" class="nav-link" data-scroll-target="#simulation">Simulation</a></li>
+  <li><a href="#data-cutting" id="toc-data-cutting" class="nav-link" data-scroll-target="#data-cutting">Data cutting</a></li>
+  <li><a href="#statistical-tests" id="toc-statistical-tests" class="nav-link" data-scroll-target="#statistical-tests">Statistical tests</a></li>
+  <li><a href="#weight-functions" id="toc-weight-functions" class="nav-link" data-scroll-target="#weight-functions">Weight functions</a></li>
+  <li><a href="#utilities" id="toc-utilities" class="nav-link" data-scroll-target="#utilities">Utilities</a></li>
+  <li><a href="#output" id="toc-output" class="nav-link" data-scroll-target="#output">Output</a></li>
+  <li><a href="#example-datasets" id="toc-example-datasets" class="nav-link" data-scroll-target="#example-datasets">Example datasets</a></li>
+  </ul></li>
+  <li><a href="#workflow-patterns" id="toc-workflow-patterns" class="nav-link" data-scroll-target="#workflow-patterns">Workflow patterns</a></li>
+  <li><a href="#important-design-considerations" id="toc-important-design-considerations" class="nav-link" data-scroll-target="#important-design-considerations">Important design considerations</a></li>
+  <li><a href="#code-patterns" id="toc-code-patterns" class="nav-link" data-scroll-target="#code-patterns">Code Patterns</a></li>
+  </ul></li>
+  <li><a href="#code-patterns-for-simtrial" id="toc-code-patterns-for-simtrial" class="nav-link" data-scroll-target="#code-patterns-for-simtrial">Code Patterns for simtrial</a>
+  <ul class="collapse">
+  <li><a href="#table-of-contents" id="toc-table-of-contents" class="nav-link" data-scroll-target="#table-of-contents">Table of Contents</a></li>
+  <li><a href="#sim-pw-surv" id="toc-sim-pw-surv" class="nav-link" data-scroll-target="#sim-pw-surv">Generating survival data with sim_pw_surv</a>
+  <ul class="collapse">
+  <li><a href="#basic-usage-proportional-hazards" id="toc-basic-usage-proportional-hazards" class="nav-link" data-scroll-target="#basic-usage-proportional-hazards">Basic usage (proportional hazards)</a></li>
+  <li><a href="#delayed-treatment-effect-non-proportional-hazards" id="toc-delayed-treatment-effect-non-proportional-hazards" class="nav-link" data-scroll-target="#delayed-treatment-effect-non-proportional-hazards">Delayed treatment effect (non-proportional hazards)</a></li>
+  <li><a href="#using-to_sim_pw_surv-for-simpler-rate-specification" id="toc-using-to_sim_pw_surv-for-simpler-rate-specification" class="nav-link" data-scroll-target="#using-to_sim_pw_surv-for-simpler-rate-specification">Using to_sim_pw_surv for simpler rate specification</a></li>
+  </ul></li>
+  <li><a href="#data-cutting" id="toc-data-cutting" class="nav-link" data-scroll-target="#data-cutting">Data cutting</a>
+  <ul class="collapse">
+  <li><a href="#cut-by-calendar-date" id="toc-cut-by-calendar-date" class="nav-link" data-scroll-target="#cut-by-calendar-date">Cut by calendar date</a></li>
+  <li><a href="#cut-by-event-count" id="toc-cut-by-event-count" class="nav-link" data-scroll-target="#cut-by-event-count">Cut by event count</a></li>
+  <li><a href="#using-create_cut-for-pipelines" id="toc-using-create_cut-for-pipelines" class="nav-link" data-scroll-target="#using-create_cut-for-pipelines">Using create_cut for pipelines</a></li>
+  </ul></li>
+  <li><a href="#wlr" id="toc-wlr" class="nav-link" data-scroll-target="#wlr">Weighted logrank test (wlr)</a></li>
+  <li><a href="#maxcombo" id="toc-maxcombo" class="nav-link" data-scroll-target="#maxcombo">MaxCombo test</a></li>
+  <li><a href="#milestone-rmst" id="toc-milestone-rmst" class="nav-link" data-scroll-target="#milestone-rmst">Milestone and RMST tests</a>
+  <ul class="collapse">
+  <li><a href="#milestone-survival-difference-at-fixed-time" id="toc-milestone-survival-difference-at-fixed-time" class="nav-link" data-scroll-target="#milestone-survival-difference-at-fixed-time">Milestone (survival difference at fixed time)</a></li>
+  <li><a href="#rmst-restricted-mean-survival-time-difference" id="toc-rmst-restricted-mean-survival-time-difference" class="nav-link" data-scroll-target="#rmst-restricted-mean-survival-time-difference">RMST (restricted mean survival time difference)</a></li>
+  </ul></li>
+  <li><a href="#multitest" id="toc-multitest" class="nav-link" data-scroll-target="#multitest">Multiple tests with multitest</a></li>
+  <li><a href="#sim-fixed-n" id="toc-sim-fixed-n" class="nav-link" data-scroll-target="#sim-fixed-n">Fixed-sample simulation with sim_fixed_n</a>
+  <ul class="collapse">
+  <li><a href="#estimating-power-from-sim_fixed_n" id="toc-estimating-power-from-sim_fixed_n" class="nav-link" data-scroll-target="#estimating-power-from-sim_fixed_n">Estimating power from sim_fixed_n</a></li>
+  </ul></li>
+  <li><a href="#sim-gs-n" id="toc-sim-gs-n" class="nav-link" data-scroll-target="#sim-gs-n">Group sequential simulation with sim_gs_n</a>
+  <ul class="collapse">
+  <li><a href="#basic-group-sequential-simulation" id="toc-basic-group-sequential-simulation" class="nav-link" data-scroll-target="#basic-group-sequential-simulation">Basic group sequential simulation</a></li>
+  <li><a href="#maxcombo-in-sim_gs_n" id="toc-maxcombo-in-sim_gs_n" class="nav-link" data-scroll-target="#maxcombo-in-sim_gs_n">MaxCombo in sim_gs_n</a></li>
+  <li><a href="#multiple-wlr-tests-in-sim_gs_n" id="toc-multiple-wlr-tests-in-sim_gs_n" class="nav-link" data-scroll-target="#multiple-wlr-tests-in-sim_gs_n">Multiple WLR tests in sim_gs_n</a></li>
+  </ul></li>
+  <li><a href="#gsdesign2-integration" id="toc-gsdesign2-integration" class="nav-link" data-scroll-target="#gsdesign2-integration">Integrating with gsDesign2 designs</a>
+  <ul class="collapse">
+  <li><a href="#alpha-spending-options" id="toc-alpha-spending-options" class="nav-link" data-scroll-target="#alpha-spending-options">Alpha spending options</a></li>
+  </ul></li>
+  <li><a href="#weight-functions" id="toc-weight-functions" class="nav-link" data-scroll-target="#weight-functions">Weight functions</a>
+  <ul class="collapse">
+  <li><a href="#fleming-harrington-family" id="toc-fleming-harrington-family" class="nav-link" data-scroll-target="#fleming-harrington-family">Fleming-Harrington family</a></li>
+  <li><a href="#magirr-burman-weights-for-delayed-effects" id="toc-magirr-burman-weights-for-delayed-effects" class="nav-link" data-scroll-target="#magirr-burman-weights-for-delayed-effects">Magirr-Burman weights (for delayed effects)</a></li>
+  <li><a href="#early-zero-weight" id="toc-early-zero-weight" class="nav-link" data-scroll-target="#early-zero-weight">Early zero weight</a></li>
+  </ul></li>
+  <li><a href="#to-sim-pw-surv" id="toc-to-sim-pw-surv" class="nav-link" data-scroll-target="#to-sim-pw-surv">Converting rate formats with to_sim_pw_surv</a></li>
+  <li><a href="#analysis-date" id="toc-analysis-date" class="nav-link" data-scroll-target="#analysis-date">Flexible analysis timing with get_analysis_date</a>
+  <ul class="collapse">
+  <li><a href="#calendar-time-driven-analysis" id="toc-calendar-time-driven-analysis" class="nav-link" data-scroll-target="#calendar-time-driven-analysis">Calendar-time-driven analysis</a></li>
+  <li><a href="#event-driven-analysis" id="toc-event-driven-analysis" class="nav-link" data-scroll-target="#event-driven-analysis">Event-driven analysis</a></li>
+  <li><a href="#event-driven-with-maximum-extension" id="toc-event-driven-with-maximum-extension" class="nav-link" data-scroll-target="#event-driven-with-maximum-extension">Event-driven with maximum extension</a></li>
+  <li><a href="#minimum-follow-up" id="toc-minimum-follow-up" class="nav-link" data-scroll-target="#minimum-follow-up">Minimum follow-up</a></li>
+  <li><a href="#combining-criteria" id="toc-combining-criteria" class="nav-link" data-scroll-target="#combining-criteria">Combining criteria</a></li>
+  <li><a href="#per-stratum-event-targets" id="toc-per-stratum-event-targets" class="nav-link" data-scroll-target="#per-stratum-event-targets">Per-stratum event targets</a></li>
+  </ul></li>
+  <li><a href="#example-datasets" id="toc-example-datasets" class="nav-link" data-scroll-target="#example-datasets">Example NPH datasets</a></li>
+  <li><a href="#stratified" id="toc-stratified" class="nav-link" data-scroll-target="#stratified">Stratified simulations</a>
+  <ul class="collapse">
+  <li><a href="#generating-stratified-data" id="toc-generating-stratified-data" class="nav-link" data-scroll-target="#generating-stratified-data">Generating stratified data</a></li>
+  <li><a href="#stratified-sim_fixed_n" id="toc-stratified-sim_fixed_n" class="nav-link" data-scroll-target="#stratified-sim_fixed_n">Stratified sim_fixed_n</a></li>
+  </ul></li>
+  <li><a href="#wlr-illness-death" id="toc-wlr-illness-death" class="nav-link" data-scroll-target="#wlr-illness-death">Standalone wlr with illness-death model data</a>
+  <ul class="collapse">
+  <li><a href="#column-mapping" id="toc-column-mapping" class="nav-link" data-scroll-target="#column-mapping">Column mapping</a></li>
+  <li><a href="#sign-convention" id="toc-sign-convention" class="nav-link" data-scroll-target="#sign-convention">Sign convention</a></li>
+  <li><a href="#usage-in-simulation-loops" id="toc-usage-in-simulation-loops" class="nav-link" data-scroll-target="#usage-in-simulation-loops">Usage in simulation loops</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/simtrial.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../skills/gsDesign.html">Individual Packages</a></li><li class="breadcrumb-item"><a href="../skills/simtrial.html">simtrial</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">simtrial</h1>
+<p class="subtitle lead">Clinical Trial Simulation</p>
+</div>
+
+<div>
+  <div class="description">
+    <p>Guide users through clinical trial simulation using the simtrial R package. Use this skill when the user asks about: simulating survival trials, simfix, sim_pw_surv, cutting data at calendar or event times, weighted logrank tests, MaxCombo tests, or simulation-based power.</p>
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="clinical-trial-simulation-with-simtrial" class="level1">
+<h1>Clinical Trial Simulation with simtrial</h1>
+<p><strong>Note</strong>: This skill targets simtrial &gt;= 1.0.2 (main branch at github.com/Merck/simtrial).</p>
+<section id="api-reference" class="level2">
+<h2 class="anchored" data-anchor-id="api-reference">API reference</h2>
+<ul>
+<li>Full function docs (CRAN): <code>references/llms.txt</code> (source: https://gsDesign.ai)</li>
+<li>Full function docs (local v1.0.2): <code>references/llms_local.txt</code></li>
+<li>Workflow patterns: <code>references/code_patterns.md</code></li>
+</ul>
+</section>
+<section id="key-functions" class="level2">
+<h2 class="anchored" data-anchor-id="key-functions">Key functions</h2>
+<section id="simulation" class="level3">
+<h3 class="anchored" data-anchor-id="simulation">Simulation</h3>
+<ul>
+<li><code>sim_pw_surv()</code> - Simulate piecewise exponential survival data (individual patient data)</li>
+<li><code>sim_fixed_n()</code> - Fixed-sample simulation with analysis pipeline (simpler, less flexible)</li>
+<li><code>sim_gs_n()</code> - Group sequential simulation (integrates with gsDesign2 designs)</li>
+<li><code>to_sim_pw_surv()</code> - Convert simple rate format (control rate + HR) to sim_pw_surv format</li>
+</ul>
+</section>
+<section id="data-cutting" class="level3">
+<h3 class="anchored" data-anchor-id="data-cutting">Data cutting</h3>
+<ul>
+<li><code>cut_data_by_date()</code> - Cut simulated data at a calendar date</li>
+<li><code>cut_data_by_event()</code> - Cut simulated data at a target event count</li>
+<li><code>get_cut_date_by_event()</code> - Find calendar date for a target event count</li>
+<li><code>get_analysis_date()</code> - Get analysis date from multiple criteria (events, calendar time, follow-up)</li>
+<li><code>create_cut()</code> - Create a cutting function for use in sim_gs_n pipelines</li>
+</ul>
+</section>
+<section id="statistical-tests" class="level3">
+<h3 class="anchored" data-anchor-id="statistical-tests">Statistical tests</h3>
+<ul>
+<li><code>wlr()</code> - Weighted logrank test (single weight function)</li>
+<li><code>maxcombo()</code> - MaxCombo test (multiple FH weight functions, correlation-adjusted p-value)</li>
+<li><code>rmst()</code> / <code>rmst_two_arm()</code> / <code>rmst_single_arm()</code> - Restricted mean survival time</li>
+<li><code>milestone()</code> - Milestone analysis (survival difference at fixed time)</li>
+<li><code>multitest()</code> - Apply multiple tests to one dataset</li>
+<li><code>create_test()</code> - Create a parameterized test function for use in pipelines</li>
+</ul>
+</section>
+<section id="weight-functions" class="level3">
+<h3 class="anchored" data-anchor-id="weight-functions">Weight functions</h3>
+<ul>
+<li><code>fh()</code> - Fleming-Harrington weights (rho, gamma)</li>
+<li><code>mb()</code> - Magirr-Burman weights (delay period for NPH)</li>
+<li><code>early_zero()</code> - Early zero weight function</li>
+<li><code>wlr_weight()</code> - General WLR weight specification</li>
+</ul>
+</section>
+<section id="utilities" class="level3">
+<h3 class="anchored" data-anchor-id="utilities">Utilities</h3>
+<ul>
+<li><code>counting_process()</code> - At-risk/event tables from survival data (for custom analyses)</li>
+<li><code>rpwexp()</code> - Random piecewise exponential generation</li>
+<li><code>rpwexp_enroll()</code> - Random piecewise enrollment times</li>
+<li><code>fit_pwexp()</code> - Fit piecewise exponential model</li>
+<li><code>randomize_by_fixed_block()</code> - Block randomization</li>
+</ul>
+</section>
+<section id="output" class="level3">
+<h3 class="anchored" data-anchor-id="output">Output</h3>
+<ul>
+<li><code>summary()</code> - Summarize sim_gs_n results (power, events, timing)</li>
+<li><code>as_gt()</code> - Convert summary to gt table</li>
+</ul>
+</section>
+<section id="example-datasets" class="level3">
+<h3 class="anchored" data-anchor-id="example-datasets">Example datasets</h3>
+<ul>
+<li><code>ex1_delayed_effect</code> through <code>ex6_crossing</code> - Pre-built NPH scenarios from Cross-Pharma Working Group</li>
+</ul>
+</section>
+</section>
+<section id="workflow-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="workflow-patterns">Workflow patterns</h2>
+<p>For detailed code templates, read <code>references/code_patterns.md</code>.</p>
+<p>Topics covered: - Generating survival data with <code>sim_pw_surv()</code> (PH and NPH) - Data cutting (calendar, event, flexible criteria) - Weighted logrank tests (<code>wlr()</code>) and MaxCombo (<code>maxcombo()</code>) - Milestone and RMST tests - Multiple tests with <code>multitest()</code> and <code>create_test()</code> - Fixed-sample simulation with <code>sim_fixed_n()</code> (timing_type options) - Group sequential simulation with <code>sim_gs_n()</code> (multiple tests, boundary updating) - Integration with gsDesign2 designs (events from design, <code>original_design</code> parameter) - Weight functions (Fleming-Harrington, Magirr-Burman, early zero) - Rate format conversion with <code>to_sim_pw_surv()</code> - Flexible analysis timing with <code>get_analysis_date()</code> / <code>create_cut()</code> - Stratified simulations - Standalone <code>wlr()</code> with illness-death model ADTTE data - Example NPH datasets</p>
+</section>
+<section id="important-design-considerations" class="level2">
+<h2 class="anchored" data-anchor-id="important-design-considerations">Important design considerations</h2>
+<ul>
+<li><strong><code>maxcombo</code> must be used alone</strong> in <code>sim_gs_n()</code>: it cannot be combined with other tests in the same <code>test</code> list</li>
+<li><strong><code>to_sim_pw_surv()</code></strong>: Use this to convert the simpler rate format (control rate + HR) to the treatment-specific format needed by <code>sim_pw_surv()</code></li>
+<li><strong><code>sim_gs_n()</code> + <code>original_design</code></strong>: Pass a gsDesign2 design object to get boundaries updated based on actual vs planned information fraction</li>
+<li><strong><code>ia_alpha_spending</code></strong>: Controls how alpha is spent when observed events differ from planned (“min_planned_actual” is conservative default)</li>
+<li><strong><code>fa_alpha_spending = "full_alpha"</code></strong>: Spends full alpha at final analysis (default); use “info_frac” for event underrunning scenarios</li>
+<li><strong><code>create_cut()</code> and <code>create_test()</code></strong>: These factory functions are essential for building <code>sim_gs_n()</code> pipelines</li>
+<li><strong>Example datasets</strong>: Columns are <code>id</code>, <code>month</code>, <code>evntd</code>, <code>trt</code> — need renaming to <code>tte</code>, <code>event</code>, <code>treatment</code> for use with <code>wlr()</code> / <code>maxcombo()</code></li>
+<li><strong>Standalone <code>wlr()</code></strong>: Can be used outside <code>sim_gs_n()</code> with any data having <code>tte</code>, <code>event</code>, <code>stratum</code>, <code>treatment</code> columns. Returns positive Z when experimental is better. See <code>references/code_patterns.md</code> for illness-death model integration.</li>
+</ul>
+</section>
+<section id="code-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="code-patterns">Code Patterns</h2>
+</section>
+</section>
+<section id="code-patterns-for-simtrial" class="level1">
+<h1>Code Patterns for simtrial</h1>
+<p><strong>Note</strong>: These patterns target simtrial &gt;= 1.0.2 (main branch at github.com/Merck/simtrial).</p>
+<section id="table-of-contents" class="level2">
+<h2 class="anchored" data-anchor-id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#sim-pw-surv">Generating survival data with sim_pw_surv</a></li>
+<li><a href="#data-cutting">Data cutting</a></li>
+<li><a href="#wlr">Weighted logrank test (wlr)</a></li>
+<li><a href="#maxcombo">MaxCombo test</a></li>
+<li><a href="#milestone-rmst">Milestone and RMST tests</a></li>
+<li><a href="#multitest">Multiple tests with multitest</a></li>
+<li><a href="#sim-fixed-n">Fixed-sample simulation with sim_fixed_n</a></li>
+<li><a href="#sim-gs-n">Group sequential simulation with sim_gs_n</a></li>
+<li><a href="#gsdesign2-integration">Integrating with gsDesign2 designs</a></li>
+<li><a href="#weight-functions">Weight functions</a></li>
+<li><a href="#to-sim-pw-surv">Converting rate formats with to_sim_pw_surv</a></li>
+<li><a href="#analysis-date">Flexible analysis timing with get_analysis_date</a></li>
+<li><a href="#example-datasets">Example NPH datasets</a></li>
+<li><a href="#stratified">Stratified simulations</a></li>
+</ol>
+<hr>
+</section>
+<section id="sim-pw-surv" class="level2">
+<h2 class="anchored" data-anchor-id="sim-pw-surv">Generating survival data with sim_pw_surv</h2>
+<p><code>sim_pw_surv()</code> generates individual patient data with piecewise exponential enrollment, failure, and dropout.</p>
+<section id="basic-usage-proportional-hazards" class="level3">
+<h3 class="anchored" data-anchor-id="basic-usage-proportional-hazards">Basic usage (proportional hazards)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(simtrial)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate 400 patients, 1:1 randomization</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">sim_pw_surv</span>(</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">400</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="fu">data.frame</span>(<span class="at">stratum =</span> <span class="st">"All"</span>, <span class="at">p =</span> <span class="dv">1</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">block =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"control"</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">"experimental"</span>, <span class="dv">2</span>)),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="dv">25</span>, <span class="at">duration =</span> <span class="dv">16</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="fu">rep</span>(<span class="st">"All"</span>, <span class="dv">2</span>),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">period =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">100</span>),</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="dv">12</span>, <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="dv">12</span> <span class="sc">*</span> <span class="fl">0.7</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="fu">rep</span>(<span class="st">"All"</span>, <span class="dv">2</span>),</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">period =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">100</span>),</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">0.001</span>, <span class="fl">0.001</span>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Returns: stratum, enroll_time, treatment, fail_time, dropout_time, cte, fail</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="delayed-treatment-effect-non-proportional-hazards" class="level3">
+<h3 class="anchored" data-anchor-id="delayed-treatment-effect-non-proportional-hazards">Delayed treatment effect (non-proportional hazards)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">sim_pw_surv</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">400</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="fu">data.frame</span>(<span class="at">stratum =</span> <span class="st">"All"</span>, <span class="at">p =</span> <span class="dv">1</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">block =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"control"</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">"experimental"</span>, <span class="dv">2</span>)),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">30</span>), <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">12</span>)),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="fu">rep</span>(<span class="st">"All"</span>, <span class="dv">4</span>),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">period =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">2</span>),</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"control"</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">"experimental"</span>, <span class="dv">2</span>)),</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">100</span>), <span class="dv">2</span>),</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="fu">c</span>(<span class="dv">9</span>, <span class="dv">9</span>, <span class="dv">9</span>, <span class="dv">18</span>)   <span class="co"># HR = 1 first 3 months, then 0.5</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="fu">rep</span>(<span class="st">"All"</span>, <span class="dv">2</span>),</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">period =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>),</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">100</span>),</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fl">0.001</span>, <span class="fl">0.001</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="using-to_sim_pw_surv-for-simpler-rate-specification" class="level3">
+<h3 class="anchored" data-anchor-id="using-to_sim_pw_surv-for-simpler-rate-specification">Using to_sim_pw_surv for simpler rate specification</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define rates in the simpler format (like sim_fixed_n)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>fail_rate <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="st">"All"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">100</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="fu">c</span>(<span class="dv">9</span>, <span class="dv">18</span>),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.9</span>, <span class="fl">0.6</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to sim_pw_surv format</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>rates <span class="ot">&lt;-</span> <span class="fu">to_sim_pw_surv</span>(fail_rate)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">sim_pw_surv</span>(</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">400</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">30</span>), <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">12</span>)),</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> rates<span class="sc">$</span>fail_rate,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> rates<span class="sc">$</span>dropout_rate</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="data-cutting" class="level2">
+<h2 class="anchored" data-anchor-id="data-cutting">Data cutting</h2>
+<p>After generating data with <code>sim_pw_surv()</code>, cut it at a specific calendar time or event count to create an analysis dataset.</p>
+<section id="cut-by-calendar-date" class="level3">
+<h3 class="anchored" data-anchor-id="cut-by-calendar-date">Cut by calendar date</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cut at 36 months from study start</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>analysis_data <span class="ot">&lt;-</span> <span class="fu">cut_data_by_date</span>(data, <span class="at">cut_date =</span> <span class="dv">36</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Returns: tte, event, stratum, treatment (class "tte_data")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="cut-by-event-count" class="level3">
+<h3 class="anchored" data-anchor-id="cut-by-event-count">Cut by event count</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cut when 250 events observed</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>analysis_data <span class="ot">&lt;-</span> <span class="fu">cut_data_by_event</span>(data, <span class="at">event =</span> <span class="dv">250</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="using-create_cut-for-pipelines" class="level3">
+<h3 class="anchored" data-anchor-id="using-create_cut-for-pipelines">Using create_cut for pipelines</h3>
+<p><code>create_cut()</code> wraps <code>get_analysis_date()</code> arguments into a reusable function.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cut at planned calendar time</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>cut1 <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(<span class="at">planned_calendar_time =</span> <span class="dv">24</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Cut at target events</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>cut2 <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(<span class="at">target_event_overall =</span> <span class="dv">250</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Cut at target events but no more than 6 months extension</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>cut3 <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_event_overall =</span> <span class="dv">300</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_extension_for_target_event =</span> <span class="dv">6</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply cutting function to simulated data</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>analysis_data <span class="ot">&lt;-</span> <span class="fu">cut1</span>(data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="wlr" class="level2">
+<h2 class="anchored" data-anchor-id="wlr">Weighted logrank test (wlr)</h2>
+<p><code>wlr()</code> performs a single weighted logrank test on cut data.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Standard logrank</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">wlr</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">cut_data_by_event</span>(data, <span class="dv">250</span>),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>z  <span class="co"># Z-statistic (negative favors experimental)</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Fleming-Harrington (0, 0.5) - emphasizes late differences</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>result_fh <span class="ot">&lt;-</span> <span class="fu">wlr</span>(</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">cut_data_by_event</span>(data, <span class="dv">250</span>),</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="fl">0.5</span>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># With variance estimate</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>result_var <span class="ot">&lt;-</span> <span class="fu">wlr</span>(</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">cut_data_by_event</span>(data, <span class="dv">250</span>),</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>),</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">return_variance =</span> <span class="cn">TRUE</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="maxcombo" class="level2">
+<h2 class="anchored" data-anchor-id="maxcombo">MaxCombo test</h2>
+<p><code>maxcombo()</code> combines multiple Fleming-Harrington weighted logrank tests, using the maximum test statistic with a correlation-adjusted p-value.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># MaxCombo: logrank + FH(0, 0.5)</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">maxcombo</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">cut_data_by_event</span>(data, <span class="dv">250</span>),</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">rho =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>),</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">gamma =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>z        <span class="co"># Z-statistics for each test</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>p_value  <span class="co"># p-value (accounts for correlation)</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Three-test MaxCombo</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>result3 <span class="ot">&lt;-</span> <span class="fu">maxcombo</span>(</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">cut_data_by_event</span>(data, <span class="dv">250</span>),</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">rho =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">gamma =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">return_corr =</span> <span class="cn">TRUE</span>   <span class="co"># Also return correlation matrix</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="milestone-rmst" class="level2">
+<h2 class="anchored" data-anchor-id="milestone-rmst">Milestone and RMST tests</h2>
+<section id="milestone-survival-difference-at-fixed-time" class="level3">
+<h3 class="anchored" data-anchor-id="milestone-survival-difference-at-fixed-time">Milestone (survival difference at fixed time)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">milestone</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">cut_data_by_event</span>(data, <span class="dv">250</span>),</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">ms_time =</span> <span class="dv">12</span>,            <span class="co"># Compare survival at 12 months</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">test_type =</span> <span class="st">"naive"</span>      <span class="co"># Or "log-log"</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>estimate  <span class="co"># Survival difference (experimental - control)</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>result<span class="sc">$</span>z         <span class="co"># Z-statistic</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="rmst-restricted-mean-survival-time-difference" class="level3">
+<h3 class="anchored" data-anchor-id="rmst-restricted-mean-survival-time-difference">RMST (restricted mean survival time difference)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">rmst</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">cut_data_by_event</span>(data, <span class="dv">250</span>),</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">tau =</span> <span class="dv">24</span>                 <span class="co"># RMST up to 24 months</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="multitest" class="level2">
+<h2 class="anchored" data-anchor-id="multitest">Multiple tests with multitest</h2>
+<p>Apply several tests to the same cut dataset in one call.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create parameterized test functions</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>logrank <span class="ot">&lt;-</span> <span class="fu">create_test</span>(wlr, <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>fh05 <span class="ot">&lt;-</span> <span class="fu">create_test</span>(wlr, <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="fl">0.5</span>))</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>rmst_test <span class="ot">&lt;-</span> <span class="fu">create_test</span>(rmst, <span class="at">tau =</span> <span class="dv">24</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>combo <span class="ot">&lt;-</span> <span class="fu">create_test</span>(maxcombo, <span class="at">rho =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">gamma =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply all tests to one dataset</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>cut <span class="ot">&lt;-</span> <span class="fu">cut_data_by_event</span>(data, <span class="dv">250</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">multitest</span>(</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> cut,</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">logrank =</span> logrank,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">fh05 =</span> fh05,</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">rmst =</span> rmst_test,</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">combo =</span> combo</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="co"># results is a named list of test outputs</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="sim-fixed-n" class="level2">
+<h2 class="anchored" data-anchor-id="sim-fixed-n">Fixed-sample simulation with sim_fixed_n</h2>
+<p><code>sim_fixed_n()</code> is a self-contained pipeline: simulate data, cut, and test in one call. Simpler but less flexible than <code>sim_gs_n()</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic simulation with Fleming-Harrington tests</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">sim_fixed_n</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_sim =</span> <span class="dv">1000</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample_size =</span> <span class="dv">400</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_event =</span> <span class="dv">300</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">12</span>), <span class="at">rate =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">30</span>)),</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="st">"All"</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">100</span>),</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">fail_rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="fu">c</span>(<span class="dv">9</span>, <span class="dv">18</span>),</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.9</span>, <span class="fl">0.6</span>),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">total_duration =</span> <span class="dv">36</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">timing_type =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">rho_gamma =</span> <span class="fu">data.frame</span>(<span class="at">rho =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">gamma =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>))</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co"># timing_type controls the cutoff method:</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 1: Planned study duration (total_duration)</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 2: Time target_event is achieved</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="co"># 3: Minimum follow-up after enrollment complete</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="co"># 4: max(planned duration, target event time)</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="co"># 5: max(target event time, minimum follow-up)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="estimating-power-from-sim_fixed_n" class="level3">
+<h3 class="anchored" data-anchor-id="estimating-power-from-sim_fixed_n">Estimating power from sim_fixed_n</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Power = proportion of simulations with z &lt; -1.96</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>power <span class="ot">&lt;-</span> results <span class="sc">|&gt;</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(cut <span class="sc">==</span> <span class="st">"Planned duration"</span> <span class="sc">&amp;</span> rho <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> gamma <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarize</span>(<span class="at">power =</span> <span class="fu">mean</span>(z <span class="sc">&lt;=</span> <span class="fu">qnorm</span>(<span class="fl">0.025</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="sim-gs-n" class="level2">
+<h2 class="anchored" data-anchor-id="sim-gs-n">Group sequential simulation with sim_gs_n</h2>
+<p><code>sim_gs_n()</code> simulates a group sequential trial: generate data, cut at multiple analysis times, and apply tests.</p>
+<section id="basic-group-sequential-simulation" class="level3">
+<h3 class="anchored" data-anchor-id="basic-group-sequential-simulation">Basic group sequential simulation</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(simtrial)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gsDesign2)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gsDesign)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Define cutting functions for 3 analyses</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>ia1_cut <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(<span class="at">target_event_overall =</span> <span class="dv">150</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>ia2_cut <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(<span class="at">target_event_overall =</span> <span class="dv">225</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>fa_cut <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(<span class="at">target_event_overall =</span> <span class="dv">300</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate with logrank test</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">sim_gs_n</span>(</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_sim =</span> <span class="dv">1000</span>,</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample_size =</span> <span class="dv">400</span>,</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">12</span>), <span class="at">rate =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">30</span>)),</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="st">"All"</span>,</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">100</span>),</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">fail_rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="fu">c</span>(<span class="dv">9</span>, <span class="dv">18</span>),</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.9</span>, <span class="fl">0.6</span>),</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">test =</span> wlr,</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">cut =</span> <span class="fu">list</span>(<span class="at">ia1 =</span> ia1_cut, <span class="at">ia2 =</span> ia2_cut, <span class="at">fa =</span> fa_cut),</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>)</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="maxcombo-in-sim_gs_n" class="level3">
+<h3 class="anchored" data-anchor-id="maxcombo-in-sim_gs_n">MaxCombo in sim_gs_n</h3>
+<p>MaxCombo must be the only test (cannot be combined with other tests in the same call).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>results_combo <span class="ot">&lt;-</span> <span class="fu">sim_gs_n</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_sim =</span> <span class="dv">1000</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample_size =</span> <span class="dv">400</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">12</span>), <span class="at">rate =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">30</span>)),</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="st">"All"</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">100</span>),</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">fail_rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="fu">c</span>(<span class="dv">9</span>, <span class="dv">18</span>),</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.9</span>, <span class="fl">0.6</span>),</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">test =</span> maxcombo,</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">cut =</span> <span class="fu">list</span>(<span class="at">ia1 =</span> ia1_cut, <span class="at">ia2 =</span> ia2_cut, <span class="at">fa =</span> fa_cut),</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">rho =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>),</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">gamma =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="multiple-wlr-tests-in-sim_gs_n" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-wlr-tests-in-sim_gs_n">Multiple WLR tests in sim_gs_n</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>results_multi <span class="ot">&lt;-</span> <span class="fu">sim_gs_n</span>(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_sim =</span> <span class="dv">1000</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample_size =</span> <span class="dv">400</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">12</span>), <span class="at">rate =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">30</span>)),</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="st">"All"</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">100</span>),</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">fail_rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="fu">c</span>(<span class="dv">9</span>, <span class="dv">18</span>),</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.9</span>, <span class="fl">0.6</span>),</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">test =</span> <span class="fu">list</span>(</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">logrank =</span> <span class="fu">create_test</span>(wlr, <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>)),</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">fh05 =</span> <span class="fu">create_test</span>(wlr, <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="fl">0.5</span>))</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">cut =</span> <span class="fu">list</span>(<span class="at">ia1 =</span> ia1_cut, <span class="at">ia2 =</span> ia2_cut, <span class="at">fa =</span> fa_cut)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="gsdesign2-integration" class="level2">
+<h2 class="anchored" data-anchor-id="gsdesign2-integration">Integrating with gsDesign2 designs</h2>
+<p>Use a <code>gsDesign2</code> design to drive sample size, event targets, and boundary updates in <code>sim_gs_n()</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(simtrial)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gsDesign2)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gsDesign)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Enrollment and failure rate assumptions</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>enroll_rate <span class="ot">&lt;-</span> <span class="fu">define_enroll_rate</span>(</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">12</span>),</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">rate =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">30</span>)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>fail_rate <span class="ot">&lt;-</span> <span class="fu">define_fail_rate</span>(</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">100</span>),</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="dv">9</span>,</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.9</span>, <span class="fl">0.6</span>),</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Group sequential design</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">gs_design_ahr</span>(</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> enroll_rate,</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> fail_rate,</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">beta =</span> <span class="fl">0.1</span>,</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">analysis_time =</span> <span class="fu">c</span>(<span class="dv">12</span>, <span class="dv">24</span>, <span class="dv">36</span>),</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">info_scale =</span> <span class="st">"h0_info"</span>,</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> gs_spending_bound,</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">upar =</span> <span class="fu">list</span>(<span class="at">sf =</span> sfLDOF, <span class="at">total_spend =</span> <span class="fl">0.025</span>),</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> gs_b,</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">lpar =</span> <span class="fu">rep</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="dv">3</span>)</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Create cuts from the design's planned events</span></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>cuts <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">ia1 =</span> <span class="fu">create_cut</span>(<span class="at">target_event_overall =</span> <span class="fu">ceiling</span>(design<span class="sc">$</span>analysis<span class="sc">$</span>event[<span class="dv">1</span>])),</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">ia2 =</span> <span class="fu">create_cut</span>(<span class="at">target_event_overall =</span> <span class="fu">ceiling</span>(design<span class="sc">$</span>analysis<span class="sc">$</span>event[<span class="dv">2</span>])),</span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">fa =</span> <span class="fu">create_cut</span>(<span class="at">target_event_overall =</span> <span class="fu">ceiling</span>(design<span class="sc">$</span>analysis<span class="sc">$</span>event[<span class="dv">3</span>]))</span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate with boundary updating from original design</span></span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">sim_gs_n</span>(</span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_sim =</span> <span class="dv">1000</span>,</span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample_size =</span> <span class="fu">ceiling</span>(<span class="fu">max</span>(design<span class="sc">$</span>analysis<span class="sc">$</span>n)),</span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> design<span class="sc">$</span>enroll_rate<span class="sc">$</span>duration,</span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> design<span class="sc">$</span>enroll_rate<span class="sc">$</span>rate</span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="st">"All"</span>,</span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> fail_rate<span class="sc">$</span>duration,</span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">fail_rate =</span> fail_rate<span class="sc">$</span>fail_rate,</span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> fail_rate<span class="sc">$</span>hr,</span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">dropout_rate =</span> fail_rate<span class="sc">$</span>dropout_rate</span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">test =</span> wlr,</span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">cut =</span> cuts,</span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a>  <span class="at">original_design =</span> design,</span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>  <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>)</span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarize results</span></span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a>results <span class="sc">|&gt;</span> <span class="fu">summary</span>() <span class="sc">|&gt;</span> <span class="fu">as_gt</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="alpha-spending-options" class="level3">
+<h3 class="anchored" data-anchor-id="alpha-spending-options">Alpha spending options</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># How interim alpha is spent when observed events differ from planned</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">sim_gs_n</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  ...,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">original_design =</span> design,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ia_alpha_spending =</span> <span class="st">"min_planned_actual"</span>,  <span class="co"># Default: min of planned and actual info fraction</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">fa_alpha_spending =</span> <span class="st">"full_alpha"</span>           <span class="co"># Default: spend full alpha at final analysis</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Alternative: spend by actual info fraction at FA (for underrunning)</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">sim_gs_n</span>(</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  ...,</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">original_design =</span> design,</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">ia_alpha_spending =</span> <span class="st">"actual"</span>,</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">fa_alpha_spending =</span> <span class="st">"info_frac"</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="weight-functions" class="level2">
+<h2 class="anchored" data-anchor-id="weight-functions">Weight functions</h2>
+<section id="fleming-harrington-family" class="level3">
+<h3 class="anchored" data-anchor-id="fleming-harrington-family">Fleming-Harrington family</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>)    <span class="co"># Standard logrank</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="fl">0.5</span>)  <span class="co"># Emphasizes late differences</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">1</span>)    <span class="co"># Stronger late emphasis (Peto-logrank-like)</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">1</span>, <span class="at">gamma =</span> <span class="dv">0</span>)    <span class="co"># Emphasizes early differences (Prentice-Wilcoxon)</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">1</span>, <span class="at">gamma =</span> <span class="dv">1</span>)    <span class="co"># Moderate weight all around</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="magirr-burman-weights-for-delayed-effects" class="level3">
+<h3 class="anchored" data-anchor-id="magirr-burman-weights-for-delayed-effects">Magirr-Burman weights (for delayed effects)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mb</span>(<span class="at">delay =</span> <span class="dv">4</span>)              <span class="co"># Down-weight first 4 months</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mb</span>(<span class="at">delay =</span> <span class="dv">4</span>, <span class="at">w_max =</span> <span class="dv">2</span>)  <span class="co"># Cap maximum weight at 2</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mb</span>(<span class="at">delay =</span> <span class="cn">Inf</span>, <span class="at">w_max =</span> <span class="dv">2</span>) <span class="co"># Magirr (2021) recommendation</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="early-zero-weight" class="level3">
+<h3 class="anchored" data-anchor-id="early-zero-weight">Early zero weight</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">early_zero</span>(<span class="at">early_period =</span> <span class="dv">4</span>)  <span class="co"># Zero weight before 4 months</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="to-sim-pw-surv" class="level2">
+<h2 class="anchored" data-anchor-id="to-sim-pw-surv">Converting rate formats with to_sim_pw_surv</h2>
+<p><code>sim_fixed_n()</code> and <code>sim_gs_n()</code> use a simpler rate format (control rate + HR). <code>sim_pw_surv()</code> uses treatment-specific rates. <code>to_sim_pw_surv()</code> converts between them.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple format (control rate + HR)</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>fail_rate_simple <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="st">"All"</span>,</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">100</span>),</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="fu">c</span>(<span class="dv">9</span>, <span class="dv">18</span>),</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.9</span>, <span class="fl">0.6</span>),</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to sim_pw_surv format</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>rates <span class="ot">&lt;-</span> <span class="fu">to_sim_pw_surv</span>(fail_rate_simple)</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>rates<span class="sc">$</span>fail_rate    <span class="co"># Treatment-specific failure rates</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>rates<span class="sc">$</span>dropout_rate <span class="co"># Treatment-specific dropout rates</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Use in sim_pw_surv</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">sim_pw_surv</span>(</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">400</span>,</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="dv">25</span>, <span class="at">duration =</span> <span class="dv">16</span>),</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> rates<span class="sc">$</span>fail_rate,</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> rates<span class="sc">$</span>dropout_rate</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="analysis-date" class="level2">
+<h2 class="anchored" data-anchor-id="analysis-date">Flexible analysis timing with get_analysis_date</h2>
+<p><code>get_analysis_date()</code> determines analysis timing from multiple criteria. <code>create_cut()</code> wraps it for use in pipelines.</p>
+<section id="calendar-time-driven-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="calendar-time-driven-analysis">Calendar-time-driven analysis</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>cut <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(<span class="at">planned_calendar_time =</span> <span class="dv">36</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="event-driven-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="event-driven-analysis">Event-driven analysis</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>cut <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(<span class="at">target_event_overall =</span> <span class="dv">300</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="event-driven-with-maximum-extension" class="level3">
+<h3 class="anchored" data-anchor-id="event-driven-with-maximum-extension">Event-driven with maximum extension</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Target 300 events, but extend at most 6 months beyond planned time</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>cut <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_event_overall =</span> <span class="dv">300</span>,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_extension_for_target_event =</span> <span class="dv">42</span>  <span class="co"># Absolute max calendar time</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="minimum-follow-up" class="level3">
+<h3 class="anchored" data-anchor-id="minimum-follow-up">Minimum follow-up</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># At least 12 months follow-up after last enrollment</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>cut <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(<span class="at">min_followup =</span> <span class="dv">12</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="combining-criteria" class="level3">
+<h3 class="anchored" data-anchor-id="combining-criteria">Combining criteria</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Analysis at the later of target events or minimum follow-up</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>cut <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_event_overall =</span> <span class="dv">300</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">min_followup =</span> <span class="dv">12</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimum time between analyses</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>cut_ia2 <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_event_overall =</span> <span class="dv">225</span>,</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">min_time_after_previous_analysis =</span> <span class="dv">6</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="per-stratum-event-targets" class="level3">
+<h3 class="anchored" data-anchor-id="per-stratum-event-targets">Per-stratum event targets</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>cut <span class="ot">&lt;-</span> <span class="fu">create_cut</span>(</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_event_per_stratum =</span> <span class="fu">c</span>(<span class="st">"BM+"</span> <span class="ot">=</span> <span class="dv">100</span>, <span class="st">"BM-"</span> <span class="ot">=</span> <span class="dv">150</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="example-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="example-datasets">Example NPH datasets</h2>
+<p>simtrial includes pre-built datasets from the Cross-Pharma Non-Proportional Hazards Working Group.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Delayed treatment effect</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(ex1_delayed_effect)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Columns: id, month (tte), evntd (event indicator), trt (0=ctrl, 1=exp)</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(ex2_delayed_effect)  <span class="co"># Another delayed effect scenario</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(ex3_cure_with_ph)    <span class="co"># Cure model with proportional hazards</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(ex4_belly)           <span class="co"># "Belly-shaped" survival curves</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(ex5_widening)        <span class="co"># Widening survival curves</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(ex6_crossing)        <span class="co"># Crossing survival curves</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Use with wlr (need column renaming)</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>analysis_data <span class="ot">&lt;-</span> ex1_delayed_effect <span class="sc">|&gt;</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">tte =</span> month, <span class="at">event =</span> evntd, <span class="at">treatment =</span> trt) <span class="sc">|&gt;</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">ifelse</span>(treatment <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"experimental"</span>, <span class="st">"control"</span>),</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="st">"All"</span></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a><span class="fu">wlr</span>(analysis_data, <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="stratified" class="level2">
+<h2 class="anchored" data-anchor-id="stratified">Stratified simulations</h2>
+<section id="generating-stratified-data" class="level3">
+<h3 class="anchored" data-anchor-id="generating-stratified-data">Generating stratified data</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">sim_pw_surv</span>(</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">600</span>,</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="fu">data.frame</span>(<span class="at">stratum =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>), <span class="at">p =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.6</span>)),</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">block =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"control"</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">"experimental"</span>, <span class="dv">2</span>)),</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">rate =</span> <span class="dv">30</span>, <span class="at">duration =</span> <span class="dv">20</span>),</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM+"</span>, <span class="st">"BM-"</span>, <span class="st">"BM-"</span>), <span class="at">each =</span> <span class="dv">1</span>),</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">period =</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">4</span>),</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>), <span class="dv">2</span>),</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">rep</span>(<span class="dv">100</span>, <span class="dv">4</span>),</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">c</span>(<span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span><span class="dv">12</span>, <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span><span class="dv">12</span> <span class="sc">*</span> <span class="fl">0.6</span>,   <span class="co"># BM+: HR = 0.6</span></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>             <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span><span class="dv">12</span>, <span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span><span class="dv">12</span> <span class="sc">*</span> <span class="fl">0.85</span>)   <span class="co"># BM-: HR = 0.85</span></span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">dropout_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>), <span class="at">each =</span> <span class="dv">2</span>),</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">period =</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">4</span>),</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"control"</span>, <span class="st">"experimental"</span>), <span class="dv">2</span>),</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">rep</span>(<span class="dv">100</span>, <span class="dv">4</span>),</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">rate =</span> <span class="fu">rep</span>(<span class="fl">0.001</span>, <span class="dv">4</span>)</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Cut and test with stratified WLR</span></span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>cut <span class="ot">&lt;-</span> <span class="fu">cut_data_by_event</span>(data, <span class="at">event =</span> <span class="dv">350</span>)</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a><span class="fu">wlr</span>(cut, <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="stratified-sim_fixed_n" class="level3">
+<h3 class="anchored" data-anchor-id="stratified-sim_fixed_n">Stratified sim_fixed_n</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">sim_fixed_n</span>(</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_sim =</span> <span class="dv">1000</span>,</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample_size =</span> <span class="dv">600</span>,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">target_event =</span> <span class="dv">350</span>,</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">stratum =</span> <span class="fu">data.frame</span>(<span class="at">stratum =</span> <span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>), <span class="at">p =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.6</span>)),</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">enroll_rate =</span> <span class="fu">data.frame</span>(<span class="at">duration =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">16</span>), <span class="at">rate =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">30</span>)),</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">fail_rate =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"BM+"</span>, <span class="st">"BM-"</span>), <span class="at">each =</span> <span class="dv">2</span>),</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">duration =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">100</span>), <span class="dv">2</span>),</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">fail_rate =</span> <span class="fu">log</span>(<span class="dv">2</span>) <span class="sc">/</span> <span class="dv">12</span>,</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.6</span>, <span class="fl">0.85</span>, <span class="fl">0.85</span>),</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">dropout_rate =</span> <span class="fl">0.001</span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">total_duration =</span> <span class="dv">36</span>,</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">timing_type =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">rho_gamma =</span> <span class="fu">data.frame</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>)</span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="wlr-illness-death" class="level2">
+<h2 class="anchored" data-anchor-id="wlr-illness-death">Standalone wlr with illness-death model data</h2>
+<p><code>wlr()</code> can be used standalone (outside <code>sim_gs_n()</code>) with data from the illness-death model. The key is mapping ADTTE columns to the <code>wlr()</code> format.</p>
+<section id="column-mapping" class="level3">
+<h3 class="anchored" data-anchor-id="column-mapping">Column mapping</h3>
+<p><code>wlr()</code> expects columns: <code>tte</code>, <code>event</code>, <code>stratum</code>, <code>treatment</code></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># From illness-death ADTTE data (columns: AVAL, CNSR, STRATUM, TRT)</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>logrank_z <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">tte =</span> data<span class="sc">$</span>AVAL,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">event =</span> <span class="dv">1</span>L <span class="sc">-</span> data<span class="sc">$</span>CNSR,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">stratum =</span> data<span class="sc">$</span>STRATUM,</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> data<span class="sc">$</span>TRT</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">sum</span>(d<span class="sc">$</span>event) <span class="sc">&lt;</span> <span class="dv">2</span>) <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">wlr</span>(d, <span class="at">weight =</span> <span class="fu">fh</span>(<span class="at">rho =</span> <span class="dv">0</span>, <span class="at">gamma =</span> <span class="dv">0</span>))<span class="sc">$</span>z</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="sign-convention" class="level3">
+<h3 class="anchored" data-anchor-id="sign-convention">Sign convention</h3>
+<p><code>wlr()</code> returns <strong>positive Z when experimental is better</strong> (more events in control than expected under null). This matches the convention needed for <code>sequentialPValue()</code> and graphical testing.</p>
+</section>
+<section id="usage-in-simulation-loops" class="level3">
+<h3 class="anchored" data-anchor-id="usage-in-simulation-loops">Usage in simulation loops</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>adtte_18 <span class="ot">&lt;-</span> <span class="fu">cut_illness_death</span>(sim_data, <span class="at">cut_date =</span> <span class="dv">18</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>z_pfs_18 <span class="ot">&lt;-</span> <span class="fu">logrank_z</span>(adtte_18[adtte_18<span class="sc">$</span>PARAMCD <span class="sc">==</span> <span class="st">"PFS"</span>, ])</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>z_os_18 <span class="ot">&lt;-</span> <span class="fu">logrank_z</span>(adtte_18[adtte_18<span class="sc">$</span>PARAMCD <span class="sc">==</span> <span class="st">"OS"</span>, ])</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Collect event counts for spending time</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>ev_pfs_18 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="dv">1</span>L <span class="sc">-</span> adtte_18<span class="sc">$</span>CNSR[adtte_18<span class="sc">$</span>PARAMCD <span class="sc">==</span> <span class="st">"PFS"</span>])</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>ev_os_18 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="dv">1</span>L <span class="sc">-</span> adtte_18<span class="sc">$</span>CNSR[adtte_18<span class="sc">$</span>PARAMCD <span class="sc">==</span> <span class="st">"OS"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/keaven/gsDesignSkills/blob/main/skills/simtrial.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/keaven/gsDesignSkills/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
