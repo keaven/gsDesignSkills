@@ -13,7 +13,7 @@ description: >
 
 ## API reference
 
-- Full function docs (CRAN): `references/llms.txt` (source: https://gsDesign.ai)
+- Vendored function docs: `references/llms.txt`
 - Full function docs (local v1.0.2): `references/llms_local.txt`
 - Workflow patterns: `references/code_patterns.md`
 

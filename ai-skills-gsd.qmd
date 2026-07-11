@@ -107,7 +107,7 @@ expertise in a specific domain:
 - `references/llms.txt` files are bundled in this repository
 - Some were imported from external documentation sources; others are built
   from local package man pages
-- The skills site does not require `gsDesign.ai` at runtime
+- The skills site does not require an external documentation site at runtime
 
 :::
 :::
@@ -415,7 +415,7 @@ gsDesignSkills includes local machine-readable references:
 . . .
 
 These files may originate from package documentation sites, local Rd files,
-or earlier gsDesign.ai exports, but they are vendored into `gsDesignSkills`.
+or earlier documentation exports, but they are vendored into `gsDesignSkills`.
 For exact current-CRAN behavior, use the installed package help as the final
 source of truth.
 

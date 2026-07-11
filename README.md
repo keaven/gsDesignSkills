@@ -61,9 +61,9 @@ read the skill at `.claude/skills/graphicalMCP-gsDesign2/SKILL.md`.
 ## API documentation
 
 Several skills include vendored `references/llms.txt` API references, plus
-local `llms_local.txt` files where package docs have been regenerated. Some
-older `llms.txt` files originated from gsDesign.ai, but gsDesignSkills is the
-source of truth for the skills and does not require that external site.
+local `llms_local.txt` files where package docs have been regenerated.
+gsDesignSkills is the source of truth for the skills and does not require an
+external documentation site.
 
 ## Contributing
 
