@@ -1,5 +1,7 @@
 # gsDesignSkills
 
+Current version: `0.2.0`
+
 AI skills for clinical trial design R packages:
 
 - **gsDesign** - Group sequential design (classical)

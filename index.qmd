@@ -10,6 +10,8 @@ domain expertise in clinical trial design. Each skill encodes package-specific
 knowledge, verified code patterns, and statistical conventions for R packages
 used in group sequential design, multiplicity control, and trial simulation.
 
+Current version: `0.2.0`
+
 Skills are portable Markdown assets stored in `.agents/skills/`. Assistant-
 specific locations, such as `.claude/skills/`, are compatibility or export
 targets rather than the source of truth.

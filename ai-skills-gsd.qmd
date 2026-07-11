@@ -486,6 +486,7 @@ AI into a reliable statistical programming assistant.
 | | |
 |---|---|
 | **What** | Curated knowledge files for AI coding assistants |
+| **Version** | `0.2.0` |
 | **Why** | Clinical trial design requires domain expertise that general AI lacks |
 | **How** | SKILL.md + code patterns + vendored API references |
 | **Where** | [github.com/keaven/gsDesignSkills](https://github.com/keaven/gsDesignSkills) |
