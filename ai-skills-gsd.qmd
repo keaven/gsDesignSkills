@@ -2,7 +2,7 @@
 title: "AI Skills for Group Sequential Design"
 subtitle: "Teaching AI to Design Clinical Trials"
 author: "Keaven M. Anderson"
-date: "2026"
+date: "July 11, 2026"
 format:
   revealjs:
     theme: default
