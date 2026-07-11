@@ -317,59 +317,57 @@ not just produce code that calls the right function.
 
 ## How Skills Are Used
 
-**1. Copy skills** into your project:
+**1. Keep portable skills** in your project:
 
 ```bash
+# Source of truth for all assistants
+gsDesignSkills/.agents/skills/
+
+# Optional: export for Claude Code compatibility
 cp -r gsDesignSkills/.agents/skills/* my-project/.claude/skills/
 ```
 
-**2. Reference** skills for your AI assistant:
+**2. Reference** skills through the adapter your assistant understands:
 
-::: {.columns}
-::: {.column width="33%"}
-
-### Claude Code
-
-In `CLAUDE.md`:
-
-```markdown
-When working on group sequential
-designs, read
-`.claude/skills/gsDesign/SKILL.md`.
-```
-
-:::
-::: {.column width="33%"}
-
-### VS Code / Copilot
-
-In `.github/copilot-instructions.md`:
-
-```markdown
-For group sequential designs,
-follow instructions in
-`.agents/skills/gsDesign/SKILL.md`.
-```
-
-:::
-::: {.column width="33%"}
-
-### Cline
-
-In `.clinerules`:
-
-```markdown
-When working on group sequential
-designs, read
-`.agents/skills/gsDesign/SKILL.md`.
-```
-
-:::
-:::
+| Assistant | Adapter |
+|---|---|
+| Claude Code | Copy or mirror selected skills into `.claude/skills/`; reference them in `CLAUDE.md` |
+| VS Code / Copilot | Point `.github/copilot-instructions.md` to `.agents/skills/` |
+| Cursor | Use `.cursor/rules/gsdesign-skills.mdc` as the repo adapter |
+| Cline | Point `.clinerules` to the relevant `.agents/skills/<skill-name>/SKILL.md` |
 
 **3. Use naturally** --- the assistant reads the skill when triggered,
 applies code patterns as verified starting points, and consults
 `llms.txt` for full API details when needed.
+
+## Cursor and Grok 4.5 / Chat Models
+
+::: {.columns}
+::: {.column width="50%"}
+
+### Cursor
+
+- Repo-native adapter:
+  `.cursor/rules/gsdesign-skills.mdc`
+- Routes ambiguous requests through
+  `semantic-router`
+- Reads selected `.agents/skills/*` files as needed
+- Best fit for editing code inside a project
+
+:::
+::: {.column width="50%"}
+
+### Grok 4.5 / Chat Models
+
+- Treat skills as portable context
+- Paste or attach:
+  `SKILL.md`, relevant `code_patterns.md`,
+  and glossary/crosswalk snippets
+- Ask the model to follow the same routing rules
+- Best fit for design review, explanation, and second opinions
+
+:::
+:::
 
 ## What Skills Prevent
 
