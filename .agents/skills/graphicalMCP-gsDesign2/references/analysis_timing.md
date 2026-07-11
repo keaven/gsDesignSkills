@@ -1,4 +1,4 @@
-# Calendar-Time Analysis Timing for OS/PFS/ORR
+# Calendar-Time Analysis Timing for OS/PFS/ORR {#analysis-timing}
 
 This note explains how to define analysis timing on the calendar and convert it into spending time for sequential p-value calculations.
 

@@ -256,7 +256,7 @@ gsD2list <- list(ossub, os, pfssub, pfs, NULL, NULL)
 
 ## Results entry template {#results-entry}
 
-For calendar-time-based interim timing (common interim dates across endpoints), see [analysis_timing.md](analysis_timing.md).
+For calendar-time-based interim timing (common interim dates across endpoints), see [calendar-time analysis timing](#analysis-timing).
 
 ```r
 # Event counts per hypothesis per analysis

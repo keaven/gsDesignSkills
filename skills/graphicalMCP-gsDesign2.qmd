@@ -8,3 +8,5 @@ subtitle: "GSD with Graphical Multiplicity Control"
 ## Code Patterns
 
 {{< include ../.agents/skills/graphicalMCP-gsDesign2/references/code_patterns.md >}}
+
+{{< include ../.agents/skills/graphicalMCP-gsDesign2/references/analysis_timing.md >}}
