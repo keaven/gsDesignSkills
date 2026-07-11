@@ -1,0 +1,4 @@
+interface:
+  display_name: "gsDesign"
+  short_description: "Classical group sequential designs"
+  default_prompt: "Use $gsDesign to design a classical group sequential trial."

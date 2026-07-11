@@ -3,8 +3,8 @@ title: "gsDesign"
 subtitle: "Classical Group Sequential Design"
 ---
 
-{{< include ../.claude/skills/gsDesign/SKILL.md >}}
+{{< include ../.agents/skills/gsDesign/SKILL.md >}}
 
 ## Code Patterns
 
-{{< include ../.claude/skills/gsDesign/references/code_patterns.md >}}
+{{< include ../.agents/skills/gsDesign/references/code_patterns.md >}}

@@ -23,18 +23,28 @@ title: "Skills Catalog"
 | [illness-death](illness-death.qmd) | gMCPLite (simulation code) | Multi-state model for correlated OS/PFS/ORR endpoints |
 | [multi-endpoint-sim](multi-endpoint-sim.qmd) | gsDesign + gMCPLite + simtrial + graphicalMCP | Full simulation pipeline from design through multiplicity-adjusted testing |
 
+## Semantic Layer
+
+| Skill | Scope | Description |
+|-------|-------|-------------|
+| [Semantic Layer](semantic-layer.qmd) | all packages | Model-neutral glossary, routing skill, gsDesignNB seed crosswalk, and routing examples |
+
 ## Skill Anatomy
 
 Each skill follows the same structure:
 
 ```
-.claude/skills/<skill-name>/
+.agents/skills/<skill-name>/
 ├── SKILL.md              # Triggers, workflow, key concepts
+├── agents/
+│   └── openai.yaml       # Codex-compatible display metadata
 └── references/
     ├── code_patterns.md  # Verified code templates
     └── llms.txt          # API documentation (where available)
 ```
 
 - **SKILL.md** defines *when* to activate and *what* domain knowledge to apply
+- **agents/openai.yaml** provides display metadata for Codex-compatible skill surfaces
 - **Code patterns** provide tested, working templates as starting points
 - **llms.txt** files from [gsDesign.ai](https://gsDesign.ai) give complete API details
+- **.cursor/rules/gsdesign-skills.mdc** adapts the portable skills for Cursor

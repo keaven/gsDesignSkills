@@ -47,6 +47,9 @@ website:
             - skills/graphicalMCP-gsDesign2.qmd
             - skills/illness-death.qmd
             - skills/multi-endpoint-sim.qmd
+        - section: "Semantic Layer"
+          contents:
+            - skills/semantic-layer.qmd
 
 format:
   html:

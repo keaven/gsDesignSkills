@@ -1,0 +1,42 @@
+---
+description: Use the portable gsDesignSkills semantic layer and package skills for clinical trial design work.
+alwaysApply: true
+---
+
+# gsDesignSkills Cursor Adapter
+
+This repository stores portable AI-agent skills in `.agents/skills/`.
+Use those skills as the source of truth for clinical trial design guidance.
+
+## Skill Loading
+
+When a request involves clinical trial design, R package workflow selection, or
+the gsDesign ecosystem:
+
+1. If the package or workflow is unclear, read `.agents/skills/semantic-router/SKILL.md` first.
+2. If terminology is ambiguous, read `.agents/skills/trial-design-glossary/SKILL.md` and `glossary/core-concepts.md`.
+3. Read the selected package or cross-package skill's `SKILL.md`.
+4. Read files under that skill's `references/` directory only when detailed code patterns or API context are needed.
+5. Use `crosswalks/*.yaml` and `evals/*.yaml` for semantic routing and examples when relevant.
+
+## Package Routing Cues
+
+- Use `gsDesign` for classical group sequential boundaries, spending functions, and established survival design workflows.
+- Use `gsDesign2` for next-generation survival group sequential designs, average hazard ratio, non-proportional hazards, spending time, and sequential p-values.
+- Use `gsDesignNB` for negative binomial or recurrent-event endpoints, rate ratios, dispersion, event gaps, calendar-time analyses, blinded information, and SSR.
+- Use `simtrial` for survival trial simulation, weighted logrank tests, MaxCombo tests, event-driven cuts, and simulation-based power.
+- Use `graphicalMCP` for graph-based multiplicity, Bonferroni-based closed testing, graph weights, transitions, and alpha reallocation.
+- Use `graphicalMCP-gsDesign2` for group sequential designs combined with graphical multiplicity control.
+- Use `rpact` for confirmatory adaptive designs, combination tests, conditional power, and adaptive sample size workflows.
+- Use `wpgsd` for weighted parametric multiplicity with correlated test statistics.
+- Use `illness-death` for oncology multi-state simulation with correlated OS, PFS, and response endpoints.
+- Use `multi-endpoint-sim` for full multi-endpoint operating-characteristic simulation workflows.
+- Use `gMCPLite` only for legacy graphical MCP workflows; prefer `graphicalMCP` for new work.
+
+## Editing Rules
+
+- Make source skill edits in `.agents/skills/`, not `.claude/skills/`.
+- Treat `.claude/skills/` as a compatibility/export target.
+- Preserve package-style skill names such as `gsDesignNB` and `graphicalMCP`.
+- `agents/openai.yaml` files are Codex-compatible display metadata; Cursor can ignore them unless specifically asked to update metadata.
+- Keep skill bodies concise and move detailed examples or API patterns into `references/`.

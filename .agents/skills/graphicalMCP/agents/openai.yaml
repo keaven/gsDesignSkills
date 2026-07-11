@@ -1,0 +1,4 @@
+interface:
+  display_name: "graphicalMCP"
+  short_description: "Graphical multiplicity procedures"
+  default_prompt: "Use $graphicalMCP to build and test a graphical multiple comparison procedure."

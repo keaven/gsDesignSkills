@@ -1,0 +1,4 @@
+interface:
+  display_name: "gsDesign2"
+  short_description: "Next-generation survival GSD workflows"
+  default_prompt: "Use $gsDesign2 to plan a next-generation survival group sequential design."

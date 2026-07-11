@@ -1,0 +1,4 @@
+interface:
+  display_name: "Multi-Endpoint Simulation"
+  short_description: "Multi-endpoint trial simulation"
+  default_prompt: "Use $multi-endpoint-sim to simulate a multi-endpoint trial with sequential and multiplicity-adjusted testing."

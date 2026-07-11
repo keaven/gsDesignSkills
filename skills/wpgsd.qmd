@@ -3,8 +3,8 @@ title: "wpgsd"
 subtitle: "Weighted Parametric Group Sequential Design"
 ---
 
-{{< include ../.claude/skills/wpgsd/SKILL.md >}}
+{{< include ../.agents/skills/wpgsd/SKILL.md >}}
 
 ## Code Patterns
 
-{{< include ../.claude/skills/wpgsd/references/code_patterns.md >}}
+{{< include ../.agents/skills/wpgsd/references/code_patterns.md >}}

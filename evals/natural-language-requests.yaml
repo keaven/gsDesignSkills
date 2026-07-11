@@ -1,0 +1,157 @@
+version: 0.1.0
+description: Seed evaluation cases for the trial design semantic router.
+
+cases:
+  - id: nb-fixed-001
+    request: "Plan a fixed sample size trial for recurrent COPD exacerbations using a negative binomial model and a rate ratio of 0.75."
+    expected:
+      intent:
+        endpoint_family: negative_binomial_count
+        estimand: rate_ratio
+        design_family: fixed_sample_size
+      skills:
+        - semantic-router
+        - gsDesignNB
+      workflow:
+        - sample_size_nbinom
+
+  - id: nb-gs-calendar-001
+    request: "Design a calendar-time group sequential trial for recurrent events with interims at 6 and 12 months."
+    expected:
+      intent:
+        endpoint_family: recurrent_event
+        design_family: group_sequential
+        timing_basis: calendar_time
+      skills:
+        - semantic-router
+        - gsDesignNB
+      workflow:
+        - sample_size_nbinom
+        - gsNBCalendar
+
+  - id: nb-gs-sim-001
+    request: "Simulate operating characteristics for a negative binomial group sequential design with efficacy and futility looks."
+    expected:
+      intent:
+        endpoint_family: negative_binomial_count
+        design_family: group_sequential
+        simulation: operating_characteristics
+      skills:
+        - semantic-router
+        - gsDesignNB
+      workflow:
+        - sample_size_nbinom
+        - gsNBCalendar
+        - sim_gs_nbinom
+        - summarize_gs_sim
+
+  - id: nb-blinded-info-001
+    request: "At the interim, estimate blinded information from pooled recurrent event data."
+    expected:
+      intent:
+        endpoint_family: recurrent_event
+        information_source: blinded
+      skills:
+        - semantic-router
+        - gsDesignNB
+      workflow:
+        - calculate_blinded_info
+
+  - id: nb-blinded-ssr-001
+    request: "Do a blinded sample size re-estimation for a negative binomial endpoint using pooled rates."
+    expected:
+      intent:
+        endpoint_family: negative_binomial_count
+        adaptation: blinded_ssr
+        information_source: blinded
+      skills:
+        - semantic-router
+        - gsDesignNB
+      workflow:
+        - calculate_blinded_info
+        - blinded_ssr
+
+  - id: nb-unblinded-ssr-001
+    request: "Use observed treatment and control rates to re-estimate sample size for a recurrent event endpoint."
+    expected:
+      intent:
+        endpoint_family: recurrent_event
+        adaptation: unblinded_ssr
+        information_source: unblinded
+      skills:
+        - semantic-router
+        - gsDesignNB
+      workflow:
+        - unblinded_ssr
+
+  - id: nb-seasonal-sim-001
+    request: "Simulate recurrent events with seasonal exacerbation rates and overdispersion."
+    expected:
+      intent:
+        endpoint_family: recurrent_event
+        design_family: simulation
+      skills:
+        - semantic-router
+        - gsDesignNB
+      workflow:
+        - nb_sim_seasonal
+        - mutze_test
+
+  - id: nb-analysis-001
+    request: "Analyze simulated count data with a Wald test for the treatment rate ratio."
+    expected:
+      intent:
+        endpoint_family: negative_binomial_count
+        estimand: rate_ratio
+      skills:
+        - semantic-router
+        - gsDesignNB
+      workflow:
+        - mutze_test
+
+  - id: survival-nph-001
+    request: "Plan a survival group sequential design under non-proportional hazards using an average hazard ratio."
+    expected:
+      intent:
+        endpoint_family: time_to_event
+        estimand: average_hazard_ratio
+        design_family: group_sequential
+      skills:
+        - semantic-router
+        - gsDesign2
+      workflow:
+        - gs_design_ahr
+
+  - id: graphical-gsd-001
+    request: "Combine OS and PFS group sequential tests with graphical alpha recycling."
+    expected:
+      intent:
+        endpoint_family: multi_endpoint
+        design_family: group_sequential
+        multiplicity: graphical
+      skills:
+        - semantic-router
+        - graphicalMCP-gsDesign2
+      workflow:
+        - graph_create
+        - sequential_pval
+        - graph_test_shortcut
+
+  - id: adaptive-rpact-001
+    request: "Use conditional power to adapt sample size in a confirmatory two-stage design."
+    expected:
+      intent:
+        design_family: adaptive
+        adaptation: conditional_power
+      skills:
+        - semantic-router
+        - rpact
+      workflow:
+        - getDesignInverseNormal
+        - getSampleSizeMeans
+
+  - id: ambiguous-events-001
+    request: "Design a trial with event-based interim analyses."
+    expected:
+      clarification:
+        - "Clarify whether events are survival events or recurrent/count events."

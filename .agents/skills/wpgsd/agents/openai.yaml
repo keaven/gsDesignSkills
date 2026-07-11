@@ -1,0 +1,4 @@
+interface:
+  display_name: "wpgsd"
+  short_description: "Weighted parametric GSD workflows"
+  default_prompt: "Use $wpgsd to design a weighted parametric group sequential procedure."

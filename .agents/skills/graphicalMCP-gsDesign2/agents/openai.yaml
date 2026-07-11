@@ -1,0 +1,4 @@
+interface:
+  display_name: "graphicalMCP + gsDesign2"
+  short_description: "Graphical multiplicity with GSD"
+  default_prompt: "Use $graphicalMCP-gsDesign2 to combine group sequential testing with graphical multiplicity control."

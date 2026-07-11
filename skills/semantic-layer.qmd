@@ -1,0 +1,32 @@
+---
+title: "Semantic Layer"
+subtitle: "Model-neutral routing across trial design skills"
+---
+
+## Purpose
+
+The semantic layer maps natural-language clinical trial design requests to
+normalized trial-design intent and then to package-specific workflows.
+
+It is intentionally lightweight:
+
+- shared vocabulary in `glossary/`
+- package crosswalks in `crosswalks/`
+- router and glossary skills in `.agents/skills/`
+- routing examples in `evals/`
+
+## Router Skill
+
+{{< include ../.agents/skills/semantic-router/SKILL.md >}}
+
+## Glossary Skill
+
+{{< include ../.agents/skills/trial-design-glossary/SKILL.md >}}
+
+## Current Crosswalks
+
+- `crosswalks/gsDesignNB.yaml`
+
+## Current Evaluation Examples
+
+- `evals/natural-language-requests.yaml`

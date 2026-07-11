@@ -1,0 +1,4 @@
+interface:
+  display_name: "Illness-Death"
+  short_description: "Correlated oncology endpoint simulation"
+  default_prompt: "Use $illness-death to simulate correlated OS, PFS, and response endpoints."

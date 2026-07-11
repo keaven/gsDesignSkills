@@ -3,8 +3,8 @@ title: "graphicalMCP"
 subtitle: "Graphical Multiple Comparison Procedures"
 ---
 
-{{< include ../.claude/skills/graphicalMCP/SKILL.md >}}
+{{< include ../.agents/skills/graphicalMCP/SKILL.md >}}
 
 ## Code Patterns
 
-{{< include ../.claude/skills/graphicalMCP/references/code_patterns.md >}}
+{{< include ../.agents/skills/graphicalMCP/references/code_patterns.md >}}

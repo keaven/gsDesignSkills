@@ -1,0 +1,4 @@
+interface:
+  display_name: "gMCPLite"
+  short_description: "Legacy graphical MCP workflows"
+  default_prompt: "Use $gMCPLite for a legacy graphical multiple comparison workflow."

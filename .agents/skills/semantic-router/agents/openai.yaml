@@ -1,0 +1,4 @@
+interface:
+  display_name: "Semantic Router"
+  short_description: "Route trial-design requests to skills"
+  default_prompt: "Use $semantic-router to route this clinical trial design request to the right package workflow."

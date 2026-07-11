@@ -1,0 +1,4 @@
+interface:
+  display_name: "simtrial"
+  short_description: "Survival trial simulation workflows"
+  default_prompt: "Use $simtrial to simulate a survival trial and summarize operating characteristics."

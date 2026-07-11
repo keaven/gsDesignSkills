@@ -1,0 +1,3909 @@
+FUNCTION: as_gt 
+TITLE: Convert a summary table object to a gt object 
+DESCRIPTION: 
+Convert a summary table object created with \code{\link{as_table}}
+to a \code{gt_tbl} object; currently only implemented for
+\code{\link{gsBinomialExact}}.
+ 
+ARGUMENTS: x Object to be converted.
+... Other parameters that may be specific to the object.
+title Table title.
+subtitle Table subtitle.
+theta_label Label for theta.
+bound_label Label for bounds.
+prob_decimals Number of decimal places for probability of crossing.
+en_decimals Number of decimal places for expected number of
+observations when bound is crossed or when trial ends without crossing.
+rr_decimals Number of decimal places for response rates. 
+EXAMPLE: 
+safety_design <- binomialSPRT(
+  p0 = .04, p1 = .1, alpha = .04, beta = .2, minn = 4, maxn = 75
+)
+safety_power <- gsBinomialExact(
+  k = length(safety_design$n.I),
+  theta = seq(.02, .16, .02),
+  n.I = safety_design$n.I,
+  a = safety_design$lower$bound,
+  b = safety_design$upper$bound
+)
+safety_power %>%
+  as_table() %>%
+  as_gt(
+    theta_label = gt::html("Underlying<br>AE rate"),
+    prob_decimals = 3,
+    bound_label = c("low rate", "high rate")
+  )
+ 
+
+
+FUNCTION: as_rtf 
+TITLE: Save a summary table object as an RTF file 
+DESCRIPTION: 
+Convert and save the summary table object created with \code{\link{as_table}}
+to an RTF file using r2rtf; currently only implemented for
+\code{\link{gsBinomialExact}}.
+ 
+ARGUMENTS: x Object to be saved as RTF file.
+... Other parameters that may be specific to the object.
+file File path for the output.
+title Title of the report.
+theta_label Label for theta.
+response_outcome Logical values indicating if the outcome is
+response rate (\code{TRUE}) or failure rate (\code{FALSE}).
+The default value is \code{TRUE}.
+bound_label Label for bounds.
+If the outcome is response rate, then the label is "Futility bound"
+and "Efficacy bound".
+If the outcome is failure rate, then the label is "Efficacy bound"
+and "Futility bound".
+en_label Label for expected number.
+prob_decimals Number of decimal places for probability of crossing.
+en_decimals Number of decimal places for expected number of
+observations when bound is crossed or when trial ends without crossing.
+rr_decimals Number of decimal places for response rates.
+footnote_p_onesided Footnote for one-side p-value.
+footnote_appx_effect_at_bound Footnote for approximate effect treatment at bound.
+footnote_p_cross_h0 Footnote for cumulative type I error.
+footnote_p_cross_h1 Footnote for cumulative power under the alternate hypothesis.
+footnote_specify Vector of string to put footnote super script.
+footnote_text Vector of string of footnote text. 
+EXAMPLE: 
+# as_rtf for gsBinomialExact
+zz <- gsBinomialExact(
+  k = 3, theta = seq(0.1, 0.9, 0.1), n.I = c(12, 24, 36),
+  a = c(-1, 0, 11), b = c(5, 9, 12)
+)
+zz %>%
+  as_table() %>%
+  as_rtf(
+    file = tempfile(fileext = ".rtf"),
+    title = "Power/Type I Error and Expected Sample Size for a Group Sequential Design"
+  )
+
+safety_design <- binomialSPRT(
+  p0 = .04, p1 = .1, alpha = .04, beta = .2, minn = 4, maxn = 75
+)
+safety_power <- gsBinomialExact(
+  k = length(safety_design$n.I),
+  theta = seq(.02, .16, .02),
+  n.I = safety_design$n.I,
+  a = safety_design$lower$bound,
+  b = safety_design$upper$bound
+)
+safety_power %>%
+  as_table() %>%
+  as_rtf(
+    file = tempfile(fileext = ".rtf"),
+    theta_label = "Underlying\nAE Rate",
+    prob_decimals = 3,
+    bound_label = c("Low Rate", "High Rate")
+  )
+# as_rtf for gsBoundSummary
+xgs <- gsSurv(lambdaC = .2, hr = .5, eta = .1, T = 2, minfup = 1.5)
+gsBoundSummary(xgs, timename = "Year", tdigits = 1) %>% as_rtf(file = tempfile(fileext = ".rtf"))
+
+ss <- nSurvival(
+  lambda1 = .2, lambda2 = .1, eta = .1, Ts = 2, Tr = .5,
+  sided = 1, alpha = .025, ratio = 2
+)
+xs <- gsDesign(nFixSurv = ss$n, n.fix = ss$nEvents, delta1 = log(ss$lambda2 / ss$lambda1))
+gsBoundSummary(xs, logdelta = TRUE, ratio = ss$ratio) %>% as_rtf(file = tempfile(fileext = ".rtf"))
+
+xs <- gsDesign(nFixSurv = ss$n, n.fix = ss$nEvents, delta1 = log(ss$lambda2 / ss$lambda1))
+gsBoundSummary(xs, logdelta = TRUE, ratio = ss$ratio) %>% 
+  as_rtf(file = tempfile(fileext = ".rtf"),
+  footnote_specify = "Z",
+  footnote_text = "Z-Score")
+ 
+
+
+FUNCTION: as_table 
+TITLE: Create a summary table 
+DESCRIPTION: 
+Create a tibble to summarize an object; currently only implemented for
+\code{\link{gsBinomialExact}}.
+ 
+ARGUMENTS: x Object to be summarized.
+... Other parameters that may be specific to the object. 
+EXAMPLE: 
+b <- binomialSPRT(p0 = .1, p1 = .35, alpha = .08, beta = .2, minn = 10, maxn = 25)
+b_power <- gsBinomialExact(
+  k = length(b$n.I), theta = seq(.1, .45, .05), n.I = b$n.I,
+  a = b$lower$bound, b = b$upper$bound
+)
+b_power %>%
+  as_table() %>%
+  as_gt()
+ 
+
+
+FUNCTION: binomialPowerTable 
+TITLE: Power Table for Binomial Tests 
+DESCRIPTION: 
+Creates a power table for binomial tests with various control group response rates and treatment effects.
+The function can compute power and Type I error either analytically or through simulation.
+With large simulations, the function is still fast and can produce exact power values to within
+simulation error.
+ 
+ARGUMENTS: pC Vector of control group response rates.
+delta Vector of treatment effects (differences in response rates).
+n Total sample size.
+ratio Ratio of experimental to control sample size.
+alpha Type I error rate.
+delta0 Non-inferiority margin.
+scale Scale for the test
+(\code{"Difference"}, \code{"RR"}, or \code{"OR"}).
+failureEndpoint Logical indicating if the endpoint is a
+failure (\code{TRUE}) or success (\code{FALSE}).
+simulation Logical indicating whether to use simulation (\code{TRUE})
+or analytical (\code{FALSE}) power calculation.
+nsim Number of simulations to run when \code{simulation = TRUE}.
+adj Use continuity correction for the testing (default is 0;
+only used if \code{simulation = TRUE}).
+chisq Chi-squared value for the test (default is 0;
+only used if \code{simulation = TRUE}). 
+EXAMPLE: 
+# Create a power table with analytical power calculation
+power_table <- binomialPowerTable(
+  pC = c(0.8, 0.9),
+  delta = seq(-0.05, 0.05, 0.025),
+  n = 70
+)
+
+# Create a power table with simulation
+power_table_sim <- binomialPowerTable(
+  pC = c(0.8, 0.9),
+  delta = seq(-0.05, 0.05, 0.025),
+  n = 70,
+  simulation = TRUE,
+  nsim = 10000
+)
+ 
+
+
+FUNCTION: checkScalar 
+TITLE: Utility functions to verify variable properties 
+DESCRIPTION: 
+Utility functions to verify an objects's properties including whether it is
+a scalar or vector, the class, the length, and (if numeric) whether the
+range of values is on a specified interval. Additionally, the
+\code{checkLengths} function can be used to ensure that all the supplied
+inputs have equal lengths.
+
+\code{isInteger} is similar to \code{\link{is.integer}} except that
+\code{isInteger(1)} returns \code{TRUE} whereas \code{is.integer(1)} returns
+\code{FALSE}.
+
+\code{checkScalar} is used to verify that the input object is a scalar as
+well as the other properties specified above.
+
+\code{checkVector} is used to verify that the input object is an atomic
+vector as well as the other properties as defined above.
+
+\code{checkRange} is used to check whether the numeric input object's values
+reside on the specified interval.  If any of the values are outside the
+specified interval, a \code{FALSE} is returned.
+
+\code{checkLength} is used to check whether all of the supplied inputs have
+equal lengths.
+ 
+ARGUMENTS: \dots For the \code{\link{checkScalar}} and \code{\link{checkVector}}
+functions, this input represents additional arguments sent directly to the
+\code{\link{checkRange}} function. For the
+
+\code{\link{checkLengths}} function, this input represents the arguments to
+check for equal lengths.
+allowSingle logical flag. If \code{TRUE}, arguments that are vectors
+comprised of a single element are not included in the comparative length
+test in the \code{\link{checkLengths}} function. Partial matching on the
+name of this argument is not performed so you must specify 'allowSingle' in
+its entirety in the call.
+x any object.
+interval two-element numeric vector defining the interval over which
+the input object is expected to be contained.  Use the \code{inclusion}
+argument to define the boundary behavior.
+inclusion two-element logical vector defining the boundary behavior
+of the specified interval. A \code{TRUE} value denotes inclusion of the
+corresponding boundary. For example, if \code{interval=c(3,6)} and
+\code{inclusion=c(FALSE,TRUE)}, then all the values of the input object are
+verified to be on the interval (3,6].
+varname character string defining the name of the input variable as
+sent into the function by the caller.  This is used primarily as a mechanism
+to specify the name of the variable being tested when \code{checkRange} is
+being called within a function.
+tol numeric scalar defining the tolerance to use in testing the
+intervals of the
+
+\code{\link{checkRange}} function.
+isType character string defining the class that the input object is
+expected to be.
+length integer specifying the expected length of the object in the
+case it is a vector. If \code{length=NULL}, the default, then no length
+check is performed. 
+EXAMPLE: 
+
+# check whether input is an integer
+isInteger(1)
+isInteger(1:5)
+try(isInteger("abc")) # expect error
+
+# check whether input is an integer scalar
+checkScalar(3, "integer")
+
+# check whether input is an integer scalar that resides
+# on the interval on [3, 6]. Then test for interval (3, 6].
+checkScalar(3, "integer", c(3, 6))
+try(checkScalar(3, "integer", c(3, 6), c(FALSE, TRUE))) # expect error
+
+# check whether the input is an atomic vector of class numeric,
+# of length 3, and whose value all reside on the interval [1, 10)
+x <- c(3, pi, exp(1))
+checkVector(x, "numeric", c(1, 10), c(TRUE, FALSE), length = 3)
+
+# do the same but change the expected length; expect error
+try(checkVector(x, "numeric", c(1, 10), c(TRUE, FALSE), length = 2))
+
+# create faux function to check input variable
+foo <- function(moo) checkVector(moo, "character")
+foo(letters)
+try(foo(1:5)) # expect error with function and argument name in message
+
+# check for equal lengths of various inputs
+checkLengths(1:2, 2:3, 3:4)
+try(checkLengths(1, 2, 3, 4:5)) # expect error
+
+# check for equal length inputs but ignore single element vectors
+checkLengths(1, 2, 3, 4:5, 7:8, allowSingle = TRUE)
+
+
+ 
+
+
+FUNCTION: eEvents 
+TITLE: Expected number of events for a time-to-event study 
+DESCRIPTION: 
+\code{eEvents()} is used to calculate the expected number of events for a
+population with a time-to-event endpoint.  It is based on calculations
+demonstrated in Lachin and Foulkes (1986) and is fundamental in computations
+for the sample size method they propose. Piecewise exponential survival and
+dropout rates are supported as well as piecewise uniform enrollment. A
+stratified population is allowed. Output is the expected number of events
+observed given a trial duration and the above rate parameters.
+
+\code{eEvents()} produces an object of class \code{eEvents} with the number
+of subjects and events for a set of pre-specified trial parameters, such as
+accrual duration and follow-up period. The underlying power calculation is
+based on Lachin and Foulkes (1986) method for proportional hazards assuming
+a fixed underlying hazard ratio between 2 treatment groups. The method has
+been extended here to enable designs to test non-inferiority. Piecewise
+constant enrollment and failure rates are assumed and a stratified
+population is allowed. See also \code{\link{nSurvival}} for other Lachin and
+Foulkes (1986) methods assuming a constant hazard difference or exponential
+enrollment rate.
+
+\code{print.eEvents()} formats the output for an object of class
+\code{eEvents} and returns the input value.
+ 
+ARGUMENTS: lambda scalar, vector or matrix of event hazard rates; rows represent
+time periods while columns represent strata; a vector implies a single
+stratum.
+eta scalar, vector or matrix of dropout hazard rates; rows represent
+time periods while columns represent strata; if entered as a scalar, rate is
+constant across strata and time periods; if entered as a vector, rates are
+constant across strata.
+gamma a scalar, vector or matrix of rates of entry by time period
+(rows) and strata (columns); if entered as a scalar, rate is constant
+across strata and time periods; if entered as a vector, rates are constant
+across strata.
+R a scalar or vector of durations of time periods for recruitment
+rates specified in rows of \code{gamma}. Length is the same as number of
+rows in \code{gamma}. Note that the final enrollment period is extended as
+long as needed.
+S a scalar or vector of durations of piecewise constant event rates
+specified in rows of \code{lambda}, \code{eta} and \code{etaE}; this is NULL
+if there is a single event rate per stratum (exponential failure) or length
+of the number of rows in \code{lambda} minus 1, otherwise.
+T time of analysis; if \code{Tfinal=NULL}, this is also the study
+duration.
+Tfinal Study duration; if \code{NULL}, this will be replaced with
+\code{T} on output.
+minfup time from end of planned enrollment (\code{sum(R)} from output
+value of \code{R}) until \code{Tfinal}.
+digits which controls number of digits for printing.
+x an object of class \code{eEvents} returned from \code{eEvents()}.
+... Other arguments that may be passed to the generic print function. 
+EXAMPLE: 
+
+# 3 enrollment periods, 3 piecewise exponential failure rates
+str(eEvents(
+  lambda = c(.05, .02, .01), eta = .01, gamma = c(5, 10, 20),
+  R = c(2, 1, 2), S = c(1, 1), T = 20
+))
+
+# control group for example from Bernstein and Lagakos (1978)
+lamC <- c(1, .8, .5)
+n <- eEvents(
+  lambda = matrix(c(lamC, lamC * 2 / 3), ncol = 6), eta = 0,
+  gamma = matrix(.5, ncol = 6), R = 2, T = 4
+)
+
+ 
+
+
+FUNCTION: gsBinomialExact 
+TITLE: One-Sample Binomial Routines 
+DESCRIPTION: 
+\code{gsBinomialExact} computes power/Type I error and expected sample size
+for a group sequential design in a single-arm trial with a binary outcome.
+This can also be used to compare event rates in two-arm studies. The print
+function has been extended using \code{print.gsBinomialExact} to print
+\code{gsBinomialExact} objects. Similarly, a plot function has
+been extended using \code{plot.gsBinomialExact} to plot
+\code{gsBinomialExact} objects.
+
+\code{binomialSPRT} computes a truncated binomial sequential probability
+ratio test (SPRT) which is a specific instance of an exact binomial group
+sequential design for a single arm trial with a binary outcome.
+
+\code{gsBinomialPP} computes a truncated binomial (group) sequential design
+based on predictive probability.
+
+\code{nBinomial1Sample} uses exact binomial calculations to compute power
+and sample size for single arm binomial experiments.
+
+\code{gsBinomialExact} is based on the book "Group Sequential Methods with
+Applications to Clinical Trials," Christopher Jennison and Bruce W.
+Turnbull, Chapter 12, Section 12.1.2 Exact Calculations for Binary Data.
+This computation is often used as an approximation for the distribution of
+the number of events in one treatment group out of all events when the
+probability of an event is small and sample size is large.
+
+An object of class \code{gsBinomialExact} is returned. On output, the values
+of \code{theta} input to \code{gsBinomialExact} will be the parameter values
+for which the boundary crossing probabilities and expected sample sizes are
+computed.
+
+Note that a[1] equal to -1 lower bound at n.I[1] means 0 successes continues
+at interim 1; a[2]==0 at interim 2 means 0 successes stops trial for
+futility at 2nd analysis.  For final analysis, set a[k] equal to b[k]-1 to
+incorporate all possibilities into non-positive trial; see example.
+
+The sequential probability ratio test (SPRT) is a sequential testing scheme
+allowing testing after each observation. This likelihood ratio is used to
+determine upper and lower cutoffs which are linear and parallel in the
+number of responses as a function of sample size.  \code{binomialSPRT}
+produces a variation the the SPRT that tests only within a range of sample
+sizes. While the linear SPRT bounds are continuous, actual bounds are the
+integer number of response at or beyond each linear bound for each sample
+size where testing is performed. Because of the truncation and
+discretization of the bounds, power and Type I error achieve will be lower
+than the nominal levels specified by \code{alpha} and \code{beta} which can
+be altered to produce desired values that are achieved by the planned sample
+size. See also example that shows computation of Type I error when futility
+bound is considered non-binding.
+
+Note that if the objective of a design is to demonstrate that a rate (e.g.,
+failure rate) is lower than a certain level, two approaches can be taken.
+First, 1 minus the failure rate is the success rate and this can be used for
+planning. Second, the role of \code{beta} becomes to express Type I error
+and \code{alpha} is used to express Type II error.
+
+Plots produced include boundary plots, expected sample size, response rate
+at the boundary and power.
+
+\code{gsBinomial1Sample} uses exact binomial computations based on the base
+R functions \code{qbinom()} and \code{pbinom()}. The tabular output may be
+convenient for plotting. Note that input variables are largely not checked,
+so the user is largely responsible for results; it is a good idea to do a
+run with \code{outtype=3} to check that you have done things appropriately.
+If \code{n} is not ordered (a bad idea) or not sequential (maybe OK), be
+aware of possible consequences.
+
+\code{nBinomial1Sample} is based on code from Marc Schwartz \email{marc_schwartz@me.com}. 
+The possible sample size vector \code{n} needs to be selected in such a fashion
+that it covers the possible range of values that include the true minimum. 
+NOTE: the one-sided evaluation of significance is more conservative than using the 2-sided exact test in \code{binom.test}.
+ 
+ARGUMENTS: k Number of analyses planned, including interim and final.
+theta Vector of possible underling binomial probabilities for a
+single binomial sample.
+n.I Sample size at analyses (increasing positive integers); vector of
+length k.
+a Number of "successes" required to cross lower bound cutoffs to
+reject \code{p1} in favor of \code{p0} at each analysis; vector of length k;
+-1 (minimum allowed) means no lower bound.
+b Number of "successes" required to cross upper bound cutoffs for
+rejecting \code{p0} in favor of \code{p1} at each analysis; vector of length
+k; value > n.I means no upper bound.
+p0 Lower of the two response (event) rates hypothesized.
+p1 Higher of the two response (event) rates hypothesized.
+alpha Nominal probability of rejecting response (event) rate
+\code{p0} when it is true.
+beta Nominal probability of rejecting response (event) rate \code{p1}
+when it is true. If NULL, Type II error will be computed for all input values 
+of \code{n} and output will be in a data frame.
+minn Minimum sample size at which sequential testing begins.
+maxn Maximum sample size.
+x Item of class \code{gsBinomialExact} or \code{binomialSPRT} for
+\code{print.gsBinomialExact}. Item of class \code{gsBinomialExact} for
+\code{plot.gsBinomialExact}. Item of class \code{binomialSPRT} for item of
+class \code{plot.binomialSPRT}.
+plottype 1 produces a plot with counts of response at bounds (for
+\code{binomialSPRT}, also produces linear SPRT bounds); 2 produces a plot
+with power to reject null and alternate response rates as well as the
+probability of not crossing a bound by the maximum sample size; 3 produces a
+plot with the response rate at the boundary as a function of sample size
+when the boundary is crossed; 6 produces a plot of the expected sample size
+by the underlying event rate (this assumes there is no enrollment beyond the
+sample size where the boundary is crossed).
+\dots arguments passed through to \code{ggplot}.
+n sample sizes to be considered for \code{nBinomial1Sample}. These
+should be ordered from smallest to largest and be > 0.
+outtype Operative when \code{beta != NULL}. \code{1} means routine
+will return a single integer sample size while for \code{output=2}a data frame 
+is returned (see Value); note that this not operative is \code{beta} is \code{NULL} 
+in which case a data table is returned with Type II error and power for each input 
+value of \code{n}.
+conservative operative when \code{outtype=1} or \code{2} and
+\code{beta != NULL}. Default \code{FALSE} selects minimum sample size for
+which power is at least \code{1-beta}. When \code{conservative=TRUE}, the
+minimum sample sample size for which power is at least \code{1-beta} and
+there is no larger sample size in the input \code{n} where power is less
+than \code{1-beta}. 
+EXAMPLE: 
+library(ggplot2)
+
+zz <- gsBinomialExact(
+  k = 3, theta = seq(0.1, 0.9, 0.1), n.I = c(12, 24, 36),
+  a = c(-1, 0, 11), b = c(5, 9, 12)
+)
+
+# let's see what class this is
+class(zz)
+
+# because of "gsProbability" class above, following is equivalent to
+# \code{print.gsProbability(zz)}
+zz
+
+# also plot (see also plots below for \code{binomialSPRT})
+# add lines using geom_line()
+plot(zz) + 
+ggplot2::geom_line()
+
+# now for SPRT examples
+x <- binomialSPRT(p0 = .05, p1 = .25, alpha = .1, beta = .2)
+# boundary plot
+plot(x)
+# power plot
+plot(x, plottype = 2)
+# Response (event) rate at boundary
+plot(x, plottype = 3)
+# Expected sample size at boundary crossing or end of trial
+plot(x, plottype = 6)
+
+# sample size for single arm exact binomial
+
+# plot of table of power by sample size
+# note that outtype need not be specified if beta is NULL
+nb1 <- nBinomial1Sample(p0 = 0.05, p1=0.2,alpha = 0.025, beta=NULL, n = 25:40)
+nb1
+library(scales)
+ggplot2::ggplot(nb1, ggplot2::aes(x = n, y = Power)) + 
+ggplot2::geom_line() + 
+ggplot2::geom_point() + 
+ggplot2::scale_y_continuous(labels = percent)
+
+# simple call with same parameters to get minimum sample size yielding desired power
+nBinomial1Sample(p0 = 0.05, p1 = 0.2, alpha = 0.025, beta = .2, n = 25:40)
+
+# change to 'conservative' if you want all larger sample
+# sizes to also provide adequate power
+nBinomial1Sample(p0 = 0.05, p1 = 0.2, alpha = 0.025, beta = .2, n = 25:40, conservative = TRUE)
+
+# print out more information for the selected derived sample size
+nBinomial1Sample(p0 = 0.05, p1 = 0.2, alpha = 0.025, beta = .2, n = 25:40, conservative = TRUE,
+ outtype = 2)
+# Reproduce realized Type I error alphaR
+stats::pbinom(q = 5, size = 39, prob = .05, lower.tail = FALSE)
+# Reproduce realized power
+stats::pbinom(q = 5, size = 39, prob = 0.2, lower.tail = FALSE)
+# Reproduce critical value for positive finding
+stats::qbinom(p = 1 - .025, size = 39, prob = .05) + 1
+# Compute p-value for 7 successes
+stats::pbinom(q = 6, size = 39, prob = .05, lower.tail = FALSE)
+# what happens if input sample sizes not sufficient?
+\dontrun{ 
+  nBinomial1Sample(p0 = 0.05, p1 = 0.2, alpha = 0.025, beta = .2, n = 25:30)
+}
+ 
+
+
+FUNCTION: gsBound 
+TITLE: Boundary derivation - low level 
+DESCRIPTION: 
+\code{gsBound()} and \code{gsBound1()} are lower-level functions used to
+find boundaries for a group sequential design. They are not recommended
+(especially \code{gsBound1()}) for casual users. These functions do not
+adjust sample size as \code{gsDesign()} does to ensure appropriate power for
+a design.
+
+\code{gsBound()} computes upper and lower bounds given boundary crossing
+probabilities assuming a mean of 0, the usual null hypothesis.
+\code{gsBound1()} computes the upper bound given a lower boundary, upper
+boundary crossing probabilities and an arbitrary mean (\code{theta}).
+
+The function \code{gsBound1()} requires special attention to detail and
+knowledge of behavior when a design corresponding to the input parameters
+does not exist.
+ 
+ARGUMENTS: I Vector containing statistical information planned at each analysis.
+trueneg Vector of desired probabilities for crossing upper bound
+assuming mean of 0.
+falsepos Vector of desired probabilities for crossing lower bound
+assuming mean of 0.
+tol Tolerance for error (scalar; default is 0.000001). Normally this
+will not be changed by the user.  This does not translate directly to number
+of digits of accuracy, so use extra decimal places.
+r Integer value (>= 1 and <= 80) controlling the number of numerical
+integration grid points. Default is 18, as recommended by Jennison and
+Turnbull (2000). Grid points are spread out in the tails for accurate
+probability calculations. Larger values provide more grid points and greater
+accuracy but slow down computation. Jennison and Turnbull (p. 350) note an
+accuracy of \eqn{10^{-6}} with \code{r = 16}. This parameter is normally
+not changed by users.
+printerr If this scalar argument set to 1, this will print messages
+from underlying C program.  Mainly intended to notify user when an output
+solution does not match input specifications.  This is not intended to stop
+execution as this often occurs when deriving a design in \code{gsDesign}
+that uses beta-spending.
+theta Scalar containing mean (drift) per unit of statistical
+information.
+a Vector containing lower bound that is fixed for use in
+\code{gsBound1}.
+probhi Vector of desired probabilities for crossing upper bound
+assuming mean of theta. 
+EXAMPLE: 
+
+# set boundaries so that probability is .01 of first crossing
+# each upper boundary and .02 of crossing each lower boundary
+# under the null hypothesis
+x <- gsBound(
+  I = c(1, 2, 3) / 3, trueneg = rep(.02, 3),
+  falsepos = rep(.01, 3)
+)
+x
+
+#  use gsBound1 to set up boundary for a 1-sided test
+x <- gsBound1(
+  theta = 0, I = c(1, 2, 3) / 3, a = rep(-20, 3),
+  probhi = c(.001, .009, .015)
+)
+x$b
+
+# check boundary crossing probabilities with gsProbability
+y <- gsProbability(k = 3, theta = 0, n.I = x$I, a = x$a, b = x$b)$upper$prob
+
+#  Note that gsBound1 only computes upper bound
+#  To get a lower bound under a parameter value theta:
+#      use minus the upper bound as a lower bound
+#      replace theta with -theta
+#      set probhi as desired lower boundary crossing probabilities
+#  Here we let set lower boundary crossing at 0.05 at each analysis
+#  assuming theta=2.2
+y <- gsBound1(
+  theta = -2.2, I = c(1, 2, 3) / 3, a = -x$b,
+  probhi = rep(.05, 3)
+)
+y$b
+
+#  Now use gsProbability to look at design
+#  Note that lower boundary crossing probabilities are as
+#  specified for theta=2.2, but for theta=0 the upper boundary
+#  crossing probabilities are smaller than originally specified
+#  above after first interim analysis
+gsProbability(k = length(x$b), theta = c(0, 2.2), n.I = x$I, b = x$b, a = -y$b)
+ 
+
+
+FUNCTION: gsBoundCP 
+TITLE: Conditional Power at Interim Boundaries 
+DESCRIPTION: 
+\code{gsBoundCP()} computes the total probability of crossing future upper
+bounds given an interim test statistic at an interim bound. For each interim
+boundary, assumes an interim test statistic at the boundary and computes the
+probability of crossing any of the later upper boundaries.
+
+See Conditional power section of manual for further clarification. See also
+Muller and Schaffer (2001) for background theory.
+ 
+ARGUMENTS: x An object of type \code{gsDesign} or \code{gsProbability}
+theta if \code{"thetahat"} and \code{class(x)!="gsDesign"},
+conditional power computations for each boundary value are computed using
+estimated treatment effect assuming a test statistic at that boundary
+(\code{zi/sqrt(x$n.I[i])} at analysis \code{i}, interim test statistic
+\code{zi} and interim sample size/statistical information of
+\code{x$n.I[i]}). Otherwise, conditional power is computed assuming the
+input scalar value \code{theta}.
+r Integer value (>= 1 and <= 80) controlling the number of numerical
+integration grid points. Default is 18, as recommended by Jennison and
+Turnbull (2000). Grid points are spread out in the tails for accurate
+probability calculations. Larger values provide more grid points and greater
+accuracy but slow down computation. Jennison and Turnbull (p. 350) note an
+accuracy of \eqn{10^{-6}} with \code{r = 16}. This parameter is normally
+not changed by users. 
+EXAMPLE: 
+
+# set up a group sequential design
+x <- gsDesign(k = 5)
+x
+
+# compute conditional power based on interim treatment effects
+gsBoundCP(x)
+
+# compute conditional power based on original x$delta
+gsBoundCP(x, theta = x$delta)
+ 
+
+
+FUNCTION: gsBoundSummary 
+TITLE: Bound Summary and Z-transformations 
+DESCRIPTION: 
+A tabular summary of a group sequential design's bounds and their properties
+are often useful. The 'vintage' \code{print.gsDesign()} function provides a
+complete but minimally formatted summary of a group sequential design
+derived by \code{gsDesign()}. A brief description of the overall design can
+also be useful (\code{summary.gsDesign()}.  A tabular summary of boundary
+characteristics oriented only towards LaTeX output is produced by
+\code{\link{xtable.gsSurv}}. More flexibility is provided by
+\code{gsBoundSummary()} which produces a tabular summary of a
+user-specifiable set of package-provided boundary properties in a data
+frame.  This can also be used to along with functions such as
+\code{\link{print.data.frame}()}, \code{\link{write.table}()},
+\code{\link{write.csv}()}, \code{\link{write.csv2}()} or, from the RTF
+package, \code{addTable.RTF()} (from the rtf package) to produce console or
+R Markdown output or output to a variety of file types. \code{xprint()} is
+provided for LaTeX output by setting default options for
+\code{\link[xtable]{print.xtable}} when producing tables summarizing design
+bounds.
+
+Individual transformation of z-value test statistics for interim and final
+analyses are obtained from \code{gsBValue()}, \code{gsDelta()},
+\code{gsHR()} and \code{gsCPz()} for B-values, approximate treatment effect
+(see details), approximate hazard ratio and conditional power, respectively.
+
+The \code{print.gsDesign} function is intended to provide an easier output
+to review than is available from a simple list of all the output components.
+The \code{gsBoundSummary} function is intended to provide a summary of
+boundary characteristics that is often useful for evaluating boundary
+selection; this outputs an extension of the \code{data.frame} class that
+sets up default printing without row names using
+\code{print.gsBoundSummary}. \code{summary.gsDesign}, on the other hand,
+provides a summary of the overall design at a higher level; this provides
+characteristics not included in the \code{gsBoundSummary} summary and no
+detail concerning interim analysis bounds.
+
+In brief, the computed descriptions of group sequential design bounds are as
+follows: \code{Z:} Standardized normal test statistic at design bound.
+
+\code{p (1-sided):} 1-sided p-value for \code{Z}. This will be computed as
+the probability of a greater EXCEPT for lower bound when a 2-sided design is
+being summarized.
+
+\code{delta at bound:} Approximate value of the natural parameter at the
+bound. The approximate standardized effect size at the bound is generally
+computed as \code{Z/sqrt(n)}. Calling this \code{theta}, this is translated
+to the \code{delta} using the values \code{delta0} and \code{delta1} from
+the input \code{x} by the formula \code{delta0 +
+(delta1-delta0)/theta1*theta} where \code{theta1} is the alternate
+hypothesis value of the standardized parameter. Note that this value will be
+exponentiated in the case of relative risks, hazard ratios or when the user
+specifies \code{logdelta=TRUE}. In the case of hazard ratios, the value is
+computed instead by \code{gsHR()} to be consistent with
+\code{plot.gsDesign()}. Similarly, the value is computed by \code{gsRR()}
+when the relative risk is the natural parameter.
+
+\code{Spending: }Incremental error spending at each given analysis. For
+asymmetric designs, futility bound will have beta-spending summarized.
+Efficacy bound always has alpha-spending summarized.
+
+\code{B-value: }\code{sqrt(t)*Z} where \code{t} is the proportion of
+information at the analysis divided by the final analysis planned
+information. The expected value for B-values is directly proportional to
+\code{t}.
+
+\code{CP: }Conditional power under the estimated treatment difference
+assuming the interim Z-statistic is at the study bound
+
+\code{CP H1: }Conditional power under the alternate hypothesis treatment
+effect assuming the interim test statistic is at the study bound.
+
+\code{PP: }Predictive power assuming the interim test statistic is at the
+study bound and the input prior distribution for the standardized effect
+size. This is the conditional power averaged across the posterior
+distribution for the treatment effect given the interim test statistic
+value. \code{P{Cross if delta=xx}: }For each of the parameter values in
+\code{x}, the probability of crossing either bound given that treatment
+effect is computed. This value is cumulative for each bound. For example,
+the probability of crossing the efficacy bound at or before the analysis of
+interest.
+ 
+ARGUMENTS: object An item of class \code{gsDesign} or \code{gsSurv}
+information indicator of whether \code{n.I} in \code{object}
+represents statistical information rather than sample size or event counts.
+timeunit Text string with time units used for time-to-event designs
+created with \code{gsSurv()}
+... This allows many optional arguments that are standard when
+calling \code{plot} for \code{gsBValue}, \code{gsDelta}, \code{gsHR},
+\code{gsRR} and \code{gsCPz}
+x An item of class \code{gsDesign} or \code{gsSurv}, except for
+\code{print.gsBoundSummary()} where \code{x} is an object created by
+\code{gsBoundSummary()} and \code{xprint()} which is used with \code{xtable}
+(see examples)
+deltaname Natural parameter name. If default \code{NULL} is used,
+routine will default to \code{"HR"} when class is \code{gsSurv} or if
+\code{nFixSurv} was input when creating \code{x} with \code{gsDesign()}.
+logdelta Indicates whether natural parameter is the natural logarithm
+of the actual parameter. For example, the relative risk or odds-ratio would
+be put on the logarithmic scale since the asymptotic behavior is 'more
+normal' than a non-transformed value. As with \code{deltaname}, the default
+will be changed to true if \code{x} has class \code{gsDesign} or if
+\code{nFixSurv>0} was input when \code{x} was created by \code{gsDesign()};
+that is, the natural parameter for a time-to-event endpoint will be on the
+logarithmic scale.
+Nname This will normally be changed to \code{"N"} or, if a
+time-to-event endpoint is used, \code{"Events"}. Other immediate possibility
+are \code{"Deaths"} or \code{"Information"}.
+digits Number of digits past the decimal to be printed in the body of
+the table.
+ddigits Number of digits past the decimal to be printed for the
+natural parameter delta.
+tdigits Number of digits past the decimal point to be shown for
+estimated timing of each analysis.
+timename Text string indicating time unit.
+prior A prior distribution for the standardized effect size. Must be
+of the format produced by \code{normalGrid()}, but can reflect an arbitrary
+prior distribution. The default reflects a normal prior centered half-way
+between the null and alternate hypothesis with the variance being equivalent
+to the treatment effect estimate if 1 percent of the sample size for a fixed
+design were sampled. The prior is intended to be relatively uninformative.
+This input will only be applied if \code{POS=TRUE} is input.
+POS This is an indicator of whether or not probability of success
+(POS) should be estimated at baseline or at each interim based on the prior
+distribution input in \code{prior}. The prior probability of success before
+the trial starts is the power of the study averaged over the prior
+distribution for the standardized effect size. The POS after an interim
+analysis assumes the interim test statistic is an unknown value between the
+futility and efficacy bounds. Based on this, a posterior distribution for
+the standardized parameter is computed and the conditional power of the
+trial is averaged over this posterior distribution.
+ratio Sample size ratio assumed for experimental to control treatment
+group sample sizes. This only matters when \code{x} for a binomial or
+time-to-event endpoint where \code{gsRR} or \code{gsHR} are used for
+approximating the treatment effect if a test statistic falls on a study
+bound.
+exclude A list of test statistics to be excluded from design boundary
+summary produced; see details or examples for a list of all possible output
+values. A value of \code{NULL} produces all available summaries.
+r See \code{\link{gsDesign}}. This is an integer used to control the
+degree of accuracy of group sequential calculations which will normally not
+be changed.
+alpha If used, a vector of alternate alpha-levels to print boundaries
+for. Only works with test.type 1, 4, and 6. If specified, efficacy bound
+columns are headed by individual alpha levels. The alpha level of the input
+design is always included as the first column.
+include.rownames indicator of whether or not to include row names in
+output.
+hline.after table lines after which horizontal separation lines
+should be set; default is to put lines between each analysis as well as at
+the top and bottom of the table.
+row.names indicator of whether or not to print row names
+z A vector of z-statistics
+i A vector containing the analysis for each element in \code{z}; each
+element must be in 1 to \code{x$k}, inclusive
+ylab Used when functions are passed to \code{plot.gsDesign} to
+establish default y-axis labels
+theta A scalar value representing the standardized effect size used
+for conditional power calculations; see \code{gsDesign}; if NULL,
+conditional power is computed at the estimated interim treatment effect
+based on \code{z} 
+EXAMPLE: 
+library(ggplot2)
+# survival endpoint using gsSurv
+# generally preferred over nSurv since time computations are shown
+xgs <- gsSurv(lambdaC = .2, hr = .5, eta = .1, T = 2, minfup = 1.5)
+gsBoundSummary(xgs, timename = "Year", tdigits = 1)
+summary(xgs)
+
+# survival endpoint using nSurvival
+# NOTE: generally recommend gsSurv above for this!
+ss <- nSurvival(
+  lambda1 = .2, lambda2 = .1, eta = .1, Ts = 2, Tr = .5,
+  sided = 1, alpha = .025, ratio = 2
+)
+xs <- gsDesign(nFixSurv = ss$n, n.fix = ss$nEvents, delta1 = log(ss$lambda2 / ss$lambda1))
+gsBoundSummary(xs, logdelta = TRUE, ratio = ss$ratio)
+# generate some of the above summary statistics for the upper bound
+z <- xs$upper$bound
+# B-values
+gsBValue(z = z, i = 1:3, x = xs)
+# hazard ratio
+gsHR(z = z, i = 1:3, x = xs)
+# conditional power at observed treatment effect
+gsCPz(z = z[1:2], i = 1:2, x = xs)
+# conditional power at H1 treatment effect
+gsCPz(z = z[1:2], i = 1:2, x = xs, theta = xs$delta)
+
+# information-based design
+xinfo <- gsDesign(delta = .3, delta1 = .3)
+gsBoundSummary(xinfo, Nname = "Information")
+
+# show all available boundary descriptions
+gsBoundSummary(xinfo, Nname = "Information", exclude = NULL)
+
+# add intermediate parameter value
+xinfo <- gsProbability(d = xinfo, theta = c(0, .15, .3))
+class(xinfo) # note this is still as gsDesign class object
+gsBoundSummary(xinfo, Nname = "Information")
+
+# now look at a binomial endpoint; specify H0 treatment difference as p1-p2=.05
+# now treatment effect at bound (say, thetahat) is transformed to
+# xp$delta0 + xp$delta1*(thetahat-xp$delta0)/xp$delta
+np <- nBinomial(p1 = .15, p2 = .10)
+xp <- gsDesign(n.fix = np, endpoint = "Binomial", delta1 = .05)
+summary(xp)
+gsBoundSummary(xp, deltaname = "p[C]-p[E]")
+# estimate treatment effect at lower bound
+# by setting delta0=0 (default) and delta1 above in gsDesign
+# treatment effect at bounds is scaled to these differences
+# in this case, this is the difference in event rates
+gsDelta(z = xp$lower$bound, i = 1:3, xp)
+
+# binomial endpoint with risk ratio estimates
+n.fix <- nBinomial(p1 = .3, p2 = .15, scale = "RR")
+xrr <- gsDesign(k = 2, n.fix = n.fix, delta1 = log(.15 / .3), endpoint = "Binomial")
+gsBoundSummary(xrr, deltaname = "RR", logdelta = TRUE)
+gsRR(z = xp$lower$bound, i = 1:3, xrr)
+plot(xrr, plottype = "RR")
+
+# delta is odds-ratio: sample size slightly smaller than for relative risk or risk difference
+n.fix <- nBinomial(p1 = .3, p2 = .15, scale = "OR")
+xOR <- gsDesign(k = 2, n.fix = n.fix, delta1 = log(.15 / .3 / .85 * .7), endpoint = "Binomial")
+gsBoundSummary(xOR, deltaname = "OR", logdelta = TRUE)
+
+# for nice LaTeX table output, use xprint
+xprint(xtable::xtable(gsBoundSummary(xOR, deltaname = "OR", logdelta = TRUE),
+  caption = "Table caption."
+))
+ 
+
+
+FUNCTION: gsCP 
+TITLE: Conditional and Predictive Power, Overall and Conditional Probability of Success 
+DESCRIPTION: 
+\code{gsCP()} computes conditional boundary crossing probabilities at future
+planned analyses for a given group sequential design assuming an interim
+z-statistic at a specified interim analysis. While \code{gsCP()} is designed
+toward computing conditional power for a variety of underlying parameter
+values, \code{\link{condPower}} is built to compute conditional power for a
+variety of interim test statistic values which is useful for sample size
+adaptation (see \code{\link{ssrCP}}). \code{gsPP()} averages conditional
+power across a posterior distribution to compute predictive power.
+\code{gsPI()} computes Bayesian prediction intervals for future analyses
+corresponding to results produced by \code{gsPP()}.  \code{gsPosterior()}
+computes the posterior density for the group sequential design parameter of
+interest given a prior density and an interim outcome that is exact or in an
+interval. \code{gsPOS()} computes the probability of success for a trial
+using a prior distribution to average power over a set of \code{theta}
+values of interest. \code{gsCPOS()} assumes no boundary has been crossed
+before and including an interim analysis of interest, and computes the
+probability of success based on this event. Note that \code{gsCP()} and
+\code{gsPP()} take only the interim test statistic into account in computing
+conditional probabilities, while \code{gsCPOS()} conditions on not crossing
+any bound through a specified interim analysis.
+
+See Conditional power section of manual for further clarification. See also
+Muller and Schaffer (2001) for background theory.
+
+For \code{gsPP()}, \code{gsPI()}, \code{gsPOS()} and \code{gsCPOS()}, the
+prior distribution for the standardized parameter \code{theta} () for a
+group sequential design specified through a gsDesign object is specified
+through the arguments \code{theta} and \code{wgts}. This can be a discrete
+or a continuous probability density function. For a discrete function,
+generally all weights would be 1. For a continuous density, the \code{wgts}
+would contain integration grid weights, such as those provided by
+\link{normalGrid}.
+
+For \code{gsPosterior}, a prior distribution in \code{prior} must be
+composed of the vectors \code{z} \code{density}.  The vector \code{z}
+contains points where the prior is evaluated and \code{density} the
+corresponding density or, for a discrete distribution, the probabilities of
+each point in \code{z}. Densities may be supplied as from
+\code{normalGrid()} where grid weights for numerical integration are
+supplied in \code{gridwgts}. If \code{gridwgts} are not supplied, they are
+defaulted to 1 (equal weighting). To ensure a proper prior distribution, you
+must have \code{sum(gridwgts * density)} equal to 1; this is NOT checked,
+however.
+ 
+ARGUMENTS: x An object of type \code{gsDesign} or \code{gsProbability}
+theta a vector with \eqn{\theta}{theta} value(s) at which conditional
+power is to be computed; for \code{gsCP()} if \code{NULL}, an estimated
+value of \eqn{\theta}{theta} based on the interim test statistic
+(\code{zi/sqrt(x$n.I[i])}) as well as at \code{x$theta} is computed. For
+\code{gsPosterior}, this may be a scalar or an interval; for \code{gsPP} and
+\code{gsCP}, this must be a scalar.
+i analysis at which interim z-value is given; must be from 1 to
+\code{x$k-1}
+zi interim z-value at analysis i (scalar)
+r Integer value (>= 1 and <= 80) controlling the number of numerical
+integration grid points. Default is 18, as recommended by Jennison and
+Turnbull (2000). Grid points are spread out in the tails for accurate
+probability calculations. Larger values provide more grid points and greater
+accuracy but slow down computation. Jennison and Turnbull (p. 350) note an
+accuracy of \eqn{10^{-6}} with \code{r = 16}. This parameter is normally
+not changed by users.
+wgts Weights to be used with grid points in \code{theta}. Length can
+be one if weights are equal, otherwise should be the same length as
+\code{theta}. Values should be positive, but do not need to sum to 1.
+total The default of \code{total=TRUE} produces the combined
+probability for all planned analyses after the interim analysis specified in
+\code{i}. Otherwise, information on each analysis is provided separately.
+j specific analysis for which prediction is being made; must be
+\code{>i} and no more than \code{x$k}
+level The level to be used for Bayes credible intervals (which
+approach confidence intervals for vague priors). The default
+\code{level=.95} corresponds to a 95\% credible interval. \code{level=0}
+provides a point estimate rather than an interval.
+prior provides a prior distribution in the form produced by
+\code{\link{normalGrid}} 
+EXAMPLE: 
+library(ggplot2)
+# set up a group sequential design
+x <- gsDesign(k = 5)
+x
+
+# set up a prior distribution for the treatment effect
+# that is normal with mean .75*x$delta and standard deviation x$delta/2
+mu0 <- .75 * x$delta
+sigma0 <- x$delta / 2
+prior <- normalGrid(mu = mu0, sigma = sigma0)
+
+# compute POS for the design given the above prior distribution for theta
+gsPOS(x = x, theta = prior$z, wgts = prior$wgts)
+
+# assume POS should only count cases in prior where theta >= x$delta/2
+gsPOS(x = x, theta = prior$z, wgts = prior$wgts * (prior$z >= x$delta / 2))
+
+# assuming a z-value at lower bound at analysis 2, what are conditional
+# boundary crossing probabilities for future analyses
+# assuming theta values from x as well as a value based on the interim
+# observed z
+CP <- gsCP(x, i = 2, zi = x$lower$bound[2])
+CP
+
+# summing values for crossing future upper bounds gives overall
+# conditional power for each theta value
+CP$theta
+t(CP$upper$prob) %*% c(1, 1, 1)
+
+# compute predictive probability based on above assumptions
+gsPP(x, i = 2, zi = x$lower$bound[2], theta = prior$z, wgts = prior$wgts)
+
+# if it is known that boundary not crossed at interim 2, use
+# gsCPOS to compute conditional POS based on this
+gsCPOS(x = x, i = 2, theta = prior$z, wgts = prior$wgts)
+
+# 2-stage example to compare results to direct computation
+x <- gsDesign(k = 2)
+z1 <- 0.5
+n1 <- x$n.I[1]
+n2 <- x$n.I[2] - x$n.I[1]
+thetahat <- z1 / sqrt(n1)
+theta <- c(thetahat, 0, x$delta)
+
+# conditional power direct computation - comparison w gsCP
+pnorm((n2 * theta + z1 * sqrt(n1) - x$upper$bound[2] * sqrt(n1 + n2)) / sqrt(n2))
+
+gsCP(x = x, zi = z1, i = 1)$upper$prob
+
+# predictive power direct computation - comparison w gsPP
+# use same prior as above
+mu0 <- .75 * x$delta * sqrt(x$n.I[2])
+sigma2 <- (.5 * x$delta)^2 * x$n.I[2]
+prior <- normalGrid(mu = .75 * x$delta, sigma = x$delta / 2)
+gsPP(x = x, zi = z1, i = 1, theta = prior$z, wgts = prior$wgts)
+t <- .5
+z1 <- .5
+b <- z1 * sqrt(t)
+# direct from Proschan, Lan and Wittes eqn 3.10
+# adjusted drift at n.I[2]
+pnorm(((b - x$upper$bound[2]) * (1 + t * sigma2) +
+  (1 - t) * (mu0 + b * sigma2)) /
+  sqrt((1 - t) * (1 + sigma2) * (1 + t * sigma2)))
+
+# plot prior then posterior distribution for unblinded analysis with i=1, zi=1
+xp <- gsPosterior(x = x, i = 1, zi = 1, prior = prior)
+plot(x = xp$z, y = xp$density, type = "l", col = 2, xlab = expression(theta), ylab = "Density")
+points(x = x$z, y = x$density, col = 1)
+
+# add posterior plot assuming only knowlede that interim bound has
+# not been crossed at interim 1
+xpb <- gsPosterior(x = x, i = 1, zi = 1, prior = prior)
+lines(x = xpb$z, y = xpb$density, col = 4)
+
+# prediction interval based in interim 1 results
+# start with point estimate, followed by 90% prediction interval
+gsPI(x = x, i = 1, zi = z1, j = 2, theta = prior$z, wgts = prior$wgts, level = 0)
+gsPI(x = x, i = 1, zi = z1, j = 2, theta = prior$z, wgts = prior$wgts, level = .9)
+ 
+
+
+FUNCTION: gsDensity 
+TITLE: Group sequential design interim density function 
+DESCRIPTION: 
+Given an interim analysis \code{i} of a group sequential design and a vector
+of real values \code{zi}, \code{gsDensity()} computes an interim density
+function at analysis \code{i} at the values in \code{zi}.  For each value in
+\code{zi}, this interim density is the derivative of the probability that
+the group sequential trial does not cross a boundary prior to the
+\code{i}-th analysis and at the \code{i}-th analysis the interim Z-statistic
+is less than that value. When integrated over the real line, this density
+computes the probability of not crossing a bound at a previous analysis. It
+corresponds to the subdistribution function at analysis \code{i} that
+excludes the probability of crossing a bound at an earlier analysis.
+
+The initial purpose of this routine was as a component needed to compute the
+predictive power for a trial given an interim result; see
+\code{\link{gsPP}}.
+
+See Jennison and Turnbull (2000) for details on how these computations are
+performed.
+ 
+ARGUMENTS: x An object of type \code{gsDesign} or \code{gsProbability}
+theta a vector with \eqn{\theta}{theta} value(s) at which the interim
+density function is to be computed.
+i analysis at which interim z-values are given; must be from 1 to
+\code{x$k}
+zi interim z-value at analysis \code{i} (scalar)
+r Integer value (>= 1 and <= 80) controlling the number of numerical
+integration grid points. Default is 18, as recommended by Jennison and
+Turnbull (2000). Grid points are spread out in the tails for accurate
+probability calculations. Larger values provide more grid points and greater
+accuracy but slow down computation. Jennison and Turnbull (p. 350) note an
+accuracy of \eqn{10^{-6}} with \code{r = 16}. This parameter is normally
+not changed by users. 
+EXAMPLE: 
+library(ggplot2)
+# set up a group sequential design
+x <- gsDesign()
+
+# set theta values where density is to be evaluated
+theta <- x$theta[2] * c(0, .5, 1, 1.5)
+
+# set zi values from -1 to 7 where density is to be evaluated
+zi <- seq(-3, 7, .05)
+
+# compute subdensity values at analysis 2
+y <- gsDensity(x, theta = theta, i = 2, zi = zi)
+
+# plot sub-density function for each theta value
+plot(y$zi, y$density[, 3],
+  type = "l", xlab = "Z",
+  ylab = "Interim 2 density", lty = 3, lwd = 2
+)
+lines(y$zi, y$density[, 2], lty = 2, lwd = 2)
+lines(y$zi, y$density[, 1], lwd = 2)
+lines(y$zi, y$density[, 4], lty = 4, lwd = 2)
+title("Sub-density functions at interim analysis 2")
+legend(
+  x = c(3.85, 7.2), y = c(.27, .385), lty = 1:5, lwd = 2, cex = 1.5,
+  legend = c(
+    expression(paste(theta, "=0.0")),
+    expression(paste(theta, "=0.5", delta)),
+    expression(paste(theta, "=1.0", delta)),
+    expression(paste(theta, "=1.5", delta))
+  )
+)
+
+# add vertical lines with lower and upper bounds at analysis 2
+# to demonstrate how likely it is to continue, stop for futility
+# or stop for efficacy at analysis 2 by treatment effect
+lines(rep(x$upper$bound[2], 2), c(0, .4), col = 2)
+lines(rep(x$lower$bound[2], 2), c(0, .4), lty = 2, col = 2)
+
+# Replicate part of figures 8.1 and 8.2 of Jennison and Turnbull text book
+# O'Brien-Fleming design with four analyses
+
+x <- gsDesign(k = 4, test.type = 2, sfu = "OF", alpha = .1, beta = .2)
+
+z <- seq(-4.2, 4.2, .05)
+d <- gsDensity(x = x, theta = x$theta, i = 4, zi = z)
+
+plot(z, d$density[, 1], type = "l", lwd = 2, ylab = expression(paste(p[4], "(z,", theta, ")")))
+lines(z, d$density[, 2], lty = 2, lwd = 2)
+u <- x$upper$bound[4]
+text(expression(paste(theta, "=", delta)), x = 2.2, y = .2, cex = 1.5)
+text(expression(paste(theta, "=0")), x = .55, y = .4, cex = 1.5)
+ 
+
+
+FUNCTION: gsDesign-package 
+TITLE: gsDesign: Group Sequential Design 
+DESCRIPTION: 
+\if{html\figure{logo.pngoptions: style='float: right' alt='logo' width='120'}}
+
+Derives group sequential clinical trial designs and describes their properties. Particular focus on time-to-event, binary, and continuous outcomes. Largely based on methods described in Jennison, Christopher and Turnbull, Bruce W., 2000, "Group Sequential Methods with Applications to Clinical Trials" ISBN: 0-8493-0316-8.
+ 
+ARGUMENTS:  
+EXAMPLE:  
+
+
+FUNCTION: gsDesign 
+TITLE: Design Derivation 
+DESCRIPTION: 
+\code{gsDesign()} is used to find boundaries and trial size required for a
+group sequential design.
+
+Many parameters normally take on default values and thus do not require
+explicit specification. One- and two-sided designs are supported. Two-sided
+designs may be symmetric or asymmetric. Wang-Tsiatis designs, including
+O'Brien-Fleming and Pocock designs can be generated. Designs with common
+spending functions as well as other built-in and user-specified functions
+for Type I error and futility are supported. Type I error computations for
+asymmetric designs may assume binding or non-binding lower bounds. The print
+function has been extended using \code{\link{print.gsDesign}()} to print
+\code{gsDesign} objects; see examples.
+
+The user may ignore the structure of the value returned by \code{gsDesign()}
+if the standard printing and plotting suffice; see examples.
+
+\code{delta} and \code{n.fix} are used together to determine what sample
+size output options the user seeks. The default, \code{delta=0} and
+\code{n.fix=1}, results in a \sQuote{generic} design that may be used with
+any sampling situation. Sample size ratios are provided and the user
+multiplies these times the sample size for a fixed design to obtain the
+corresponding group sequential analysis times. If \code{delta>0},
+\code{n.fix} is ignored, and \code{delta} is taken as the standardized
+effect size - the signal to noise ratio for a single observation; for
+example, the mean divided by the standard deviation for a one-sample normal
+problem.  In this case, the sample size at each analysis is computed.  When
+\code{delta=0} and \code{n.fix>1}, \code{n.fix} is assumed to be the sample
+size for a fixed design with no interim analyses. See examples below.
+
+Following are further comments on the input argument \code{test.type} which
+is used to control what type of error measurements are used in trial design.
+The manual may also be worth some review in order to see actual formulas for
+boundary crossing probabilities for the various options.  Options 3 and 5
+assume the trial stops if the lower bound is crossed for Type I and Type II
+error computation (binding lower bound).  For the purpose of computing Type
+I error, options 4 and 6 assume the trial continues if the lower bound is
+crossed (non-binding lower bound); that is a Type I error can be made by
+crossing an upper bound after crossing a previous lower bound.
+Beta-spending refers to error spending for the lower bound crossing
+probabilities under the alternative hypothesis (options 3 and 4). In this
+case, the final analysis lower and upper boundaries are assumed to be the
+same. The appropriate total beta spending (power) is determined by adjusting
+the maximum sample size through an iterative process for all options. Since
+options 3 and 4 must compute boundary crossing probabilities under both the
+null and alternative hypotheses, deriving these designs can take longer than
+other options. Options 5 and 6 compute lower bound spending under the null
+hypothesis.
+ 
+ARGUMENTS: k Number of analyses planned, including interim and final.
+test.type \code{1=}one-sided \cr \code{2=}two-sided symmetric \cr
+\code{3=}two-sided, asymmetric, beta-spending with binding lower bound \cr
+\code{4=}two-sided, asymmetric, beta-spending with non-binding lower bound
+\cr \code{5=}two-sided, asymmetric, lower bound spending under the null
+hypothesis with binding lower bound \cr \code{6=}two-sided, asymmetric,
+lower bound spending under the null hypothesis with non-binding lower bound.
+\cr See details, examples and manual.
+alpha Type I error, always one-sided. Default value is 0.025.
+beta Type II error, default value is 0.1 (90\% power).
+astar Normally not specified. If \code{test.type=5} or \code{6},
+\code{astar} specifies the total probability of crossing a lower bound at
+all analyses combined.  This will be changed to \eqn{1 - }\code{alpha} when
+default value of 0 is used.  Since this is the expected usage, normally
+\code{astar} is not specified by the user.
+delta Effect size for theta under alternative hypothesis. This can be
+set to the standardized effect size to generate a sample size if
+\code{n.fix=NULL}. See details and examples.
+n.fix Sample size for fixed design with no interim; used to find
+maximum group sequential sample size. For a time-to-event outcome, input
+number of events required for a fixed design rather than sample size and
+enter fixed design sample size (optional) in \code{nFixSurv}.  See details
+and examples.
+timing Sets relative timing of interim analyses. Default of 1
+produces equally spaced analyses.  Otherwise, this is a vector of length
+\code{k} or \code{k-1}.  The values should satisfy \code{0 < timing[1] <
+timing[2] < ... < timing[k-1] < timing[k]=1}.
+sfu A spending function or a character string indicating a boundary
+type (that is, \dQuote{WT} for Wang-Tsiatis bounds, \dQuote{OF} for
+O'Brien-Fleming bounds and \dQuote{Pocock} for Pocock bounds).  For
+one-sided and symmetric two-sided testing is used to completely specify
+spending (\code{test.type=1, 2}), \code{sfu}.  The default value is
+\code{sfHSD} which is a Hwang-Shih-DeCani spending function.  See details,
+\code{vignette("SpendingFunctionOverview")}, manual and examples.
+sfupar Real value, default is \eqn{-4} which is an
+O'Brien-Fleming-like conservative bound when used with the default
+Hwang-Shih-DeCani spending function. This is a real-vector for many spending
+functions.  The parameter \code{sfupar} specifies any parameters needed for
+the spending function specified by \code{sfu}; this is not needed for
+spending functions (\code{sfLDOF}, \code{sfLDPocock}) or bound types
+(\dQuote{OF}, \dQuote{Pocock}) that do not require parameters.
+Note that \code{sfupar} can be specified as a positive scalar for
+\code{sfLDOF} for a generalized O'Brien-Fleming spending function.
+sfl Specifies the spending function for lower boundary crossing
+probabilities when asymmetric, two-sided testing is performed
+(\code{test.type = 3}, \code{4}, \code{5}, or \code{6}).  Unlike the upper
+bound, only spending functions are used to specify the lower bound.  The
+default value is \code{sfHSD} which is a Hwang-Shih-DeCani spending
+function.  The parameter \code{sfl} is ignored for one-sided testing
+(\code{test.type=1}) or symmetric 2-sided testing (\code{test.type=2}).  See
+details, spending functions, manual and examples.
+sflpar Real value, default is \eqn{-2}, which, with the default
+Hwang-Shih-DeCani spending function, specifies a less conservative spending
+rate than the default for the upper bound.
+tol Tolerance for error (default is 0.000001). Normally this will not
+be changed by the user.  This does not translate directly to number of
+digits of accuracy, so use extra decimal places.
+r Integer value (>= 1 and <= 80) controlling the number of numerical
+integration grid points. Default is 18, as recommended by Jennison and
+Turnbull (2000). Grid points are spread out in the tails for accurate
+probability calculations. Larger values provide more grid points and greater
+accuracy but slow down computation. Jennison and Turnbull (p. 350) note an
+accuracy of \eqn{10^{-6}} with \code{r = 16}. This parameter is normally
+not changed by users.
+n.I Used for re-setting bounds when timing of analyses changes from
+initial design; see examples.
+maxn.IPlan Used for re-setting bounds when timing of analyses changes
+from initial design; see examples.
+nFixSurv If a time-to-event variable is used, \code{nFixSurv}
+computed as the sample size from \code{nSurvival} may be entered to have
+\code{gsDesign} compute the total sample size required as well as the number
+of events at each analysis that will be returned in \code{n.fix}; this is
+rounded up to an even number.
+endpoint An optional character string that should represent the type
+of endpoint used for the study. This may be used by output functions. Types
+most likely to be recognized initially are "TTE" for time-to-event outcomes
+with fixed design sample size generated by \code{nSurvival()} and "Binomial"
+for 2-sample binomial outcomes with fixed design sample size generated by
+\code{nBinomial()}.
+delta1 \code{delta1} and \code{delta0} may be used to store
+information about the natural parameter scale compared to \code{delta} that
+is a standardized effect size. \code{delta1} is the alternative hypothesis
+parameter value on the natural parameter scale (e.g., the difference in two
+binomial rates).
+delta0 \code{delta0} is the null hypothesis parameter value on the
+natural parameter scale.
+overrun Scalar or vector of length \code{k-1} with patients enrolled
+that are not included in each interim analysis.
+usTime Default is NULL in which case upper bound spending time is 
+determined by \code{timing}. Otherwise, this should be a vector of length 
+\code{k} with the spending time at each analysis (see Details).
+lsTime Default is NULL in which case lower bound spending time is 
+determined by \code{timing}. Otherwise, this should be a vector of length 
+\code{k} with the spending time at each analysis (see Details).
+x An \R object of class found among \code{methods(xtable)}.  See
+    below on how to write additional method functions for \code{xtable}.
+caption Character vector of length 1 or 2 containing the
+    table's caption or title.  If length is 2, the second item is the
+    "short caption" used when LaTeX generates a "List of Tables". Set to
+    \code{NULL} to suppress the caption.  Default value is \code{NULL}. 
+label Character vector of length 1 containing the LaTeX label
+    or HTML anchor. Set to \code{NULL} to suppress the label.  Default
+    value is \code{NULL}. 
+align Character vector of length equal to the number of columns
+    of the resulting table, indicating the alignment of the corresponding
+    columns.  Also, \code{"|"} may be used to produce vertical lines
+    between columns in LaTeX tables, but these are effectively ignored
+    when considering the required length of the supplied vector.  If a
+    character vector of length one is supplied, it is split as
+    \code{strsplit(align, "")[[1]]} before processing. Since the row
+    names are printed in the first column, the length of \code{align} is
+    one greater than \code{ncol(x)} if \code{x} is a
+    \code{data.frame}. Use \code{"l"}, \code{"r"}, and \code{"c"} to
+    denote left, right, and center alignment, respectively.  Use
+    \code{"p{3cm}"} etc. for a LaTeX column of the specified width. For
+    HTML output the \code{"p"} alignment is interpreted as \code{"l"},
+    ignoring the width request. Default depends on the class of
+    \code{x}. 
+digits 
+    Numeric vector of length equal to one (in which case it will be
+    replicated as necessary) or to the number of columns of the
+    resulting table \bold{or} matrix of the same size as the resulting
+    table, indicating the number of digits to display in the
+    corresponding columns. Since the row names are printed in the first
+    column, the length of the vector \code{digits} or the number of
+    columns of the matrix \code{digits} is one greater than
+    \code{ncol(x)} if \code{x} is a \code{data.frame}. Default depends
+    on the class of \code{x}. If values of \code{digits} are negative, the
+    corresponding values of \code{x} are displayed in scientific format
+    with \code{abs(digits)} digits.
+display 
+    Character vector of length equal to the number of columns of the
+    resulting table, indicating the format for the corresponding columns.
+    Since the row names are printed in the first column, the length of
+    \code{display} is one greater than \code{ncol(x)} if \code{x} is a
+    \code{data.frame}.  These values are passed to the \code{formatC}
+    function.  Use \code{"d"} (for integers), \code{"f"}, \code{"e"},
+    \code{"E"}, \code{"g"}, \code{"G"}, \code{"fg"} (for reals), or
+    \code{"s"} (for strings).  \code{"f"} gives numbers in the usual
+    \code{xxx.xxx} format; \code{"e"} and \code{"E"} give
+    \code{n.ddde+nn} or \code{n.dddE+nn} (scientific format); \code{"g"}
+    and \code{"G"} put \code{x[i]} into scientific format only if it
+    saves space to do so.  \code{"fg"} uses fixed format as \code{"f"},
+    but \code{digits} as number of \emph{significant} digits.  Note that
+    this can lead to quite long result strings.  Default depends on the
+    class of \code{x}.
+... Additional arguments.  (Currently ignored.) 
+EXAMPLE: 
+library(ggplot2)
+#  symmetric, 2-sided design with O'Brien-Fleming-like boundaries
+#  lower bound is non-binding (ignored in Type I error computation)
+#  sample size is computed based on a fixed design requiring n=800
+x <- gsDesign(k = 5, test.type = 2, n.fix = 800)
+
+# note that "x" below is equivalent to print(x) and print.gsDesign(x)
+x
+plot(x)
+plot(x, plottype = 2)
+
+# Assuming after trial was designed actual analyses occurred after
+# 300, 600, and 860 patients, reset bounds
+y <- gsDesign(
+  k = 3, test.type = 2, n.fix = 800, n.I = c(300, 600, 860),
+  maxn.IPlan = x$n.I[x$k]
+)
+y
+
+#  asymmetric design with user-specified spending that is non-binding
+#  sample size is computed relative to a fixed design with n=1000
+sfup <- c(.033333, .063367, .1)
+sflp <- c(.25, .5, .75)
+timing <- c(.1, .4, .7)
+x <- gsDesign(
+  k = 4, timing = timing, sfu = sfPoints, sfupar = sfup, sfl = sfPoints,
+  sflpar = sflp, n.fix = 1000
+)
+x
+plot(x)
+plot(x, plottype = 2)
+
+# same design, but with relative sample sizes
+gsDesign(
+  k = 4, timing = timing, sfu = sfPoints, sfupar = sfup, sfl = sfPoints,
+  sflpar = sflp
+)
+ 
+
+
+FUNCTION: gsProbability 
+TITLE: Boundary Crossing Probabilities 
+DESCRIPTION: 
+Computes power/Type I error and expected sample size for a group sequential
+design across a selected set of parameter values for a given set of analyses
+and boundaries. The print function has been extended using
+\code{print.gsProbability} to print \code{gsProbability} objects; see
+examples.
+
+Depending on the calling sequence, an object of class \code{gsProbability}
+or class \code{gsDesign} is returned. If it is of class \code{gsDesign} then
+the members of the object will be the same as described in
+\code{\link{gsDesign}}. If \code{d} is input as \code{NULL} (the default),
+all other arguments (other than \code{r}) must be specified and an object of
+class \code{gsProbability} is returned. If \code{d} is passed as an object
+of class \code{gsProbability} or \code{gsDesign} the only other argument
+required is \code{theta}; the object returned has the same class as the
+input \code{d}. On output, the values of \code{theta} input to
+\code{gsProbability} will be the parameter values for which the design is
+characterized.
+ 
+ARGUMENTS: k Number of analyses planned, including interim and final.
+theta Vector of standardized effect sizes for which boundary crossing
+probabilities are to be computed.
+n.I Sample size or relative sample size at analyses; vector of length
+k. See \code{\link{gsDesign}} and manual.
+a Lower bound cutoffs (z-values) for futility or harm at each
+analysis, vector of length k.
+b Upper bound cutoffs (z-values) for futility at each analysis;
+vector of length k.
+r Integer value (>= 1 and <= 80) controlling the number of numerical
+integration grid points. Default is 18, as recommended by Jennison and
+Turnbull (2000). Grid points are spread out in the tails for accurate
+probability calculations. Larger values provide more grid points and greater
+accuracy but slow down computation. Jennison and Turnbull (p. 350) note an
+accuracy of \eqn{10^{-6}} with \code{r = 16}. This parameter is normally
+not changed by users.
+d If not \code{NULL}, this should be an object of type
+\code{gsDesign} returned by a call to \code{gsDesign()}.  When this is
+specified, the values of \code{k}, \code{n.I}, \code{a}, \code{b}, and
+\code{r} will be obtained from \code{d} and only \code{theta} needs to be
+specified by the user.
+overrun Scalar or vector of length \code{k-1} with patients enrolled
+that are not included in each interim analysis.
+x An item of class \code{gsProbability}.
+\dots Not implemented (here for compatibility with generic print
+input). 
+EXAMPLE: 
+library(ggplot2)
+# making a gsDesign object first may be easiest...
+x <- gsDesign()
+
+# take a look at it
+x
+
+# default plot for gsDesign object shows boundaries
+plot(x)
+
+# \code{plottype=2} shows boundary crossing probabilities
+plot(x, plottype = 2)
+
+# now add boundary crossing probabilities and
+# expected sample size for more theta values
+y <- gsProbability(d = x, theta = x$delta * seq(0, 2, .25))
+class(y)
+
+# note that "y" below is equivalent to \code{print(y)} and
+# \code{print.gsProbability(y)}
+y
+
+# the plot does not change from before since this is a
+# gsDesign object; note that theta/delta is on x axis
+plot(y, plottype = 2)
+
+# now let's see what happens with a gsProbability object
+z <- gsProbability(
+  k = 3, a = x$lower$bound, b = x$upper$bound,
+  n.I = x$n.I, theta = x$delta * seq(0, 2, .25)
+)
+
+# with the above form,  the results is a gsProbability object
+class(z)
+z
+
+# default plottype is now 2
+# this is the same range for theta, but plot now has theta on x axis
+plot(z)
+ 
+
+
+FUNCTION: gsSurvCalendar 
+TITLE: Time-to-event endpoint design with calendar timing of analyses 
+DESCRIPTION: 
+Time-to-event endpoint design with calendar timing of analyses
+ 
+ARGUMENTS: test.type Test type. See \code{\link{gsSurv}}.
+alpha Type I error rate. Default is 0.025 since 1-sided
+testing is default.
+sided \code{1} for 1-sided testing, \code{2} for 2-sided testing.
+beta Type II error rate. Default is 0.10
+(90\% power); \code{NULL} if power is to be computed based on
+other input values.
+astar Normally not specified. If \code{test.type = 5}
+or \code{6}, \code{astar} specifies the total probability
+of crossing a lower bound at all analyses combined. This
+will be changed to \code{1 - alpha} when default value of
+\code{0} is used. Since this is the expected usage,
+normally \code{astar} is not specified by the user.
+sfu A spending function or a character string
+indicating a boundary type (that is, \code{"WT"} for
+Wang-Tsiatis bounds, \code{"OF"} for O'Brien-Fleming bounds and
+\code{"Pocock"} for Pocock bounds). For one-sided and symmetric
+two-sided testing is used to completely specify spending
+(\code{test.type = 1}, \code{2}), \code{sfu}. The default value is
+\code{sfHSD} which is a Hwang-Shih-DeCani spending function.
+sfupar Real value, default is \code{-4} which is an
+O'Brien-Fleming-like conservative bound when used with the
+default Hwang-Shih-DeCani spending function. This is a
+real-vector for many spending functions. The parameter
+\code{sfupar} specifies any parameters needed for the spending
+function specified by \code{sfu}; this will be ignored for
+spending functions (\code{sfLDOF}, \code{sfLDPocock})
+or bound types (\code{"OF"}, \code{"Pocock"})
+that do not require parameters.
+sfl Specifies the spending function for lower
+boundary crossing probabilities when asymmetric,
+two-sided testing is performed
+(\code{test.type = 3}, \code{4}, \code{5}, or \code{6}).
+Unlike the upper bound,
+only spending functions are used to specify the lower bound.
+The default value is \code{sfHSD} which is a
+Hwang-Shih-DeCani spending function. The parameter
+\code{sfl} is ignored for one-sided testing
+(\code{test.type = 1}) or symmetric 2-sided testing
+(\code{test.type = 2}).
+sflpar Real value, default is \code{-2}, which, with the
+default Hwang-Shih-DeCani spending function, specifies a
+less conservative spending rate than the default for the
+upper bound.
+calendarTime Vector of increasing positive numbers
+with calendar times of analyses. Time 0 is start of
+randomization.
+spending Select between calendar-based spending and
+information-based spending.
+lambdaC Scalar, vector or matrix of event hazard
+rates for the control group; rows represent time periods while
+columns represent strata; a vector implies a single stratum.
+hr Hazard ratio (experimental/control) under the
+alternate hypothesis (scalar).
+hr0 Hazard ratio (experimental/control) under the null
+hypothesis (scalar).
+eta Scalar, vector or matrix of dropout hazard rates
+for the control group; rows represent time periods while
+columns represent strata; if entered as a scalar, rate is
+constant across strata and time periods; if entered as a
+vector, rates are constant across strata.
+etaE Matrix dropout hazard rates for the experimental
+group specified in like form as \code{eta}; if \code{NULL},
+this is set equal to \code{eta}.
+gamma A scalar, vector or matrix of rates of entry by
+time period (rows) and strata (columns); if entered as a
+scalar, rate is constant across strata and time periods;
+if entered as a vector, rates are constant across strata.
+R A scalar or vector of durations of time periods for
+recruitment rates specified in rows of \code{gamma}. Length is the
+same as number of rows in \code{gamma}. Note that when variable
+enrollment duration is specified (input \code{T = NULL}), the final
+enrollment period is extended as long as needed.
+S A scalar or vector of durations of piecewise constant
+event rates specified in rows of \code{lambda}, \code{eta} and \code{etaE};
+this is \code{NULL} if there is a single event rate per stratum
+(exponential failure) or length of the number of rows in \code{lambda}
+minus 1, otherwise.
+minfup A non-negative scalar less than the maximum value
+in \code{calendarTime}. Enrollment will be cut off at the
+difference between the maximum value in \code{calendarTime}
+and \code{minfup}.
+ratio Randomization ratio of experimental treatment
+divided by control; normally a scalar, but may be a vector with
+length equal to number of strata.
+r Integer value (>= 1 and <= 80) controlling the number of numerical
+integration grid points. Default is 18, as recommended by Jennison and
+Turnbull (2000). Grid points are spread out in the tails for accurate
+probability calculations. Larger values provide more grid points and greater
+accuracy but slow down computation. Jennison and Turnbull (p. 350) note an
+accuracy of \eqn{10^{-6}} with \code{r = 16}. This parameter is normally
+not changed by users.
+tol Tolerance for error passed to the \code{\link{gsDesign}} function. 
+EXAMPLE: 
+# First example: while timing is calendar-based, spending is event-based
+x <- gsSurvCalendar() %>% toInteger()
+gsBoundSummary(x)
+
+# Second example: both timing and spending are calendar-based
+# This results in less spending at interims and leaves more for final analysis
+y <- gsSurvCalendar(spending = "calendar") %>% toInteger()
+gsBoundSummary(y)
+
+# Note that calendar timing for spending relates to planned timing for y
+# rather than timing in y after toInteger() conversion
+
+# Values plugged into spending function for calendar time
+y$usTime
+# Actual calendar fraction from design after toInteger() conversion
+y$T / max(y$T)
+ 
+
+
+FUNCTION: hGraph 
+TITLE: Create multiplicity graphs using ggplot2 
+DESCRIPTION: 
+\code{hGraph()} plots a multiplicity graph defined by user inputs.
+The graph can also be used with the **gMCPLite** package to evaluate a set of nominal p-values for the tests of the hypotheses in the graph
+ 
+ARGUMENTS: nHypotheses number of hypotheses in graph
+nameHypotheses hypothesis names
+alphaHypotheses alpha-levels or weights for ellipses
+m square transition matrix of dimension `nHypotheses`
+fill grouping variable for hypotheses
+palette colors for groups
+labels text labels for groups
+legend.name text for legend header
+legend.position text string or x,y coordinates for legend
+halfWid half width of ellipses
+halfHgt half height of ellipses
+trhw transition box width
+trhh transition box height
+trprop proportion of transition arrow length where transition box is placed
+digits number of digits to show for alphaHypotheses
+trdigits digits displayed for transition weights
+size text size in ellipses
+boxtextsize transition text size
+arrowsize size of arrowhead for transition arrows
+radianStart radians from origin for first ellipse; nodes spaced equally in clockwise order with centers on an ellipse by default
+offset rotational offset in radians for transition weight arrows
+xradius horizontal ellipse diameter on which ellipses are drawn
+yradius vertical ellipse diameter on which ellipses are drawn
+x x coordinates for hypothesis ellipses if elliptical arrangement is not wanted
+y y coordinates for hypothesis ellipses if elliptical arrangement is not wanted
+wchar character for alphaHypotheses in ellipses 
+EXAMPLE: 
+# 'gsDesign::hGraph' is deprecated.
+# See the examples in 'gMCPLite::hGraph' instead.
+ 
+
+
+FUNCTION: nNormal 
+TITLE: Normal distribution sample size (2-sample) 
+DESCRIPTION: 
+\code{nNormal()} computes a fixed design sample size for comparing 2 means
+where variance is known. T The function allows computation of sample size
+for a non-inferiority hypothesis. Note that you may wish to investigate 
+other R packages such as the \code{pwr} package which uses the t-distribution.
+In the examples below we show how to set up a 2-arm group sequential design with a normal outcome. 
+
+\code{nNormal()} computes sample size for comparing two normal means when
+the variance for observations in
+ 
+ARGUMENTS: delta1 difference between sample means under the alternate
+hypothesis.
+sd Standard deviation for the control arm.
+sd2 Standard deviation of experimental arm; this will be set to be
+the same as the control arm with the default of \code{NULL}.
+alpha type I error rate. Default is 0.025 since 1-sided testing is
+default.
+beta type II error rate. Default is 0.10 (90\% power). Not needed if
+\code{n} is provided.
+ratio randomization ratio of experimental group compared to control.
+sided 1 for 1-sided test (default), 2 for 2-sided test.
+n Sample size; may be input to compute power rather than sample size.
+If \code{NULL} (default) then sample size is computed.
+delta0 difference between sample means under the null hypothesis;
+normally this will be left as the default of 0.
+outtype controls output; see value section below. 
+EXAMPLE: 
+
+# EXAMPLES
+# equal variances
+n=nNormal(delta1=.5,sd=1.1,alpha=.025,beta=.2)
+n
+x <- gsDesign(k = 3, n.fix = n, test.type = 4, alpha = 0.025, beta = 0.1, timing = c(.5,.75),
+sfu = sfLDOF, sfl = sfHSD, sflpar = -1, delta1 = 0.5, endpoint = 'normal') 
+gsBoundSummary(x)
+summary(x)
+# unequal variances, fixed design
+nNormal(delta1 = .5, sd = 1.1, sd2 = 2, alpha = .025, beta = .2)
+# unequal sample sizes
+nNormal(delta1 = .5, sd = 1.1, alpha = .025, beta = .2, ratio = 2)
+# non-inferiority assuming a better effect than null
+nNormal(delta1 = .5, delta0 = -.1, sd = 1.2)
+ 
+
+
+FUNCTION: normalGrid 
+TITLE: Normal Density Grid 
+DESCRIPTION: 
+normalGrid() is intended to be used for computation of the expected value of
+a function of a normal random variable.  The function produces grid points
+and weights to be used for numerical integration.
+
+This is a utility function to provide a normal density function and a grid
+to integrate over as described by Jennison and Turnbull (2000), Chapter 19.
+While integration can be performed over the real line or over any portion of
+it, the numerical integration does not extend beyond 6 standard deviations
+from the mean. The grid used for integration uses equally spaced points over
+the middle of the distribution function, and spreads points further apart in
+the tails. The values returned in \code{gridwgts} may be used to integrate
+any function over the given grid, although the user should take care that
+the function integrated is not large in the tails of the grid where points
+are spread further apart.
+ 
+ARGUMENTS: r Control for grid points as in Jennison and Turnbull (2000), Chapter
+19; default is 18. Range: 1 to 80.  This might be changed by the user (e.g.,
+\code{r=6} which produces 65 gridpoints compare to 185 points when
+\code{r=18}) when speed is more important than precision.
+bounds Range of integration. Real-valued vector of length 2. Default
+value of 0, 0 produces a range of + or - 6 standard deviations (6*sigma)
+from the mean (=mu).
+mu Mean of the desired normal distribution.
+sigma Standard deviation of the desired normal distribution. 
+EXAMPLE: 
+library(ggplot2)
+#  standard normal distribution
+x <- normalGrid(r = 3)
+plot(x$z, x$wgts)
+
+#  verify that numerical integration replicates sigma
+#  get grid points and weights
+x <- normalGrid(mu = 2, sigma = 3)
+
+# compute squared deviation from mean for grid points
+dev <- (x$z - 2)^2
+
+# multiply squared deviations by integration weights and sum
+sigma2 <- sum(dev * x$wgts)
+
+# square root of sigma2 should be sigma (3)
+sqrt(sigma2)
+
+# do it again with larger r to increase accuracy
+x <- normalGrid(r = 22, mu = 2, sigma = 3)
+sqrt(sum((x$z - 2)^2 * x$wgts))
+
+# this can also be done by combining gridwgts and density
+sqrt(sum((x$z - 2)^2 * x$gridwgts * x$density))
+
+# integrate normal density and compare to built-in function
+# to compute probability of being within 1 standard deviation
+# of the mean
+pnorm(1) - pnorm(-1)
+x <- normalGrid(bounds = c(-1, 1))
+sum(x$wgts)
+sum(x$gridwgts * x$density)
+
+# find expected sample size for default design with
+# n.fix=1000
+x <- gsDesign(n.fix = 1000)
+x
+
+# set a prior distribution for theta
+y <- normalGrid(r = 3, mu = x$theta[2], sigma = x$theta[2] / 1.5)
+z <- gsProbability(
+  k = 3, theta = y$z, n.I = x$n.I, a = x$lower$bound,
+  b = x$upper$bound
+)
+z <- gsProbability(d = x, theta = y$z)
+cat(
+  "Expected sample size averaged over normal\n prior distribution for theta with \n mu=",
+  x$theta[2], "sigma=", x$theta[2] / 1.5, ":",
+  round(sum(z$en * y$wgt), 1), "\n"
+)
+plot(y$z, z$en,
+  xlab = "theta", ylab = "E{N}",
+  main = "Expected sample size for different theta values"
+)
+lines(y$z, z$en)
+ 
+
+
+FUNCTION: nSurv 
+TITLE: Advanced time-to-event sample size calculation 
+DESCRIPTION: 
+\code{nSurv()} is used to calculate the sample size for a clinical trial
+with a time-to-event endpoint and an assumption of proportional hazards.
+This set of routines is new with version 2.7 and will continue to be
+modified and refined to improve input error checking and output format with
+subsequent versions. It allows both the Lachin and Foulkes (1986) method
+(fixed trial duration) as well as the Kim and Tsiatis(1990) method (fixed
+enrollment rates and either fixed enrollment duration or fixed minimum
+follow-up). Piecewise exponential survival is supported as well as piecewise
+constant enrollment and dropout rates. The methods are for a 2-arm trial
+with treatment groups referred to as experimental and control. A stratified
+population is allowed as in Lachin and Foulkes (1986); this method has been
+extended to derive non-inferiority as well as superiority trials.
+Stratification also allows power calculation for meta-analyses.
+\code{gsSurv()} combines \code{nSurv()} with \code{gsDesign()} to derive a
+group sequential design for a study with a time-to-event endpoint.
+ 
+ARGUMENTS: x An object of class \code{nSurv} or \code{gsSurv}.
+\code{print.nSurv()} is used for an object of class \code{nSurv} which will
+generally be output from \code{nSurv()}. For \code{print.gsSurv()} is used
+for an object of class \code{gsSurv} which will generally be output from
+\code{gsSurv()}. \code{nEventsIA} and \code{tEventsIA} operate on both the
+\code{nSurv} and \code{gsSurv} class.
+digits Number of digits past the decimal place to print
+(\code{print.gsSurv.}); also a pass through to generic \code{xtable()} from
+\code{xtable.gsSurv()}.
+... other arguments that may be passed to generic functions
+underlying the methods here.
+lambdaC scalar, vector or matrix of event hazard rates for the
+control group; rows represent time periods while columns represent strata; a
+vector implies a single stratum.
+hr hazard ratio (experimental/control) under the alternate hypothesis
+(scalar).
+hr0 hazard ratio (experimental/control) under the null hypothesis
+(scalar).
+eta scalar, vector or matrix of dropout hazard rates for the control
+group; rows represent time periods while columns represent strata; if
+entered as a scalar, rate is constant across strata and time periods; if
+entered as a vector, rates are constant across strata.
+etaE matrix dropout hazard rates for the experimental group specified
+in like form as \code{eta}; if NULL, this is set equal to \code{eta}.
+gamma a scalar, vector or matrix of rates of entry by time period
+(rows) and strata (columns); if entered as a scalar, rate is constant
+across strata and time periods; if entered as a vector, rates are constant
+across strata.
+R a scalar or vector of durations of time periods for recruitment
+rates specified in rows of \code{gamma}. Length is the same as number of
+rows in \code{gamma}. Note that when variable enrollment duration is
+specified (input \code{T=NULL}), the final enrollment period is extended as
+long as needed.
+S a scalar or vector of durations of piecewise constant event rates
+specified in rows of \code{lambda}, \code{eta} and \code{etaE}; this is NULL
+if there is a single event rate per stratum (exponential failure) or length
+of the number of rows in \code{lambda} minus 1, otherwise.
+T study duration; if \code{T} is input as \code{NULL}, this will be
+computed on output; see details.
+minfup follow-up of last patient enrolled; if \code{minfup} is input
+as \code{NULL}, this will be computed on output; see details.
+ratio randomization ratio of experimental treatment divided by
+control; normally a scalar, but may be a vector with length equal to number
+of strata.
+alpha type I error rate. Default is 0.025 since 1-sided testing is
+default.
+beta type II error rate. Default is 0.10 (90\% power); NULL if power
+is to be computed based on other input values.
+sided 1 for 1-sided testing, 2 for 2-sided testing.
+tol for cases when \code{T} or \code{minfup} values are derived
+through root finding (\code{T} or \code{minfup} input as \code{NULL}),
+\code{tol} provides the level of error input to the \code{uniroot()}
+root-finding function. The default is the same as for \code{\link{uniroot}}.
+timing Sets relative timing of interim analyses in \code{gsSurv}.
+Default of 1 produces equally spaced analyses.  Otherwise, this is a vector
+of length \code{k} or \code{k-1}.  The values should satisfy \code{0 <
+timing[1] < timing[2] < ... < timing[k-1] < timing[k]=1}. For
+\code{tEventsIA}, this is a scalar strictly between 0 and 1 that indicates
+the targeted proportion of final planned events available at an interim
+analysis.
+tIA Timing of an interim analysis; should be between 0 and
+\code{y$T}.
+target The targeted proportion of events at an interim analysis. This
+is used for root-finding will be 0 for normal use.
+simple See output specification for \code{nEventsIA()}.
+k Number of analyses planned, including interim and final.
+test.type \code{1=}one-sided \cr \code{2=}two-sided symmetric \cr
+\code{3=}two-sided, asymmetric, beta-spending with binding lower bound \cr
+\code{4=}two-sided, asymmetric, beta-spending with non-binding lower bound
+\cr \code{5=}two-sided, asymmetric, lower bound spending under the null
+hypothesis with binding lower bound \cr \code{6=}two-sided, asymmetric,
+lower bound spending under the null hypothesis with non-binding lower bound.
+\cr See details, examples and manual.
+astar Normally not specified. If \code{test.type=5} or \code{6},
+\code{astar} specifies the total probability of crossing a lower bound at
+all analyses combined.  This will be changed to \eqn{1 - }\code{alpha} when
+default value of 0 is used.  Since this is the expected usage, normally
+\code{astar} is not specified by the user.
+sfu A spending function or a character string indicating a boundary
+type (that is, \dQuote{WT} for Wang-Tsiatis bounds, \dQuote{OF} for
+O'Brien-Fleming bounds and \dQuote{Pocock} for Pocock bounds).  For
+one-sided and symmetric two-sided testing is used to completely specify
+spending (\code{test.type=1, 2}), \code{sfu}.  The default value is
+\code{sfHSD} which is a Hwang-Shih-DeCani spending function.  See details,
+\code{vignette("SpendingFunctionOverview")}, manual and examples.
+sfupar Real value, default is \eqn{-4} which is an
+O'Brien-Fleming-like conservative bound when used with the default
+Hwang-Shih-DeCani spending function. This is a real-vector for many spending
+functions.  The parameter \code{sfupar} specifies any parameters needed for
+the spending function specified by \code{sfu}; this will be ignored for
+spending functions (\code{sfLDOF}, \code{sfLDPocock}) or bound types
+(\dQuote{OF}, \dQuote{Pocock}) that do not require parameters.
+Note that \code{sfupar} can be specified as a positive scalar for
+\code{sfLDOF} for a generalized O'Brien-Fleming spending function.
+sfl Specifies the spending function for lower boundary crossing
+probabilities when asymmetric, two-sided testing is performed
+(\code{test.type = 3}, \code{4}, \code{5}, or \code{6}).  Unlike the upper
+bound, only spending functions are used to specify the lower bound.  The
+default value is \code{sfHSD} which is a Hwang-Shih-DeCani spending
+function.  The parameter \code{sfl} is ignored for one-sided testing
+(\code{test.type=1}) or symmetric 2-sided testing (\code{test.type=2}).  See
+details, spending functions, manual and examples.
+sflpar Real value, default is \eqn{-2}, which, with the default
+Hwang-Shih-DeCani spending function, specifies a less conservative spending
+rate than the default for the upper bound.
+r Integer value (>= 1 and <= 80) controlling the number of numerical
+integration grid points. Default is 18, as recommended by Jennison and
+Turnbull (2000). Grid points are spread out in the tails for accurate
+probability calculations. Larger values provide more grid points and greater
+accuracy but slow down computation. Jennison and Turnbull (p. 350) note an
+accuracy of \eqn{10^{-6}} with \code{r = 16}. This parameter is normally
+not changed by users.
+usTime Default is NULL in which case upper bound spending time is
+determined by \code{timing}. Otherwise, this should be a vector of length
+\code{k} with the spending time at each analysis (see Details in help for \code{gsDesign}).
+lsTime Default is NULL in which case lower bound spending time is
+determined by \code{timing}. Otherwise, this should be a vector of length
+\code{k} with the spending time at each analysis (see Details in help for \code{gsDesign}).
+caption passed through to generic \code{xtable()}.
+label passed through to generic \code{xtable()}.
+align passed through to generic \code{xtable()}.
+display passed through to generic \code{xtable()}.
+auto passed through to generic \code{xtable()}.
+footnote footnote for xtable output; may be useful for describing
+some of the design parameters.
+fnwid a text string controlling the width of footnote text at the
+bottom of the xtable output.
+timename character string with plural of time units (e.g., "months") 
+EXAMPLE: 
+
+# vary accrual rate to obtain power
+nSurv(lambdaC = log(2) / 6, hr = .5, eta = log(2) / 40, gamma = 1, T = 36, minfup = 12)
+
+# vary accrual duration to obtain power
+nSurv(lambdaC = log(2) / 6, hr = .5, eta = log(2) / 40, gamma = 6, minfup = 12)
+
+# vary follow-up duration to obtain power
+nSurv(lambdaC = log(2) / 6, hr = .5, eta = log(2) / 40, gamma = 6, R = 25)
+
+# piecewise constant enrollment rates (vary accrual duration)
+nSurv(
+  lambdaC = log(2) / 6, hr = .5, eta = log(2) / 40, gamma = c(1, 3, 6),
+  R = c(3, 6, 9), T = NULL, minfup = 12
+)
+
+# stratified population (vary accrual duration)
+nSurv(
+  lambdaC = matrix(log(2) / c(6, 12), ncol = 2), hr = .5, eta = log(2) / 40,
+  gamma = matrix(c(2, 4), ncol = 2), minfup = 12
+)
+
+# piecewise exponential failure rates (vary accrual duration)
+nSurv(lambdaC = log(2) / c(6, 12), hr = .5, eta = log(2) / 40, S = 3, gamma = 6, minfup = 12)
+
+# combine it all: 2 strata, 2 failure rate periods
+nSurv(
+  lambdaC = matrix(log(2) / c(6, 12, 18, 24), ncol = 2), hr = .5,
+  eta = matrix(log(2) / c(40, 50, 45, 55), ncol = 2), S = 3,
+  gamma = matrix(c(3, 6, 5, 7), ncol = 2), R = c(5, 10), minfup = 12
+)
+
+# example where only 1 month of follow-up is desired
+# set failure rate to 0 after 1 month using lambdaC and S
+nSurv(lambdaC = c(.4, 0), hr = 2 / 3, S = 1, minfup = 1)
+
+# group sequential design (vary accrual rate to obtain power)
+x <- gsSurv(
+  k = 4, sfl = sfPower, sflpar = .5, lambdaC = log(2) / 6, hr = .5,
+  eta = log(2) / 40, gamma = 1, T = 36, minfup = 12
+)
+x
+print(xtable::xtable(x,
+  footnote = "This is a footnote; note that it can be wide.",
+  caption = "Caption example."
+))
+# find expected number of events at time 12 in the above trial
+nEventsIA(x = x, tIA = 10)
+
+# find time at which 1/4 of events are expected
+tEventsIA(x = x, timing = .25)
+ 
+
+
+FUNCTION: nSurvival 
+TITLE: Time-to-event sample size calculation (Lachin-Foulkes) 
+DESCRIPTION: 
+\code{nSurvival()} is used to calculate the sample size for a clinical trial
+with a time-to-event endpoint. The Lachin and Foulkes (1986) method is used.
+\code{nEvents} uses the Schoenfeld (1981) approximation to provide sample
+size and power in terms of the underlying hazard ratio and the number of
+events observed in a survival analysis. The functions \code{hrz2n()},
+\code{hrn2z()} and \code{zn2hr()} also use the Schoenfeld approximation to
+provide simple translations between hazard ratios, z-values and the number
+of events in an analysis; input variables can be given as vectors.
+
+\code{nSurvival()} produces an object of class "nSurvival" with the number
+of subjects and events for a set of pre-specified trial parameters, such as
+accrual duration and follow-up period. The calculation is based on Lachin
+and Foulkes (1986) method and can be used for risk ratio or risk difference.
+The function also consider non-uniform (exponential) entry as well as
+uniform entry.
+
+If the logical \code{approx} is \code{TRUE}, the variance under alternative
+hypothesis is used to replace the variance under null hypothesis.  For
+non-uniform entry, a non-zero value of \code{gamma} for exponential entry
+must be supplied. For positive \code{gamma}, the entry distribution is
+convex, whereas for negative \code{gamma}, the entry distribution is
+concave.
+
+\code{nEvents()} uses the Schoenfeld (1981) method to approximate the number
+of events \code{n} (given \code{beta}) or the power (given \code{n}).
+Arguments may be vectors or scalars, but any vectors must have the same
+length.
+
+The functions \code{hrz2n}, \code{hrn2z} and \code{zn2hr} also all apply the
+Schoenfeld approximation for proportional hazards modeling.  This
+approximation is based on the asymptotic normal distribtuion of the logrank
+statistic as well as related statistics are asymptotically normal.  Let
+\eqn{\lambda} denote the underlying hazard ratio (\code{lambda1/lambda2} in
+terms of the arguments to \code{nSurvival}). Further, let \eqn{n} denote the
+number of events observed when computing the statistic of interest and
+\eqn{r} the ratio of the sample size in an experimental group relative to a
+control. The estimated natural logarithm of the hazard ratio from a
+proportional hazards ratio is approximately normal with a mean of
+\eqn{log{\lambda}} and variance \eqn{(1+r)^2/nr}. Let \eqn{z} denote a
+logrank statistic (or a Wald statistic or score statistic from a
+proportional hazards regression model). The same asymptotic theory implies
+\eqn{z} is asymptotically equivalent to a normalized estimate of the hazard
+ratio \eqn{\lambda} and thus \eqn{z} is asymptotically normal with variance
+1 and mean \deqn{\frac{log{\lambda}r}{(1+r)^2}.} Plugging the estimated
+hazard ratio into the above equation allows approximating any one of the
+following based on the other two: the estimate hazard ratio, the number of
+events and the z-statistic. That is, \deqn{\hat{\lambda}=
+\exp(z(1+r)/\sqrt{rn})} \deqn{z=\log(\hat{\lambda})\sqrt{nr}/(1+r)} \deqn{n=
+(z(1+r)/\log(\hat{\lambda}))^2/r.}
+
+\code{hrz2n()} translates an observed interim hazard ratio and interim
+z-value into the number of events required for the Z-value and hazard ratio
+to correspond to each other. \code{hrn2z()} translates a hazard ratio and
+number of events into an approximate corresponding Z-value. \code{zn2hr()}
+translates a Z-value and number of events into an approximate corresponding
+hazard ratio. Each of these functions has a default assumption of an
+underlying hazard ratio of 1 which can be changed using the argument
+\code{hr0}. \code{hrn2z()} and \code{zn2hr()} also have an argument
+\code{hr1} which is only used to compute the sign of the computed Z-value in
+the case of \code{hrn2z()} and whether or not a z-value > 0 corresponds to a
+hazard ratio > or < the null hazard ratio \code{hr0}.
+ 
+ARGUMENTS: x An object of class "nSurvival" returned by \code{nSurvival()}
+(optional: used for output; "months" or "years" would be the 'usual'
+choices).
+... Allows additional arguments for \code{print.nSurvival()}.
+lambda1,lambda2 event hazard rate for placebo and treatment group
+respectively.
+Ts maximum study duration.
+Tr accrual (recruitment) duration.
+eta equal dropout hazard rate for both groups.
+ratio randomization ratio between placebo and treatment group.
+Default is balanced design, i.e., randomization ratio is 1.
+alpha type I error rate. Default is 0.025 since 1-sided testing is
+default.
+beta type II error rate. Default is 0.10 (90\% power). Not needed for
+\code{nEvents()} if n is provided.
+sided one or two-sided test? Default is one-sided test.
+approx logical. If \code{TRUE}, the approximation sample size formula
+for risk difference is used.
+type type of sample size calculation: risk ratio (\dQuote{rr}) or
+risk difference (\dQuote{rd}).
+entry patient entry type: uniform entry (\code{"unif"}) or
+exponential entry (\code{"expo"}).
+gamma rate parameter for exponential entry. \code{NA} if entry type
+is \code{"unif"} (uniform). A non-zero value is supplied if entry type is
+\code{"expo"} (exponential).
+hr Hazard ratio. For \code{nEvents}, this is the hazard ratio under
+the alternative hypothesis (>0).
+hr0 Hazard ratio under the null hypothesis (>0, for \code{nEvents},
+\code{!= hr}).
+n Number of events. For \code{nEvents} may be input to compute power
+rather than sample size.
+tbl Indicator of whether or not scalar (vector) or tabular output is
+desired for \code{nEvents()}.
+z A z-statistic.
+hr1 Hazard ratio under the alternate hypothesis for \code{hrn2z,
+zn2hr} (>0, \code{!= hr0}) 
+EXAMPLE: 
+library(ggplot2)
+
+# consider a trial with
+# 2 year maximum follow-up
+# 6 month uniform enrollment
+# Treatment/placebo hazards = 0.1/0.2 per 1 person-year
+# drop out hazard 0.1 per 1 person-year
+# alpha = 0.025 (1-sided)
+# power = 0.9 (default beta=.1)
+
+ss <- nSurvival(
+  lambda1 = .2, lambda2 = .1, eta = .1, Ts = 2, Tr = .5,
+  sided = 1, alpha = .025
+)
+
+#  group sequential translation with default bounds
+#  note that delta1 is log hazard ratio; used later in gsBoundSummary summary
+x <- gsDesign(
+  k = 5, test.type = 2, n.fix = ss$nEvents, nFixSurv = ss$n,
+  delta1 = log(ss$lambda2 / ss$lambda1)
+)
+# boundary plot
+plot(x)
+# effect size plot
+plot(x, plottype = "hr")
+# total sample size
+x$nSurv
+# number of events at analyses
+x$n.I
+# print the design
+x
+# overall design summary
+cat(summary(x))
+# tabular summary of bounds
+gsBoundSummary(x, deltaname = "HR", Nname = "Events", logdelta = TRUE)
+
+
+
+# approximate number of events required using Schoenfeld's method
+# for 2 different hazard ratios
+nEvents(hr = c(.5, .6), tbl = TRUE)
+# vector output
+nEvents(hr = c(.5, .6))
+
+# approximate power using Schoenfeld's method
+# given 2 sample sizes and hr=.6
+nEvents(hr = .6, n = c(50, 100), tbl = TRUE)
+# vector output
+nEvents(hr = .6, n = c(50, 100))
+
+# approximate hazard ratio corresponding to 100 events and z-statistic of 2
+zn2hr(n = 100, z = 2)
+# same when hr0 is 1.1
+zn2hr(n = 100, z = 2, hr0 = 1.1)
+# same when hr0 is .9 and hr1 is greater than hr0
+zn2hr(n = 100, z = 2, hr0 = .9, hr1 = 1)
+
+# approximate number of events corresponding to z-statistic of 2 and
+# estimated hazard ratio of .5 (or 2)
+hrz2n(hr = .5, z = 2)
+hrz2n(hr = 2, z = 2)
+
+# approximate z statistic corresponding to 75 events
+# and estimated hazard ratio of .6 (or 1/.6)
+# assuming 2-to-1 randomization of experimental to control
+hrn2z(hr = .6, n = 75, ratio = 2)
+hrn2z(hr = 1 / .6, n = 75, ratio = 2)
+ 
+
+
+FUNCTION: pipe 
+TITLE: Pipe operator 
+DESCRIPTION: 
+See \code{magrittr::\link[magrittr:pipe]{%>%}} for details.
+ 
+ARGUMENTS: lhs A value or the magrittr placeholder.
+rhs A function call using the magrittr semantics. 
+EXAMPLE:  
+
+
+FUNCTION: plot.gsDesign 
+TITLE: Plots for group sequential designs 
+DESCRIPTION: 
+The \code{plot()} function has been extended to work with objects returned
+by \code{gsDesign()} and \code{gsProbability()}.  For objects of type
+\code{gsDesign}, seven types of plots are provided: z-values at boundaries
+(default), power, approximate treatment effects at boundaries, conditional
+power at boundaries, spending functions, expected sample size, and B-values
+at boundaries. For objects of type \code{gsProbability} plots are available
+for z-values at boundaries, power (default), approximate treatment effects at
+boundaries, conditional power, expected sample size and B-values at
+boundaries.
+
+The intent is that many standard \code{plot()} parameters will function as
+expected; exceptions to this rule exist. In particular, \code{main, xlab,
+ylab, lty, col, lwd, type, pch, cex} have been tested and work for most
+values of \code{plottype}; one exception is that \code{type="l"} cannot be
+overridden when \code{plottype=2}. Default values for labels depend on
+\code{plottype} and the class of \code{x}.
+
+Note that there is some special behavior for values plotted and returned for
+power and expected sample size (ASN) plots for a \code{gsDesign} object. A
+call to \code{x<-gsDesign()} produces power and expected sample size for
+only two \code{theta} values: 0 and \code{x$delta}.  The call \code{plot(x,
+plottype="Power")} (or \code{plot(x,plottype="ASN"}) for a \code{gsDesign}
+object produces power (expected sample size) curves and returns a
+\code{gsDesign} object with \code{theta} values determined as follows.  If
+\code{theta} is non-null on input, the input value(s) are used. Otherwise,
+for a \code{gsProbability} object, the \code{theta} values from that object
+are used. For a \code{gsDesign} object where \code{theta} is input as
+\code{NULL} (the default), \code{theta=seq(0,2,.05)*x$delta}) is used.  For
+a \code{gsDesign} object, the x-axis values are rescaled to
+\code{theta/x$delta} and the label for the x-axis \eqn{\theta / \delta}. For a
+\code{gsProbability} object, the values of \code{theta} are plotted and are
+labeled as \eqn{\theta}. See examples below.
+
+Approximate treatment effects at boundaries are computed dividing the Z-values
+at the boundaries by the square root of \code{n.I} at that analysis.
+
+Spending functions are plotted for a continuous set of values from 0 to 1.
+This option should not be used if a boundary is used or a pointwise spending
+function is used (\code{sfu} or \code{sfl="WT", "OF", "Pocock"} or
+\code{sfPoints}).
+
+Conditional power is computed using the function \code{gsBoundCP()}.  The
+default input for this routine is \code{theta="thetahat"} which will compute
+the conditional power at each bound using the approximate treatment effect at
+that bound.  Otherwise, if the input is \code{gsDesign} object conditional
+power is computed assuming \code{theta=x$delta}, the original effect size
+for which the trial was planned.
+
+Average sample number/expected sample size is computed using \code{n.I} at
+each analysis times the probability of crossing a boundary at that analysis.
+If no boundary is crossed at any analysis, this is counted as stopping at
+the final analysis.
+
+B-values are Z-values multiplied by \code{sqrt(t)=sqrt(x$n.I/x$n.I[x$k])}.
+Thus, the expected value of a B-value at an analysis is the true value of
+\eqn{\theta} multiplied by the proportion of total planned observations at
+that time. See Proschan, Lan and Wittes (2006).
+ 
+ARGUMENTS: x Object of class \code{gsDesign} for \code{plot.gsDesign()} or
+\code{gsProbability} for
+
+\code{plot.gsProbability()}.
+plottype 1=boundary plot (default for \code{gsDesign}),
+
+2=power plot (default for \code{gsProbability}),
+
+3=approximate treatment effect at boundaries,
+
+4=conditional power at boundaries,
+
+5=spending function plot (only available if \code{class(x)=="gsDesign"}),
+
+6=expected sample size plot, and
+
+7=B-values at boundaries.
+
+Character values for \code{plottype} may also be entered: \code{"Z"} for
+plot type 1, \code{"power"} for plot type 2, \code{"thetahat"} for plot type
+3, \code{"CP"} for plot type 4, \code{"sf"} for plot type 5, \code{"ASN"},
+\code{"N"} or \code{"n"} for plot type 6, and \code{"B"}, \code{"B-val"} or
+\code{"B-value"} for plot type 7.
+base Default is FALSE, which means ggplot2 graphics are used. If
+true, base graphics are used for plotting.
+... This allows many optional arguments that are standard when
+calling \code{plot}.
+
+Other arguments include:
+
+\code{theta} which is used for \code{plottype=2}, \code{4}, \code{6};
+normally defaults will be adequate; see details.
+
+\code{ses=TRUE} which applies only when \code{plottype=3} and
+
+\code{class(x)=="gsDesign"}; indicates that approximate standardized effect
+size at the boundary is to be plotted rather than the approximate natural parameter.
+
+\code{xval="Default"} which is only effective when \code{plottype=2} or
+\code{6}. Appropriately scaled (reparameterized) values for x-axis for power
+and expected sample size graphs; see details. 
+EXAMPLE: 
+library(ggplot2)
+#  symmetric, 2-sided design with O'Brien-Fleming-like boundaries
+#  lower bound is non-binding (ignored in Type I error computation)
+#  sample size is computed based on a fixed design requiring n=100
+x <- gsDesign(k = 5, test.type = 2, n.fix = 100)
+x
+
+# the following translate to calls to plot.gsDesign since x was
+# returned by gsDesign; run these commands one at a time
+plot(x)
+plot(x, plottype = 2)
+plot(x, plottype = 3)
+plot(x, plottype = 4)
+plot(x, plottype = 5)
+plot(x, plottype = 6)
+plot(x, plottype = 7)
+
+#  choose different parameter values for power plot
+#  start with design in x from above
+y <- gsProbability(
+  k = 5, theta = seq(0, .5, .025), x$n.I,
+  x$lower$bound, x$upper$bound
+)
+
+# the following translates to a call to plot.gsProbability since
+# y has that type
+plot(y)
+ 
+
+
+FUNCTION: sequentiaPValue 
+TITLE: Sequential p-value computation 
+DESCRIPTION: 
+\code{sequentialPValue} computes a sequential p-value for a group sequential design using a spending function as described in 
+Maurer and Bretz (2013) and previously defined by Liu and Anderson (2008).
+It is the minimum of repeated p-values computed at each analysis (Jennison and Turnbull, 2000).
+This is particularly useful for multiplicity methods such as the graphical method for group sequential designs 
+where sequential p-values for multiple hypotheses can be used as nominal p-values to plug into a multiplicity graph. 
+A sequential p-value is described as the minimum alpha level at which a one-sided group sequential bound would 
+be rejected given interim and final observed results.
+It is meaningful for both one-sided designs and designs with non-binding futility bounds (\code{test.type} 1, 4, 6), 
+but not for 2-sided designs with binding futility bounds (\code{test.type} 2, 3 or 5).
+Mild restrictions are required on spending functions used, but these are satisfied for commonly used spending functions
+such as the Lan-DeMets spending function approximating an O'Brien-Fleming bound or a Hwang-Shih-DeCani spending function; see Maurer and Bretz (2013).
+ 
+ARGUMENTS: gsD Group sequential design generated by \code{gsDesign} or \code{gsSurv}.
+n.I Event counts (for time-to-event outcomes) or sample size (for most other designs); numeric vector with increasing, positive values with at most one
+value greater than or equal to largest value in \code{gsD$n.I}; NOTE: if NULL, planned n.I will be used (\code{gsD$n.I}).
+Z Z-value tests corresponding to analyses in \code{n.I}; positive values indicate a positive finding; must have the same length as \code{n.I}.
+usTime Spending time for upper bound at specified analyses; specify default: \code{NULL} if this is to be based on information fraction; 
+if not \code{NULL}, must have the same length as \code{n.I}; increasing positive values with at most 1 greater than or equal to 1.
+interval Interval for search to derive p-value; Default: \code{c(1e-05, 0.9999)}. Lower end of interval must be >0 and upper end must be < 1. 
+The primary reason to not use the defaults would likely be if a test were vs a Type I error <0.0001. 
+EXAMPLE: 
+
+# Derive Group Sequential Design 
+x <- gsSurv(k = 4, alpha = 0.025, beta = 0.1, timing = c(.5,.65,.8), sfu = sfLDOF,
+            sfl = sfHSD, sflpar = 2, lambdaC = log(2)/6, hr = 0.6,
+            eta = 0.01 , gamma = c(2.5,5,7.5,10), R = c( 2,2,2,6 ),
+            T = 30 , minfup = 18)
+x$n.I
+# Analysis at IA2
+sequentialPValue(gsD=x,n.I=c(100,160),Z=c(1.5,2))
+# Use planned spending instead of information fraction; do final analysis
+sequentialPValue(gsD=x,n.I=c(100,160,190,230),Z=c(1.5,2,2.5,3),usTime=x$timing)
+# Check bounds for updated design to verify at least one was crossed
+xupdate <- gsDesign(maxn.IPlan=max(x$n.I),n.I=c(100,160,190,230),usTime=x$timing,
+                    delta=x$delta,delta1=x$delta1,k=4,alpha=x$alpha,test.type=1,
+                    sfu=x$upper$sf,sfupar=x$upper$param)
+ 
+
+
+FUNCTION: sfDistribution 
+TITLE: Two-parameter Spending Function Families 
+DESCRIPTION: 
+The functions \code{sfLogistic()}, \code{sfNormal()},
+\code{sfExtremeValue()}, \code{sfExtremeValue2()}, \code{sfCauchy()}, and
+\code{sfBetaDist()} are all 2-parameter spending function families. These
+provide increased flexibility in some situations where the flexibility of a
+one-parameter spending function family is not sufficient. These functions
+all allow fitting of two points on a cumulative spending function curve; in
+this case, four parameters are specified indicating an x and a y coordinate
+for each of 2 points. Normally each of these functions will be passed to
+\code{gsDesign()} in the parameter \code{sfu} for the upper bound or
+\code{sfl} for the lower bound to specify a spending function family for a
+design. In this case, the user does not need to know the calling sequence.
+The calling sequence is useful, however, when the user wishes to plot a
+spending function as demonstrated in the examples; note, however, that an
+automatic \eqn{\alpha}{alpha}- and \eqn{\beta}{beta}-spending function plot
+is also available.
+
+\code{sfBetaDist(alpha,t,param)} is simply \code{alpha} times the incomplete
+beta cumulative distribution function with parameters \eqn{a} and \eqn{b}
+passed in \code{param} evaluated at values passed in \code{t}.
+
+The other spending functions take the form \deqn{f(t;\alpha,a,b)=\alpha
+}{f(t;alpha,a,b)=alpha F(a+bF^{-1}(t))}\deqn{F(a+bF^{-1}(t))}{f(t;alpha,a,b)=alpha F(a+bF^{-1}(t))} where \eqn{F()} is a
+cumulative distribution function with values \eqn{> 0} on the real line
+(logistic for \code{sfLogistic()}, normal for \code{sfNormal()}, extreme
+value for \code{sfExtremeValue()} and Cauchy for \code{sfCauchy()}) and
+\eqn{F^{-1}()} is its inverse.
+
+For the logistic spending function this simplifies to
+\deqn{f(t;\alpha,a,b)=\alpha (1-(1+e^a(t/(1-t))^b)^{-1}).}
+
+For the extreme value distribution with \deqn{F(x)=\exp(-\exp(-x))} this
+simplifies to \deqn{f(t;\alpha,a,b)=\alpha \exp(-e^a (-\ln t)^b).} Since the
+extreme value distribution is not symmetric, there is also a version where
+the standard distribution is flipped about 0. This is reflected in
+\code{sfExtremeValue2()} where \deqn{F(x)=1-\exp(-\exp(x)).}
+ 
+ARGUMENTS: alpha Real value \eqn{> 0} and no more than 1. Normally,
+\code{alpha=0.025} for one-sided Type I error specification or
+\code{alpha=0.1} for Type II error specification. However, this could be set
+to 1 if for descriptive purposes you wish to see the proportion of spending
+as a function of the proportion of sample size or information.
+t A vector of points with increasing values from 0 to 1, inclusive.
+Values of the proportion of sample size or information for which the
+spending function will be computed.
+param In the two-parameter specification, \code{sfBetaDist()}
+requires 2 positive values, while \code{sfLogistic()}, \code{sfNormal()},
+\code{sfExtremeValue()},
+
+\code{sfExtremeValue2()} and \code{sfCauchy()} require the first parameter
+to be any real value and the second to be a positive value.  The four
+parameter specification is \code{c(t1,t2,u1,u2)} where the objective is that
+\code{sf(t1)=alpha*u1} and \code{sf(t2)=alpha*u2}.  In this
+parameterization, all four values must be between 0 and 1 and \code{t1 <
+t2}, \code{u1 < u2}. 
+EXAMPLE: 
+library(ggplot2)
+# design a 4-analysis trial using a Kim-DeMets spending function
+# for both lower and upper bounds
+x <- gsDesign(k = 4, sfu = sfPower, sfupar = 3, sfl = sfPower, sflpar = 1.5)
+
+# print the design
+x
+
+# plot the alpha- and beta-spending functions
+plot(x, plottype = 5)
+
+# start by showing how to fit two points with sfLogistic
+# plot the spending function using many points to obtain a smooth curve
+# note that curve fits the points x=.1,  y=.01 and x=.4,  y=.1
+# specified in the 3rd parameter of sfLogistic
+t <- 0:100 / 100
+plot(t, sfLogistic(1, t, c(.1, .4, .01, .1))$spend,
+  xlab = "Proportion of final sample size",
+  ylab = "Cumulative Type I error spending",
+  main = "Logistic Spending Function Examples",
+  type = "l", cex.main = .9
+)
+lines(t, sfLogistic(1, t, c(.01, .1, .1, .4))$spend, lty = 2)
+
+# now just give a=0 and b=1 as 3rd parameters for sfLogistic
+lines(t, sfLogistic(1, t, c(0, 1))$spend, lty = 3)
+
+# try a couple with unconventional shapes again using
+# the xy form in the 3rd parameter
+lines(t, sfLogistic(1, t, c(.4, .6, .1, .7))$spend, lty = 4)
+lines(t, sfLogistic(1, t, c(.1, .7, .4, .6))$spend, lty = 5)
+legend(
+  x = c(.0, .475), y = c(.76, 1.03), lty = 1:5,
+  legend = c(
+    "Fit (.1, 01) and (.4, .1)", "Fit (.01, .1) and (.1, .4)",
+    "a=0,  b=1", "Fit (.4, .1) and (.6, .7)",
+    "Fit (.1, .4) and (.7, .6)"
+  )
+)
+
+# set up a function to plot comparsons of all
+# 2-parameter spending functions
+plotsf <- function(alpha, t, param) {
+  plot(t, sfCauchy(alpha, t, param)$spend,
+    xlab = "Proportion of enrollment",
+    ylab = "Cumulative spending", type = "l", lty = 2
+  )
+  lines(t, sfExtremeValue(alpha, t, param)$spend, lty = 5)
+  lines(t, sfLogistic(alpha, t, param)$spend, lty = 1)
+  lines(t, sfNormal(alpha, t, param)$spend, lty = 3)
+  lines(t, sfExtremeValue2(alpha, t, param)$spend, lty = 6, col = 2)
+  lines(t, sfBetaDist(alpha, t, param)$spend, lty = 7, col = 3)
+  legend(
+    x = c(.05, .475), y = .025 * c(.55, .9),
+    lty = c(1, 2, 3, 5, 6, 7),
+    col = c(1, 1, 1, 1, 2, 3),
+    legend = c(
+      "Logistic", "Cauchy", "Normal", "Extreme value",
+      "Extreme value 2", "Beta distribution"
+    )
+  )
+}
+# do comparison for a design with conservative early spending
+# note that Cauchy spending function is quite different
+# from the others
+param <- c(.25, .5, .05, .1)
+plotsf(.025, t, param)
+ 
+
+
+FUNCTION: sfExponential 
+TITLE: Exponential Spending Function 
+DESCRIPTION: 
+The function \code{sfExponential} implements the exponential spending
+function (Anderson and Clark, 2009). Normally \code{sfExponential} will be
+passed to \code{gsDesign} in the parameter \code{sfu} for the upper bound or
+\code{sfl} for the lower bound to specify a spending function family for a
+design. In this case, the user does not need to know the calling sequence.
+The calling sequence is useful, however, when the user wishes to plot a
+spending function as demonstrated below in examples.
+
+An exponential spending function is defined for any positive \code{nu} and
+\eqn{0\le t\le 1} as
+\deqn{f(t;\alpha,\nu)=\alpha(t)=\alpha^{t^{-\nu}}.}{f(t;alpha,nu)=alpha^(t^(-nu)).}
+A value of \code{nu=0.8} approximates an O'Brien-Fleming spending function
+well.
+
+The general class of spending functions this family is derived from requires
+a continuously increasing cumulative distribution function defined for
+\eqn{x>0} and is defined as \deqn{f(t;\alpha,
+}{% f(t; alpha,
+nu)=1-F(F^(-1)(1-alpha)/ t^nu).}\deqn{\nu)=1-F\left(F^{-1}(1-\alpha)/ t^\nu\right).}{% f(t; alpha,
+nu)=1-F(F^(-1)(1-alpha)/ t^nu).} The exponential spending function can be
+derived by letting \eqn{F(x)=1-\exp(-x)}, the exponential cumulative
+distribution function. This function was derived as a generalization of the
+Lan-DeMets (1983) spending function used to approximate an O'Brien-Fleming
+spending function (\code{sfLDOF()}), \deqn{f(t; \alpha)=2-2\Phi \left(
+}{% f(t;
+alpha)=2-2*Phi(Phi^(-1)(1-alpha/2)/t^(1/2)).}\deqn{\Phi^{-1}(1-\alpha/2)/ t^{1/2} \right).}{% f(t;
+alpha)=2-2*Phi(Phi^(-1)(1-alpha/2)/t^(1/2)).}
+ 
+ARGUMENTS: alpha Real value \eqn{> 0} and no more than 1. Normally,
+\code{alpha=0.025} for one-sided Type I error specification or
+\code{alpha=0.1} for Type II error specification. However, this could be set
+to 1 if for descriptive purposes you wish to see the proportion of spending
+as a function of the proportion of sample size/information.
+t A vector of points with increasing values from 0 to 1, inclusive.
+Values of the proportion of sample size/information for which the spending
+function will be computed.
+param A single positive value specifying the nu parameter for which
+the exponential spending is to be computed; allowable range is (0, 1.5]. 
+EXAMPLE: 
+library(ggplot2)
+# use 'best' exponential approximation for k=6 to O'Brien-Fleming design
+# (see manual for details)
+gsDesign(
+  k = 6, sfu = sfExponential, sfupar = 0.7849295,
+  test.type = 2
+)$upper$bound
+
+# show actual O'Brien-Fleming bound
+gsDesign(k = 6, sfu = "OF", test.type = 2)$upper$bound
+
+# show Lan-DeMets approximation
+# (not as close as sfExponential approximation)
+gsDesign(k = 6, sfu = sfLDOF, test.type = 2)$upper$bound
+
+# plot exponential spending function across a range of values of interest
+t <- 0:100 / 100
+plot(t, sfExponential(0.025, t, 0.8)$spend,
+  xlab = "Proportion of final sample size",
+  ylab = "Cumulative Type I error spending",
+  main = "Exponential Spending Function Example", type = "l"
+)
+lines(t, sfExponential(0.025, t, 0.5)$spend, lty = 2)
+lines(t, sfExponential(0.025, t, 0.3)$spend, lty = 3)
+lines(t, sfExponential(0.025, t, 0.2)$spend, lty = 4)
+lines(t, sfExponential(0.025, t, 0.15)$spend, lty = 5)
+legend(
+  x = c(.0, .3), y = .025 * c(.7, 1), lty = 1:5,
+  legend = c(
+    "nu = 0.8", "nu = 0.5", "nu = 0.3", "nu = 0.2",
+    "nu = 0.15"
+  )
+)
+text(x = .59, y = .95 * .025, labels = "<--approximates O'Brien-Fleming")
+ 
+
+
+FUNCTION: sfHSD 
+TITLE: Hwang-Shih-DeCani Spending Function 
+DESCRIPTION: 
+The function \code{sfHSD} implements a Hwang-Shih-DeCani spending function.
+This is the default spending function for \code{gsDesign()}. Normally it
+will be passed to \code{gsDesign} in the parameter \code{sfu} for the upper
+bound or \code{sfl} for the lower bound to specify a spending function
+family for a design. In this case, the user does not need to know the
+calling sequence. The calling sequence is useful, however, when the user
+wishes to plot a spending function as demonstrated below in examples.
+
+A Hwang-Shih-DeCani spending function takes the form \deqn{f(t;\alpha,
+}{f(t; alpha, gamma) = alpha
+* (1-exp(-gamma * t))/(1 - exp(-gamma))}\deqn{\gamma)=\alpha(1-e^{-\gamma t})/(1-e^{-\gamma})}{f(t; alpha, gamma) = alpha
+* (1-exp(-gamma * t))/(1 - exp(-gamma))} where \eqn{\gamma}{gamma} is the
+value passed in \code{param}. A value of \eqn{\gamma=-4}{gamma=-4} is used
+to approximate an O'Brien-Fleming design (see \code{\link{sfExponential}}
+for a better fit), while a value of \eqn{\gamma=1}{gamma=1} approximates a
+Pocock design well.
+ 
+ARGUMENTS: alpha Real value \eqn{> 0} and no more than 1. Normally,
+\code{alpha=0.025} for one-sided Type I error specification or
+\code{alpha=0.1} for Type II error specification. However, this could be set
+to 1 if for descriptive purposes you wish to see the proportion of spending
+as a function of the proportion of sample size/information.
+t A vector of points with increasing values from 0 to 1, inclusive.
+Values of the proportion of sample size/information for which the spending
+function will be computed.
+param A single real value specifying the gamma parameter for which
+Hwang-Shih-DeCani spending is to be computed; allowable range is [-40, 40] 
+EXAMPLE: 
+library(ggplot2)
+# design a 4-analysis trial using a Hwang-Shih-DeCani spending function
+# for both lower and upper bounds
+x <- gsDesign(k = 4, sfu = sfHSD, sfupar = -2, sfl = sfHSD, sflpar = 1)
+
+# print the design
+x
+
+# since sfHSD is the default for both sfu and sfl,
+# this could have been written as
+x <- gsDesign(k = 4, sfupar = -2, sflpar = 1)
+
+# print again
+x
+
+# plot the spending function using many points to obtain a smooth curve
+# show default values of gamma to see how the spending function changes
+# also show gamma=1 which is supposed to approximate a Pocock design
+t <- 0:100 / 100
+plot(t, sfHSD(0.025, t, -4)$spend,
+  xlab = "Proportion of final sample size",
+  ylab = "Cumulative Type I error spending",
+  main = "Hwang-Shih-DeCani Spending Function Example", type = "l"
+)
+lines(t, sfHSD(0.025, t, -2)$spend, lty = 2)
+lines(t, sfHSD(0.025, t, 1)$spend, lty = 3)
+legend(
+  x = c(.0, .375), y = .025 * c(.8, 1), lty = 1:3,
+  legend = c("gamma= -4", "gamma= -2", "gamma= 1")
+)
+ 
+
+
+FUNCTION: sfLDOF 
+TITLE: Lan-DeMets Spending function overview 
+DESCRIPTION: 
+Lan and DeMets (1983) first published the method of using spending functions 
+to set boundaries for group sequential trials. In this publication they
+proposed two specific spending functions: one to approximate an
+O'Brien-Fleming design and the other to approximate a Pocock design.
+The spending function to approximate O'Brien-Fleming has been generalized as proposed by Liu, et al (2012)
+
+With \code{param=1=rho}, the Lan-DeMets (1983) spending function to approximate an O'Brien-Fleming
+bound is implemented in the function (\code{sfLDOF()}): \deqn{f(t; 
+}{%
+f(t; alpha)=2-2*Phi(Phi^(-1)(1-alpha/2)/t^(rho/2)\right)}\deqn{\alpha)=2-2\Phi\left(\Phi^{-1}(1-\alpha/2)/ t^{\rho/2}\right).}{%
+f(t; alpha)=2-2*Phi(Phi^(-1)(1-alpha/2)/t^(rho/2)\right)}
+For \code{rho} otherwise in \code{[.005,2]}, this is the generalized version of Liu et al (2012).
+For \code{param} outside of \code{[.005,2]}, \code{rho} is set to 1. The Lan-DeMets (1983)
+spending function to approximate a Pocock design is implemented in the
+function \code{sfLDPocock()}:
+\deqn{f(t;\alpha)=\alpha ln(1+(e-1)t).}{f(t;alpha)= alpha ln(1+(e-1)t).} As shown in
+examples below, other spending functions can be used to ge t as good or
+better approximations to Pocock and O'Brien-Fleming bounds. In particular,
+O'Brien-Fleming bounds can be closely approximated using
+\code{\link{sfExponential}}.
+ 
+ARGUMENTS: alpha Real value \eqn{> 0} and no more than 1. Normally,
+\code{alpha=0.025} for one-sided Type I error specification or
+\code{alpha=0.1} for Type II error specification. However, this could be set
+to 1 if for descriptive purposes you wish to see the proportion of spending
+as a function of the proportion of sample size/information.
+t A vector of points with increasing values from 0 to 1, inclusive.
+Values of the proportion of sample size/information for which the spending
+function will be computed.
+param This parameter is not used for \code{sfLDPocock}, not required 
+for \code{sfLDOF} and need not be specified. For \code{sfLDPocock} it is here 
+so that the calling sequence conforms to the standard for spending functions used 
+with \code{gsDesign()}. For \code{sfLDOF} it will default to 1 (Lan-DeMets function 
+to approximate O'Brien-Fleming) if \code{NULL} or if outside of the range \code{[.005,2]}.
+otherwise, it will be use to set rho from Liu et al (2012). 
+EXAMPLE: 
+library(ggplot2)
+# 2-sided,  symmetric 6-analysis trial Pocock
+# spending function approximation
+gsDesign(k = 6, sfu = sfLDPocock, test.type = 2)$upper$bound
+
+# show actual Pocock design
+gsDesign(k = 6, sfu = "Pocock", test.type = 2)$upper$bound
+
+# approximate Pocock again using a standard
+# Hwang-Shih-DeCani approximation
+gsDesign(k = 6, sfu = sfHSD, sfupar = 1, test.type = 2)$upper$bound
+
+# use 'best' Hwang-Shih-DeCani approximation for Pocock,  k=6;
+# see manual for details
+gsDesign(k = 6, sfu = sfHSD, sfupar = 1.3354376, test.type = 2)$upper$bound
+
+# 2-sided, symmetric 6-analysis trial
+# O'Brien-Fleming spending function approximation
+gsDesign(k = 6, sfu = sfLDOF, test.type = 2)$upper$bound
+
+# show actual O'Brien-Fleming bound
+gsDesign(k = 6, sfu = "OF", test.type = 2)$upper$bound
+
+# approximate again using a standard Hwang-Shih-DeCani
+# approximation to O'Brien-Fleming
+x <- gsDesign(k = 6, test.type = 2)
+x$upper$bound
+x$upper$param
+
+# use 'best' exponential approximation for k=6; see manual for details
+gsDesign(
+  k = 6, sfu = sfExponential, sfupar = 0.7849295,
+  test.type = 2
+)$upper$bound
+
+# plot spending functions for generalized Lan-DeMets approximation of
+ti <-(0:100)/100
+rho <- c(.05,.5,1,1.5,2,2.5,3:6,8,10,12.5,15,20,30,200)/10
+df <- NULL
+for(r in rho){
+  df <- rbind(df,data.frame(t=ti,rho=r,alpha=.025,spend=sfLDOF(alpha=.025,t=ti,param=r)$spend))
+}
+ggplot(df,aes(x=t,y=spend,col=as.factor(rho)))+
+  geom_line()+
+  guides(col=guide_legend(expression(rho)))+
+  ggtitle("Generalized Lan-DeMets O'Brien-Fleming Spending Function")
+ 
+
+
+FUNCTION: sfLinear 
+TITLE: Piecewise Linear and Step Function Spending Functions 
+DESCRIPTION: 
+The function \code{sfLinear()} allows specification of a piecewise linear
+spending function. The function \code{sfStep()} specifies a step function
+spending function. Both functions provide complete flexibility in setting
+spending at desired timepoints in a group sequential design. Normally these
+function will be passed to \code{gsDesign()} in the parameter \code{sfu} for
+the upper bound or \code{sfl} for the lower bound to specify a spending
+function family for a design. When passed to \code{gsDesign()}, the value of
+\code{param} would be passed to \code{sfLinear()} or \code{sfStep()} through
+the \code{gsDesign()} arguments \code{sfupar} for the upper bound and
+\code{sflpar} for the lower bound.
+
+Note that \code{sfStep()} allows setting a particular level of spending when
+the timing is not strictly known; an example shows how this can inflate Type
+I error when timing of analyses are changed based on knowing the treatment
+effect at an interim.
+ 
+ARGUMENTS: alpha Real value \eqn{> 0} and no more than 1. Normally,
+\code{alpha=0.025} for one-sided Type I error specification or
+\code{alpha=0.1} for Type II error specification. However, this could be set
+to 1 if for descriptive purposes you wish to see the proportion of spending
+as a function of the proportion of sample size or information.
+t A vector of points with increasing values from 0 to 1, inclusive.
+Values of the proportion of sample size or information for which the
+spending function will be computed.
+param A vector with a positive, even length. Values must range from 0
+to 1, inclusive. Letting \code{m <- length(param/2)}, the first \code{m}
+points in param specify increasing values strictly between 0 and 1
+corresponding to interim timing (proportion of final total statistical
+information). The last \code{m} points in \code{param} specify
+non-decreasing values from 0 to 1, inclusive, with the cumulative proportion
+of spending at the specified timepoints. 
+EXAMPLE: 
+library(ggplot2)
+# set up alpha spending and beta spending to be piecewise linear
+sfupar <- c(.2, .4, .05, .2)
+sflpar <- c(.3, .5, .65, .5, .75, .9)
+x <- gsDesign(sfu = sfLinear, sfl = sfLinear, sfupar = sfupar, sflpar = sflpar)
+plot(x, plottype = "sf")
+x
+
+# now do an example where there is no lower-spending at interim 1
+# and no upper spending at interim 2
+sflpar <- c(1 / 3, 2 / 3, 0, .25)
+sfupar <- c(1 / 3, 2 / 3, .1, .1)
+x <- gsDesign(sfu = sfLinear, sfl = sfLinear, sfupar = sfupar, sflpar = sflpar)
+plot(x, plottype = "sf")
+x
+
+# now do an example where timing of interims changes slightly, but error spending does not
+# also, spend all alpha when at least >=90 percent of final information is in the analysis
+sfupar <- c(.2, .4, .9, ((1:3) / 3)^3)
+x <- gsDesign(k = 3, n.fix = 100, sfu = sfStep, sfupar = sfupar, test.type = 1)
+plot(x, pl = "sf")
+# original planned sample sizes
+ceiling(x$n.I)
+# cumulative spending planned at original interims
+cumsum(x$upper$spend)
+# change timing of analyses;
+# note that cumulative spending "P(Cross) if delta=0" does not change from cumsum(x$upper$spend)
+# while full alpha is spent, power is reduced by reduced sample size
+y <- gsDesign(
+  k = 3, sfu = sfStep, sfupar = sfupar, test.type = 1,
+  maxn.IPlan = x$n.I[x$k], n.I = c(30, 70, 95),
+  n.fix = x$n.fix
+)
+# note that full alpha is used, but power is reduced due to lowered sample size
+gsBoundSummary(y)
+
+# now show how step function can be abused by 'adapting' stage 2 sample size based on interim result
+x <- gsDesign(k = 2, delta = .05, sfu = sfStep, sfupar = c(.02, .001), timing = .02, test.type = 1)
+# spending jumps from miniscule to full alpha at first analysis after interim 1
+plot(x, pl = "sf")
+# sample sizes at analyses:
+ceiling(x$n.I)
+# simulate 1 million stage 1 sum of 178 Normal(0,1) random variables
+# Normal(0,Variance=178) under null hypothesis
+s1 <- rnorm(1000000, 0, sqrt(178))
+# compute corresponding z-values
+z1 <- s1 / sqrt(178)
+# set stage 2 sample size to 1 if z1 is over final bound, otherwise full sample size
+n2 <- rep(1, 1000000)
+n2[z1 < 1.96] <- ceiling(x$n.I[2]) - ceiling(178)
+# now sample n2 observations for second stage
+s2 <- rnorm(1000000, 0, sqrt(n2))
+# add sum and divide by standard deviation
+z2 <- (s1 + s2) / (sqrt(178 + n2))
+# By allowing full spending when final analysis is either
+# early or late depending on observed interim z1,
+# Type I error is now almost twice the planned .025
+sum(z1 >= x$upper$bound[1] | z2 >= x$upper$bound[2]) / 1000000
+# if stage 2 sample size is random and independent of z1 with same frequency,
+# this is not a problem
+s1alt <- rnorm(1000000, 0, sqrt(178))
+z1alt <- s1alt / sqrt(178)
+z2alt <- (s1alt + s2) / sqrt(178 + n2)
+sum(z1alt >= x$upper$bound[1] | z2alt >= x$upper$bound[2]) / 1000000
+
+ 
+
+
+FUNCTION: sfPoints 
+TITLE: Pointwise Spending Function 
+DESCRIPTION: 
+The function \code{sfPoints} implements a spending function with values
+specified for an arbitrary set of specified points. It is now recommended to
+use sfLinear rather than sfPoints. Normally \code{sfPoints} will be passed
+to \code{gsDesign} in the parameter \code{sfu} for the upper bound or
+\code{sfl} for the lower bound to specify a spending function family for a
+design. In this case, the user does not need to know the calling sequence,
+just the points they wish to specify. If using \code{sfPoints()} in a
+design, it is recommended to specify how to interpolate between the
+specified points (e.g,, linear interpolation); also consider fitting smooth
+spending functions; see \code{vignette("SpendingFunctionOverview")}.
+ 
+ARGUMENTS: alpha Real value \eqn{> 0} and no more than 1. Normally,
+\code{alpha=0.025} for one-sided Type I error specification or
+\code{alpha=0.1} for Type II error specification. However, this could be set
+to 1 if for descriptive purposes you wish to see the proportion of spending
+as a function of the proportion of sample size/information.
+t A vector of points with increasing values from >0 and <=1.  Values
+of the proportion of sample size/information for which the spending function
+will be computed.
+param A vector of the same length as \code{t} specifying the
+cumulative proportion of spending to corresponding to each point in
+\code{t}; must be >=0 and <=1. 
+EXAMPLE: 
+library(ggplot2)
+# example to specify spending on a pointwise basis
+x <- gsDesign(
+  k = 6, sfu = sfPoints, sfupar = c(.01, .05, .1, .25, .5, 1),
+  test.type = 2
+)
+x
+
+# get proportion of upper spending under null hypothesis
+# at each analysis
+y <- x$upper$prob[, 1] / .025
+
+# change to cumulative proportion of spending
+for (i in 2:length(y))
+  y[i] <- y[i - 1] + y[i]
+
+# this should correspond to input sfupar
+round(y, 6)
+
+# plot these cumulative spending points
+plot(1:6 / 6, y,
+  main = "Pointwise spending function example",
+  xlab = "Proportion of final sample size",
+  ylab = "Cumulative proportion of spending",
+  type = "p"
+)
+
+# approximate this with a t-distribution spending function
+# by fitting 3 points
+tx <- 0:100 / 100
+lines(tx, sfTDist(1, tx, c(c(1, 3, 5) / 6, .01, .1, .5))$spend)
+text(x = .6, y = .9, labels = "Pointwise Spending Approximated by")
+text(x = .6, y = .83, "t-Distribution Spending with 3-point interpolation")
+
+# example without lower spending at initial interim or
+# upper spending at last interim
+x <- gsDesign(
+  k = 3, sfu = sfPoints, sfupar = c(.25, .25),
+  sfl = sfPoints, sflpar = c(0, .25)
+)
+x
+
+ 
+
+
+FUNCTION: sfPower 
+TITLE: Kim-DeMets (power) Spending Function 
+DESCRIPTION: 
+The function \code{sfPower()} implements a Kim-DeMets (power) spending
+function. This is a flexible, one-parameter spending function recommended by
+Jennison and Turnbull (2000). Normally it will be passed to
+\code{gsDesign()} in the parameter \code{sfu} for the upper bound or
+\code{sfl} for the lower bound to specify a spending function family for a
+design. In this case, the user does not need to know the calling sequence.
+The calling sequence is useful, however, when the user wishes to plot a
+spending function as demonstrated below in examples.
+
+A Kim-DeMets spending function takes the form \deqn{f(t;\alpha,\rho)=\alpha
+}{f(t; alpha, rho) = alpha t^rho}\deqn{t^\rho}{f(t; alpha, rho) = alpha t^rho} where \eqn{\rho}{rho} is the value
+passed in \code{param}. See examples below for a range of values of
+\eqn{\rho}{rho} that may be of interest (\code{param=0.75} to \code{3} are
+documented there).
+ 
+ARGUMENTS: alpha Real value \eqn{> 0} and no more than 1. Normally,
+\code{alpha=0.025} for one-sided Type I error specification or
+\code{alpha=0.1} for Type II error specification. However, this could be set
+to 1 if for descriptive purposes you wish to see the proportion of spending
+as a function of the proportion of sample size/information.
+t A vector of points with increasing values from 0 to 1, inclusive.
+Values of the proportion of sample size/information for which the spending
+function will be computed.
+param A single, positive value specifying the \eqn{\rho}{rho}
+parameter for which Kim-DeMets spending is to be computed; allowable range
+is (0,50] 
+EXAMPLE: 
+library(ggplot2)
+# design a 4-analysis trial using a Kim-DeMets spending function
+# for both lower and upper bounds
+x <- gsDesign(k = 4, sfu = sfPower, sfupar = 3, sfl = sfPower, sflpar = 1.5)
+
+# print the design
+x
+
+# plot the spending function using many points to obtain a smooth curve
+# show rho=3 for approximation to O'Brien-Fleming and rho=.75 for
+# approximation to Pocock design.
+# Also show rho=2 for an intermediate spending.
+# Compare these to Hwang-Shih-DeCani spending with gamma=-4,  -2,  1
+t <- 0:100 / 100
+plot(t, sfPower(0.025, t, 3)$spend,
+  xlab = "Proportion of sample size",
+  ylab = "Cumulative Type I error spending",
+  main = "Kim-DeMets (rho) versus Hwang-Shih-DeCani (gamma) Spending",
+  type = "l", cex.main = .9
+)
+lines(t, sfPower(0.025, t, 2)$spend, lty = 2)
+lines(t, sfPower(0.025, t, 0.75)$spend, lty = 3)
+lines(t, sfHSD(0.025, t, 1)$spend, lty = 3, col = 2)
+lines(t, sfHSD(0.025, t, -2)$spend, lty = 2, col = 2)
+lines(t, sfHSD(0.025, t, -4)$spend, lty = 1, col = 2)
+legend(
+  x = c(.0, .375), y = .025 * c(.65, 1), lty = 1:3,
+  legend = c("rho= 3", "rho= 2", "rho= 0.75")
+)
+legend(
+  x = c(.0, .357), y = .025 * c(.65, .85), lty = 1:3, bty = "n", col = 2,
+  legend = c("gamma= -4", "gamma= -2", "gamma=1")
+)
+ 
+
+
+FUNCTION: sfSpecial 
+TITLE: Truncated, trimmed and gapped spending functions 
+DESCRIPTION: 
+The functions \code{sfTruncated()} and \code{sfTrimmed} apply any other
+spending function over a restricted range. This allows eliminating spending
+for early interim analyses when you desire not to stop for the bound being
+specified; this is usually applied to eliminate early tests for a positive
+efficacy finding. The truncation can come late in the trial if you desire to
+stop a trial any time after, say, 90 percent of information is available and
+an analysis is performed. This allows full Type I error spending if the
+final analysis occurs early. Both functions set cumulative spending to 0
+below a 'spending interval' in the interval [0,1], and set cumulative
+spending to 1 above this range. \code{sfTrimmed()} otherwise does not change
+an input spending function that is specified; probably the preferred and
+more intuitive method in most cases. \code{sfTruncated()} resets the time
+scale on which the input spending function is computed to the 'spending
+interval.'
+
+\code{sfGapped()} allows elimination of analyses after some time point in
+the trial; see details and examples.
+
+\code{sfTrimmed} simply computes the value of the input spending function
+and parameters in the sub-range of [0,1], sets spending to 0 below this
+range and sets spending to 1 above this range.
+
+\code{sfGapped} spends outside of the range provided in trange. Below
+trange, the input spending function is used. Above trange, full spending is
+used; i.e., the first analysis performed above the interval in trange is the
+final analysis. As long as the input spending function is strictly
+increasing, this means that the first interim in the interval trange is the
+final interim analysis for the bound being specified.
+
+\code{sfTruncated} compresses spending into a sub-range of [0,1]. The
+parameter \code{param$trange} specifies the range over which spending is to
+occur. Within this range, spending is spent according to the spending
+function specified in \code{param$sf} along with the corresponding spending
+function parameter(s) in \code{param$param}. See example using
+\code{sfLinear} that spends uniformly over specified range.
+ 
+ARGUMENTS: alpha Real value \eqn{> 0} and no more than 1. Normally,
+\code{alpha=0.025} for one-sided Type I error specification or
+\code{alpha=0.1} for Type II error specification. However, this could be set
+to 1 if for descriptive purposes you wish to see the proportion of spending
+as a function of the proportion of sample size or information.
+t A vector of points with increasing values from 0 to 1, inclusive.
+Values of the proportion of sample size or information for which the
+spending function will be computed.
+param a list containing the elements sf (a spendfn object such as
+sfHSD), trange (the range over which the spending function increases from 0
+to 1; 0 <= trange[1]<trange[2] <=1; for sfGapped, trange[1] must be > 0),
+and param (null for a spending function with no parameters or a scalar or
+vector of parameters needed to fully specify the spending function in sf). 
+EXAMPLE: 
+
+
+# Eliminate efficacy spending forany interim at or before 20 percent of information.
+# Complete spending at first interim at or after 80 percent of information.
+tx <- (0:100) / 100
+s <- sfHSD(alpha = .05, t = tx, param = 1)$spend
+x <- data.frame(t = tx, Spending = s, sf = "Original spending")
+param <- list(trange = c(.2, .8), sf = sfHSD, param = 1)
+s <- sfTruncated(alpha = .05, t = tx, param = param)$spend
+x <- rbind(x, data.frame(t = tx, Spending = s, sf = "Truncated"))
+s <- sfTrimmed(alpha = .05, t = tx, param = param)$spend
+x <- rbind(x, data.frame(t = tx, Spending = s, sf = "Trimmed"))
+s <- sfGapped(alpha = .05, t = tx, param = param)$spend
+x <- rbind(x, data.frame(t = tx, Spending = s, sf = "Gapped"))
+ggplot2::ggplot(x, ggplot2::aes(x = t, y = Spending, col = sf)) + 
+ggplot2::geom_line()
+
+
+# now apply the sfTrimmed version in gsDesign
+# initially, eliminate the early efficacy analysis
+# note: final spend must occur at > next to last interim
+x <- gsDesign(
+  k = 4, n.fix = 100, sfu = sfTrimmed,
+  sfupar = list(sf = sfHSD, param = 1, trange = c(.3, .9))
+)
+
+# first upper bound=20 means no testing there
+gsBoundSummary(x)
+
+# now, do not eliminate early efficacy analysis
+param <- list(sf = sfHSD, param = 1, trange = c(0, .9))
+x <- gsDesign(k = 4, n.fix = 100, sfu = sfTrimmed, sfupar = param)
+
+# The above means if final analysis is done a little early, all spending can occur
+# Suppose we set calendar date for final analysis based on
+# estimated full information, but come up with only 97 pct of plan
+xA <- gsDesign(
+  k = x$k, n.fix = 100, n.I = c(x$n.I[1:3], .97 * x$n.I[4]),
+  test.type = x$test.type,
+  maxn.IPlan = x$n.I[x$k],
+  sfu = sfTrimmed, sfupar = param
+)
+# now accelerate without the trimmed spending function
+xNT <- gsDesign(
+  k = x$k, n.fix = 100, n.I = c(x$n.I[1:3], .97 * x$n.I[4]),
+  test.type = x$test.type,
+  maxn.IPlan = x$n.I[x$k],
+  sfu = sfHSD, sfupar = 1
+)
+# Check last bound if analysis done at early time
+x$upper$bound[4]
+# Now look at last bound if done at early time with trimmed spending function
+# that allows capture of full alpha
+xA$upper$bound[4]
+# With original spending function, we don't get full alpha and therefore have
+# unnecessarily stringent bound at final analysis
+xNT$upper$bound[4]
+
+# note that if the last analysis is LATE, all 3 approaches should give the same
+# final bound that has a little larger z-value
+xlate <- gsDesign(
+  k = x$k, n.fix = 100, n.I = c(x$n.I[1:3], 1.25 * x$n.I[4]),
+  test.type = x$test.type,
+  maxn.IPlan = x$n.I[x$k],
+  sfu = sfHSD, sfupar = 1
+)
+xlate$upper$bound[4]
+
+# eliminate futility after the first interim analysis
+# note that by setting trange[1] to .2, the spend at t=.2 is used for the first
+# interim at or after 20 percent of information
+x <- gsDesign(n.fix = 100, sfl = sfGapped, sflpar = list(trange = c(.2, .9), sf = sfHSD, param = 1))
+ 
+
+
+FUNCTION: sfTDist 
+TITLE: t-distribution Spending Function 
+DESCRIPTION: 
+The function \code{sfTDist()} provides perhaps the maximum flexibility among
+spending functions provided in the \code{gsDesign} package. This function
+allows fitting of three points on a cumulative spending function curve; in
+this case, six parameters are specified indicating an x and a y coordinate
+for each of 3 points. Normally this function will be passed to
+\code{gsDesign()} in the parameter \code{sfu} for the upper bound or
+\code{sfl} for the lower bound to specify a spending function family for a
+design. In this case, the user does not need to know the calling sequence.
+The calling sequence is useful, however, when the user wishes to plot a
+spending function as demonstrated below in examples.
+
+The t-distribution spending function takes the form \deqn{f(t;\alpha)=\alpha
+F(a+bF^{-1}(t))} where \eqn{F()} is a cumulative t-distribution function
+with \code{df} degrees of freedom and \eqn{F^{-1}()} is its inverse.
+ 
+ARGUMENTS: alpha Real value \eqn{> 0} and no more than 1. Normally,
+\code{alpha=0.025} for one-sided Type I error specification or
+\code{alpha=0.1} for Type II error specification. However, this could be set
+to 1 if for descriptive purposes you wish to see the proportion of spending
+as a function of the proportion of sample size/information.
+t A vector of points with increasing values from 0 to 1, inclusive.
+Values of the proportion of sample size/information for which the spending
+function will be computed.
+param In the three-parameter specification, the first paramater (a)
+may be any real value, the second (b) any positive value, and the third
+parameter (df=degrees of freedom) any real value 1 or greater. When
+\code{gsDesign()} is called with a t-distribution spending function, this is
+the parameterization printed.  The five parameter specification is
+\code{c(t1,t2,u1,u2,df)} where the objective is that the resulting
+cumulative proportion of spending at \code{t} represented by \code{sf(t)}
+satisfies \code{sf(t1)=alpha*u1}, \code{sf(t2)=alpha*u2}. The t-distribution
+used has \code{df} degrees of freedom.  In this parameterization, all the
+first four values must be between 0 and 1 and \code{t1 < t2}, \code{u1 <
+u2}.  The final parameter is any real value of 1 or more. This
+parameterization can fit any two points satisfying these requirements.  The
+six parameter specification attempts to fit 3 points, but does not have
+flexibility to fit any three points.  In this case, the specification for
+\code{param} is c(t1,t2,t3,u1,u2,u3) where the objective is that
+\code{sf(t1)=alpha*u1}, \code{sf(t2)=alpha*u2}, and \code{sf(t3)=alpha*u3}.
+See examples to see what happens when points are specified that cannot be
+fit. 
+EXAMPLE: 
+library(ggplot2)
+# 3-parameter specification: a,  b,  df
+sfTDist(1, 1:5 / 6, c(-1, 1.5, 4))$spend
+
+# 5-parameter specification fits 2 points,  in this case
+# the 1st 2 interims are at 25% and 50% of observations with
+# cumulative error spending of 10% and 20%, respectively
+# final parameter is df
+sfTDist(1, 1:3 / 4, c(.25, .5, .1, .2, 4))$spend
+
+# 6-parameter specification fits 3 points
+# Interims are at 25%. 50% and 75% of observations
+# with cumulative spending of 10%, 20% and 50%, respectively
+# Note: not all 3 point combinations can be fit
+sfTDist(1, 1:3 / 4, c(.25, .5, .75, .1, .2, .5))$spend
+
+# Example of error message when the 3-points specified
+# in the 6-parameter version cannot be fit
+try(sfTDist(1, 1:3 / 4, c(.25, .5, .75, .1, .2, .3))$errmsg)
+
+# sfCauchy (sfTDist with 1 df) and sfNormal (sfTDist with infinite df)
+# show the limits of what sfTdist can fit
+# for the third point are u3 from 0.344 to 0.6 when t3=0.75
+sfNormal(1, 1:3 / 4, c(.25, .5, .1, .2))$spend[3]
+sfCauchy(1, 1:3 / 4, c(.25, .5, .1, .2))$spend[3]
+
+# plot a few t-distribution spending functions fitting
+# t=0.25, .5 and u=0.1, 0.2
+# to demonstrate the range of flexibility
+t <- 0:100 / 100
+plot(t, sfTDist(0.025, t, c(.25, .5, .1, .2, 1))$spend,
+  xlab = "Proportion of final sample size",
+  ylab = "Cumulative Type I error spending",
+  main = "t-Distribution Spending Function Examples", type = "l"
+)
+lines(t, sfTDist(0.025, t, c(.25, .5, .1, .2, 1.5))$spend, lty = 2)
+lines(t, sfTDist(0.025, t, c(.25, .5, .1, .2, 3))$spend, lty = 3)
+lines(t, sfTDist(0.025, t, c(.25, .5, .1, .2, 10))$spend, lty = 4)
+lines(t, sfTDist(0.025, t, c(.25, .5, .1, .2, 100))$spend, lty = 5)
+legend(
+  x = c(.0, .3), y = .025 * c(.7, 1), lty = 1:5,
+  legend = c("df = 1", "df = 1.5", "df = 3", "df = 10", "df = 100")
+)
+ 
+
+
+FUNCTION: sfXG 
+TITLE: Xi and Gallo conditional error spending functions 
+DESCRIPTION: 
+Error spending functions based on Xi and Gallo (2019).
+The intention of these spending functions is to provide bounds where the
+conditional error at an efficacy bound is approximately equal to the
+conditional error rate for crossing the final analysis bound.
+This is explained in greater detail in
+\code{vignette("ConditionalErrorSpending")}.
+ 
+ARGUMENTS: alpha Real value \eqn{> 0} and no more than 1. Normally,
+\code{alpha = 0.025} for one-sided Type I error specification or
+\code{alpha = 0.1} for Type II error specification.
+However, this could be set to 1 if for descriptive purposes you wish
+to see the proportion of spending as a function of the proportion of
+sample size/information.
+t A vector of points with increasing values from 0 to 1, inclusive.
+Values of the proportion of sample size/information for which the spending
+function will be computed.
+param This is the gamma parameter in the Xi and Gallo
+spending function paper, distinct for each function.
+See the details section for functional forms and range of param
+acceptable for each spending function. 
+EXAMPLE: 
+# Plot conditional error spending spending functions across
+# a range of values of interest
+pts <- seq(0, 1.2, 0.01)
+pal <- palette()
+
+plot(
+  pts,
+  sfXG1(0.025, pts, 0.5)$spend,
+  type = "l", col = pal[1],
+  xlab = "t", ylab = "Spending", main = "Xi-Gallo, Method 1"
+)
+lines(pts, sfXG1(0.025, pts, 0.6)$spend, col = pal[2])
+lines(pts, sfXG1(0.025, pts, 0.75)$spend, col = pal[3])
+lines(pts, sfXG1(0.025, pts, 0.9)$spend, col = pal[4])
+legend(
+  "topleft",
+  legend = c("gamma=0.5", "gamma=0.6", "gamma=0.75", "gamma=0.9"),
+  col = pal[1:4],
+  lty = 1
+)
+
+plot(
+  pts,
+  sfXG2(0.025, pts, 0.14)$spend,
+  type = "l", col = pal[1],
+  xlab = "t", ylab = "Spending", main = "Xi-Gallo, Method 2"
+)
+lines(pts, sfXG2(0.025, pts, 0.25)$spend, col = pal[2])
+lines(pts, sfXG2(0.025, pts, 0.5)$spend, col = pal[3])
+lines(pts, sfXG2(0.025, pts, 0.75)$spend, col = pal[4])
+lines(pts, sfXG2(0.025, pts, 0.9)$spend, col = pal[5])
+legend(
+  "topleft",
+  legend = c("gamma=0.14", "gamma=0.25", "gamma=0.5", "gamma=0.75", "gamma=0.9"),
+  col = pal[1:5],
+  lty = 1
+)
+
+plot(
+  pts,
+  sfXG3(0.025, pts, 0.013)$spend,
+  type = "l", col = pal[1],
+  xlab = "t", ylab = "Spending", main = "Xi-Gallo, Method 3"
+)
+lines(pts, sfXG3(0.025, pts, 0.02)$spend, col = pal[2])
+lines(pts, sfXG3(0.025, pts, 0.05)$spend, col = pal[3])
+lines(pts, sfXG3(0.025, pts, 0.1)$spend, col = pal[4])
+lines(pts, sfXG3(0.025, pts, 0.25)$spend, col = pal[5])
+lines(pts, sfXG3(0.025, pts, 0.5)$spend, col = pal[6])
+lines(pts, sfXG3(0.025, pts, 0.75)$spend, col = pal[7])
+lines(pts, sfXG3(0.025, pts, 0.9)$spend, col = pal[8])
+legend(
+  "bottomright",
+  legend = c(
+    "gamma=0.013", "gamma=0.02", "gamma=0.05", "gamma=0.1",
+    "gamma=0.25", "gamma=0.5", "gamma=0.75", "gamma=0.9"
+  ),
+  col = pal[1:8],
+  lty = 1
+)
+ 
+
+
+FUNCTION: spendingFunction 
+TITLE: Spending Function 
+DESCRIPTION: 
+Spending Function
+ 
+ARGUMENTS: object A spendfn object to be summarized.
+... Not currently used.
+alpha Real value \eqn{> 0} and no more than 1. Defaults in calls to
+\code{gsDesign()} are \code{alpha=0.025} for one-sided Type I error
+specification and \code{alpha=0.1} for Type II error specification.
+However, this could be set to 1 if, for descriptive purposes, you wish to
+see the proportion of spending as a function of the proportion of sample
+size/information.
+t A vector of points with increasing values from 0 to 1, inclusive.
+Values of the proportion of sample size/information for which the spending
+function will be computed.
+param A single real value or a vector of real values specifying the
+spending function parameter(s); this must be appropriately matched to the
+spending function specified. 
+EXAMPLE: 
+# Example 1: simple example showing what most users need to know
+
+# Design a 4-analysis trial using a Hwang-Shih-DeCani spending function
+# for both lower and upper bounds
+x <- gsDesign(k = 4, sfu = sfHSD, sfupar = -2, sfl = sfHSD, sflpar = 1)
+
+# Print the design
+x
+# Summarize the spending functions
+summary(x$upper)
+summary(x$lower)
+
+# Plot the alpha- and beta-spending functions
+plot(x, plottype = 5)
+
+# What happens to summary if we used a boundary function design
+x <- gsDesign(test.type = 2, sfu = "OF")
+y <- gsDesign(test.type = 1, sfu = "WT", sfupar = .25)
+summary(x$upper)
+summary(y$upper)
+
+# Example 2: advanced example: writing a new spending function
+# Most users may ignore this!
+
+# Implementation of 2-parameter version of
+# beta distribution spending function
+# assumes t and alpha are appropriately specified (does not check!)
+sfbdist <- function(alpha, t, param) {
+  # Check inputs
+  checkVector(param, "numeric", c(0, Inf), c(FALSE, TRUE))
+  if (length(param) != 2) {
+    stop(
+      "b-dist example spending function parameter must be of length 2"
+    )
+  }
+
+  # Set spending using cumulative beta distribution and return
+  x <- list(
+    name = "B-dist example", param = param, parname = c("a", "b"),
+    sf = sfbdist, spend = alpha *
+      pbeta(t, param[1], param[2]), bound = NULL, prob = NULL
+  )
+
+  class(x) <- "spendfn"
+
+  x
+}
+
+# Now try it out!
+# Plot some example beta (lower bound) spending functions using
+# the beta distribution spending function
+t <- 0:100 / 100
+plot(
+  t, sfbdist(1, t, c(2, 1))$spend,
+  type = "l",
+  xlab = "Proportion of information",
+  ylab = "Cumulative proportion of total spending",
+  main = "Beta distribution Spending Function Example"
+)
+lines(t, sfbdist(1, t, c(6, 4))$spend, lty = 2)
+lines(t, sfbdist(1, t, c(.5, .5))$spend, lty = 3)
+lines(t, sfbdist(1, t, c(.6, 2))$spend, lty = 4)
+legend(
+  x = c(.65, 1), y = 1 * c(0, .25), lty = 1:4,
+  legend = c("a=2, b=1", "a=6, b=4", "a=0.5, b=0.5", "a=0.6, b=2")
+)
+ 
+
+
+FUNCTION: ssrCP 
+TITLE: Sample size re-estimation based on conditional power 
+DESCRIPTION: 
+\code{ssrCP()} adapts 2-stage group sequential designs to 2-stage sample
+size re-estimation designs based on interim analysis conditional power. This
+is a simple case of designs developed by Lehmacher and Wassmer, Biometrics
+(1999). The conditional power designs of Bauer and Kohne (1994), 
+Proschan and Hunsberger (1995), Cui, Hung and Wang (1999) and Liu and Chi (2001), 
+Gao, Ware and Mehta (2008), and Mehta and Pocock (2011). Either the estimated
+treatment effect at the interim analysis or any chosen effect size can be
+used for sample size re-estimation. If not done carefully, these designs can
+be very inefficient. It is probably a good idea to compare any design to a
+simpler group sequential design; see, for example, Jennison and Turnbull
+(2003). The a assumes a small Type I error is included with the interim
+analysis and that the design is an adaptation from a 2-stage group
+sequential design Related functions include 3 pre-defined combination test
+functions (\code{z2NC}, \code{z2Z}, \code{z2Fisher}) that represent the
+inverse normal combination test (Lehmacher and Wassmer, 1999), the
+sufficient statistic for the complete data, and Fisher's combination test.
+\code{Power.ssrCP} computes unconditional power for a conditional power
+design derived by \code{ssrCP}.
+
+\code{condPower} is a supportive routine that also is interesting in its own
+right; it computes conditional power of a combination test given an interim
+test statistic, stage 2 sample size and combination test statistic. While
+the returned data frame should make general plotting easy, the function
+\code{plot.ssrCP()} prints a plot of study sample size by stage 1 outcome
+with multiple x-axis labels for stage 1 z-value, conditional power, and
+stage 1 effect size relative to the effect size for which the underlying
+group sequential design was powered.
+
+Sample size re-estimation using conditional power and an interim estimate of
+treatment effect was proposed by several authors in the 1990's (see
+references below). Statistical testing for these original methods was based
+on combination tests since Type I error could be inflated by using a
+sufficient statistic for testing at the end of the trial. Since 2000, more
+efficient variations of these conditional power designs have been developed.
+Fully optimized designs have also been derived (Posch et all, 2003,
+Lokhnygina and Tsiatis, 2008). Some of the later conditional power methods
+allow use of sufficient statistics for testing (Chen, DeMets and Lan, 2004,
+Gao, Ware and Mehta, 2008, and Mehta and Pocock, 2011).
+
+The methods considered here are extensions of 2-stage group sequential
+designs that include both an efficacy and a futility bound at the planned
+interim analysis. A maximum fold-increase in sample size (\code{maxinc})from
+the supplied group sequential design (\code{x}) is specified by the user, as
+well as a range of conditional power (\code{cpadj}) where sample size should
+be re-estimated at the interim analysis, 1-the targeted conditional power to
+be used for sample size re-estimation (\code{beta}) and a combination test
+statistic (\code{z2}) to be used for testing at the end of the trial. The
+input value \code{overrun} represents incremental enrollment not included in
+the interim analysis that is not included in the analysis; this is used for
+calculating the required number of patients enrolled to complete the trial.
+
+Whereas most of the methods proposed have been based on using the interim
+estimated treatment effect size (default for \code{ssrCP}), the variable
+\code{theta} allows the user to specify an alternative; Liu and Chi (2001)
+suggest that using the parameter value for which the trial was originally
+powered is a good choice.
+ 
+ARGUMENTS: z1 Scalar or vector with interim standardized Z-value(s). Input of
+multiple values makes it easy to plot the revised sample size as a function
+of the interim test statistic.
+n2 stage 2 sample size to be used in computing sufficient statistic
+when combining stage 1 and 2 test statistics.
+z2 a combination function that returns a test statistic cutoff for
+the stage 2 test based in the interim test statistic supplied in \code{z1},
+the design \code{x} and the stage 2 sample size.
+theta If \code{NULL} (default), conditional power calculation will be
+based on estimated interim treatment effect. Otherwise, \code{theta} is the
+standardized effect size used for conditional power calculation. Using the
+alternate hypothesis treatment effect can be more efficient than the
+estimated effect size; see Liu and Chi, Biometrics (2001).
+x A group sequential design with 2 stages (\code{k=2}) generated by
+\code{\link{gsDesign}}. For \code{plot.ssrCP}, \code{x} is a design returned
+by \code{ssrCP()}.
+... Allows passing of arguments that may be needed by the
+user-supplied function, codez2. In the case of \code{plot.ssrCP()}, allows
+passing more graphical parameters.
+maxinc Maximum fold-increase from planned maximum sample size in
+underlying group sequential design provided in \code{x}.
+overrun The number of patients enrolled before the interim analysis
+is completed who are not included in the interim analysis.
+beta Targeted Type II error (1 - targeted conditional power); used
+for conditional power in sample size reestimation.
+cpadj Range of values strictly between 0 and 1 specifying the range
+of interim conditional power for which sample size re-estimation is to be
+performed. Outside of this range, the sample size supplied in \code{x} is
+used.
+z1ticks Test statistic values at which tick marks are to be made on
+x-axis; automatically calculated under default of \code{NULL}
+mar Plot margins; see help for \code{par}
+ylab y-axis label
+xlaboffset offset on x-axis for printing x-axis labels
+lty line type for stage 2 sample size
+col line color for stage 2 sample size
+delta Natural parameter values for power calculation; see
+\code{\link{gsDesign}} for a description of how this is related to
+\code{theta}.
+r Integer value (>= 1 and <= 80) controlling the number of numerical
+integration grid points. Default is 18, as recommended by Jennison and
+Turnbull (2000). Grid points are spread out in the tails for accurate
+probability calculations. Larger values provide more grid points and greater
+accuracy but slow down computation. Jennison and Turnbull (p. 350) note an
+accuracy of \eqn{10^{-6}} with \code{r = 16}. This parameter is normally
+not changed by users. 
+EXAMPLE: 
+library(ggplot2)
+# quick trick for simple conditional power based on interim z-value, stage 1 and 2 sample size
+# assumed treatment effect and final alpha level
+# and observed treatment effect
+alpha <- .01 # set final nominal significance level
+timing <- .6 # set proportion of sample size, events or statistical information at IA
+n2 <- 40 # set stage 2 sample size events or statistical information
+hr <- .6 # for this example we will derive conditional power based on hazard ratios
+n.fix <- nEvents(hr=hr,alpha=alpha) # you could otherwise make n.fix an arbitrary positive value
+# this just derives a group sequential design that should not change sample size from n.fix
+# due to stringent IA bound
+x <- gsDesign(k=2,n.fix=n.fix,alpha=alpha,test.type=1,sfu=sfHSD,
+sfupar=-20,timing=timing,delta1=log(hr))
+# derive effect sizes for which you wish to compute conditional power
+hrpostIA = seq(.4,1,.05)
+# in the following, we convert HR into standardized effect size based on the design in x
+powr <- condPower(x=x,z1=1,n2=x$n.I[2]-x$n.I[1],theta=log(hrpostIA)/x$delta1*x$theta[2])
+ggplot(
+  data.frame(
+    x = hrpostIA,
+    y = condPower(
+      x = x,
+      z1 = 1,
+      n2 = x$n.I[2] - x$n.I[1],
+      theta = log(hrpostIA) / x$delta1 * x$theta[2]
+    )
+  ),
+  aes(x = x, y = y)
+) +
+  geom_line() +
+  labs(
+    x = "HR post IA",
+    y = "Conditional power",
+    title = "Conditional power as a function of assumed HR"
+  )
+
+# Following is a template for entering parameters for ssrCP
+# Natural parameter value null and alternate hypothesis values
+delta0 <- 0
+delta1 <- 1
+# timing of interim analysis for underlying group sequential design
+timing <- .5
+# upper spending function
+sfu <- sfHSD
+# upper spending function paramater
+sfupar <- -12
+# maximum sample size inflation
+maxinflation <- 2
+# assumed enrollment overrrun at IA
+overrun <- 25
+# interim z-values for plotting
+z <- seq(0, 4, .025)
+# Type I error (1-sided)
+alpha <- .025
+# Type II error for design
+beta <- .1
+# Fixed design sample size
+n.fix <- 100
+# conditional power interval where sample
+# size is to be adjusted
+cpadj <- c(.3, .9)
+# targeted Type II error when adapting sample size
+betastar <- beta
+# combination test (built-in options are: z2Z, z2NC, z2Fisher)
+z2 <- z2NC
+
+# use the above parameters to generate design
+# generate a 2-stage group sequential design with
+x <- gsDesign(
+  k = 2, n.fix = n.fix, timing = timing, sfu = sfu, sfupar = sfupar,
+  alpha = alpha, beta = beta, delta0 = delta0, delta1 = delta1
+)
+# extend this to a conditional power design
+xx <- ssrCP(
+  x = x, z1 = z, overrun = overrun, beta = betastar, cpadj = cpadj,
+  maxinc = maxinflation, z2 = z2
+)
+# plot the stage 2 sample size
+plot(xx)
+# demonstrate overlays on this plot
+# overlay with densities for z1 under different hypotheses
+lines(z, 80 + 240 * dnorm(z, mean = 0), col = 2)
+lines(z, 80 + 240 * dnorm(z, mean = sqrt(x$n.I[1]) * x$theta[2]), col = 3)
+lines(z, 80 + 240 * dnorm(z, mean = sqrt(x$n.I[1]) * x$theta[2] / 2), col = 4)
+lines(z, 80 + 240 * dnorm(z, mean = sqrt(x$n.I[1]) * x$theta[2] * .75), col = 5)
+axis(side = 4, at = 80 + 240 * seq(0, .4, .1), labels = as.character(seq(0, .4, .1)))
+mtext(side = 4, expression(paste("Density for ", z[1])), line = 2)
+text(x = 1.5, y = 90, col = 2, labels = expression(paste("Density for ", theta, "=0")))
+text(x = 3.00, y = 180, col = 3, labels = expression(paste("Density for ", theta, "=",
+ theta[1])))
+text(x = 1.00, y = 180, col = 4, labels = expression(paste("Density for ", theta, "=",
+ theta[1], "/2")))
+text(x = 2.5, y = 140, col = 5, labels = expression(paste("Density for ", theta, "=",
+ theta[1], "*.75")))
+# overall line for max sample size
+nalt <- xx$maxinc * x$n.I[2]
+lines(x = par("usr")[1:2], y = c(nalt, nalt), lty = 2)
+
+# compare above design with different combination tests
+# use sufficient statistic for final testing
+xxZ <- ssrCP(
+  x = x, z1 = z, overrun = overrun, beta = betastar, cpadj = cpadj,
+  maxinc = maxinflation, z2 = z2Z
+)
+# use Fisher combination test for final testing
+xxFisher <- ssrCP(
+  x = x, z1 = z, overrun = overrun, beta = betastar, cpadj = cpadj,
+  maxinc = maxinflation, z2 = z2Fisher
+)
+# combine data frames from these designs
+y <- rbind(
+  data.frame(xx$dat, Test = "Normal combination"),
+  data.frame(xxZ$dat, Test = "Sufficient statistic"),
+  data.frame(xxFisher$dat, Test = "Fisher combination")
+)
+# plot stage 2 statistic required for positive combination test
+ggplot2::ggplot(data = y, ggplot2::aes(x = z1, y = z2, col = Test)) + 
+ggplot2::geom_line()
+# plot total sample size versus stage 1 test statistic
+ggplot2::ggplot(data = y, ggplot2::aes(x = z1, y = n2, col = Test)) + 
+ggplot2::geom_line()
+# check achieved Type I error for sufficient statistic design
+Power.ssrCP(x = xxZ, theta = 0)
+
+# compare designs using observed vs planned theta for conditional power
+xxtheta1 <- ssrCP(
+  x = x, z1 = z, overrun = overrun, beta = betastar, cpadj = cpadj,
+  maxinc = maxinflation, z2 = z2, theta = x$delta
+)
+# combine data frames for the 2 designs
+y <- rbind(
+  data.frame(xx$dat, "CP effect size" = "Obs. at IA"),
+  data.frame(xxtheta1$dat, "CP effect size" = "Alt. hypothesis")
+)
+# plot stage 2 sample size by design
+ggplot2::ggplot(data = y, ggplot2::aes(x = z1, y = n2, col = CP.effect.size)) + 
+ggplot2::geom_line()
+# compare power and expected sample size
+y1 <- Power.ssrCP(x = xx)
+y2 <- Power.ssrCP(x = xxtheta1)
+# combine data frames for the 2 designs
+y3 <- rbind(
+  data.frame(y1, "CP effect size" = "Obs. at IA"),
+  data.frame(y2, "CP effect size" = "Alt. hypothesis")
+)
+# plot expected sample size by design and effect size
+ggplot2::ggplot(data = y3, ggplot2::aes(x = delta, y = en, col = CP.effect.size)) + 
+ggplot2::geom_line() +
+ggplot2::xlab(expression(delta)) + 
+ggplot2::ylab("Expected sample size")
+# plot power by design and effect size
+ggplot2::ggplot(data = y3, ggplot2::aes(x = delta, y = Power, col = CP.effect.size)) + 
+ggplot2::geom_line() + 
+ggplot2::xlab(expression(delta))
+ 
+
+
+FUNCTION: toBinomialExact 
+TITLE: Translate survival design bounds to exact binomial bounds 
+DESCRIPTION: 
+Translate survival design bounds to exact binomial bounds
+ 
+ARGUMENTS: x An object of class \code{gsSurv}; i.e., an object generated by
+the \code{gsSurv()} function.
+observedEvents If NULL (default), targeted timing of analyses will come from \code{x$n.I}. 
+Otherwise, this should be vector of increasing positive integers with at most 1 value \code{>= x$n.IPlan} and of length at least 2.
+Only one value can be greater than or equal to \code{x$maxn.IPlan}. 
+This determines the case count at each analysis performed. 
+Primarily, this is used for updating a design at the time of analysis. 
+EXAMPLE: 
+# The following code derives the group sequential design using the method
+# of Lachin and Foulkes
+
+x <- gsSurv(
+  k = 3,                 # 3 analyses
+  test.type = 4,         # Non-binding futility bound 1 (no futility bound) and 4 are allowable
+  alpha = .025,          # 1-sided Type I error
+  beta = .1,             # Type II error (1 - power)
+  timing = c(0.45, 0.7), # Proportion of final planned events at interims
+  sfu = sfHSD,           # Efficacy spending function
+  sfupar = -4,           # Parameter for efficacy spending function
+  sfl = sfLDOF,          # Futility spending function; not needed for test.type = 1
+  sflpar = 0,            # Parameter for futility spending function
+  lambdaC = .001,        # Exponential failure rate
+  hr = 0.3,              # Assumed proportional hazard ratio (1 - vaccine efficacy = 1 - VE)
+  hr0 = 0.7,             # Null hypothesis VE
+  eta = 5e-04,           # Exponential dropout rate
+  gamma = 10,            # Piecewise exponential enrollment rates
+  R = 16,                # Time period durations for enrollment rates in gamma
+  T = 24,                # Planned trial duration
+  minfup = 8,            # Planned minimum follow-up
+  ratio = 3              # Randomization ratio (experimental:control)
+)
+# Convert bounds to exact binomial bounds
+toBinomialExact(x)
+# Update bounds at time of analysis
+toBinomialExact(x, observedEvents = c(20,55,80))
+ 
+
+
+FUNCTION: toInteger 
+TITLE: Translate group sequential design to integer events (survival designs)
+or sample size (other designs) 
+DESCRIPTION: 
+Translate group sequential design to integer events (survival designs)
+or sample size (other designs)
+ 
+ARGUMENTS: x An object of class \code{gsDesign} or \code{gsSurv}.
+ratio Usually corresponds to experimental:control sample size ratio.
+If an integer is provided, rounding is done to a multiple of
+\code{ratio + 1}. See details.
+If input is non integer, rounding is done to the nearest integer or
+nearest larger integer depending on \code{roundUpFinal}.
+roundUpFinal Sample size is rounded up to a value of \code{ratio + 1}
+with the default \code{roundUpFinal = TRUE} if \code{ratio} is a
+non-negative integer.
+If \code{roundUpFinal = FALSE} and \code{ratio} is a non-negative integer,
+sample size is rounded to the nearest multiple of \code{ratio + 1}.
+For event counts, \code{roundUpFinal = TRUE} rounds final event count up;
+otherwise, just rounded if \code{roundUpFinal = FALSE}.
+See details. 
+EXAMPLE: 
+# The following code derives the group sequential design using the method
+# of Lachin and Foulkes
+
+x <- gsSurv(
+  k = 3,                 # 3 analyses
+  test.type = 4,         # Non-binding futility bound 1 (no futility bound) and 4 are allowable
+  alpha = .025,          # 1-sided Type I error
+  beta = .1,             # Type II error (1 - power)
+  timing = c(0.45, 0.7), # Proportion of final planned events at interims
+  sfu = sfHSD,           # Efficacy spending function
+  sfupar = -4,           # Parameter for efficacy spending function
+  sfl = sfLDOF,          # Futility spending function; not needed for test.type = 1
+  sflpar = 0,            # Parameter for futility spending function
+  lambdaC = .001,        # Exponential failure rate
+  hr = 0.3,              # Assumed proportional hazard ratio (1 - vaccine efficacy = 1 - VE)
+  hr0 = 0.7,             # Null hypothesis VE
+  eta = 5e-04,           # Exponential dropout rate
+  gamma = 10,            # Piecewise exponential enrollment rates
+  R = 16,                # Time period durations for enrollment rates in gamma
+  T = 24,                # Planned trial duration
+  minfup = 8,            # Planned minimum follow-up
+  ratio = 3              # Randomization ratio (experimental:control)
+)
+# Convert sample size to multiple of ratio + 1 = 4, round event counts.
+# Default is to round up both event count and sample size for final analysis
+toInteger(x)
+ 
+
+
+FUNCTION: varBinomial 
+TITLE: Testing, Confidence Intervals, Sample Size and Power for Comparing Two
+Binomial Rates 
+DESCRIPTION: 
+Support is provided for sample size estimation, power, testing, confidence
+intervals and simulation for fixed sample size trials (that is, not group
+sequential or adaptive) with two arms and binary outcomes.  Both superiority
+and non-inferiority trials are considered. While all routines default to
+comparisons of risk-difference, options to base computations on risk-ratio
+and odds-ratio are also included.
+
+\code{nBinomial()} computes sample size or power using the method of
+Farrington and Manning (1990) for a trial to test the difference between two
+binomial event rates.  The routine can be used for a test of superiority or
+non-inferiority. For a design that tests for superiority \code{nBinomial()}
+is consistent with the method of Fleiss, Tytun, and Ury (but without the
+continuity correction) to test for differences between event rates. This
+routine is consistent with the Hmisc package routines \code{bsamsize} and
+\code{bpower} for superiority designs. Vector arguments allow computing
+sample sizes for multiple scenarios for comparative purposes.
+
+\code{testBinomial()} computes a Z- or Chi-square-statistic that compares
+two binomial event rates using the method of Miettinen and Nurminen (1980).
+This can be used for superiority or non-inferiority testing. Vector
+arguments allow easy incorporation into simulation routines for fixed, group
+sequential and adaptive designs.
+
+\code{ciBinomial()} computes confidence intervals for 1) the difference
+between two rates, 2) the risk-ratio for two rates or 3) the odds-ratio for
+two rates. This procedure provides inference that is consistent with
+\code{testBinomial()} in that the confidence intervals are produced by
+inverting the testing procedures in \code{testBinomial()}. The Type I error
+\code{alpha} input to \code{ciBinomial} is always interpreted as 2-sided.
+
+\code{simBinomial()} performs simulations to estimate the power for a
+Miettinen and Nurminen (1985) test comparing two binomial rates for
+superiority or non-inferiority.  As noted in documentation for
+\code{bpower.sim()} in the HMisc package, by using \code{testBinomial()} you
+can see that the formulas without any continuity correction are quite
+accurate.  In fact, Type I error for a continuity-corrected test is
+significantly lower (Gordon and Watson, 1996) than the nominal rate.  Thus,
+as a default no continuity corrections are performed.
+
+\code{varBinomial} computes blinded estimates of the variance of the
+estimate of 1) event rate differences, 2) logarithm of the risk ratio, or 3)
+logarithm of the odds ratio. This is intended for blinded sample size
+re-estimation for comparative trials with a binary outcome.
+
+Testing is 2-sided when a Chi-square statistic is used and 1-sided when a
+Z-statistic is used. Thus, these 2 options will produce substantially
+different results, in general. For non-inferiority, 1-sided testing is
+appropriate.
+
+You may wish to round sample sizes up using \code{ceiling()}.
+
+Farrington and Manning (1990) begin with event rates \code{p1} and \code{p2}
+under the alternative hypothesis and a difference between these rates under
+the null hypothesis, \code{delta0}. From these values, actual rates under
+the null hypothesis are computed, which are labeled \code{p10} and
+\code{p20} when \code{outtype=3}. The rates \code{p1} and \code{p2} are used
+to compute a variance for a Z-test comparing rates under the alternative
+hypothesis, while \code{p10} and \code{p20} are used under the null
+hypothesis. This computational method is also used to estimate variances in
+\code{varBinomial()} based on the overall event rate observed and the input
+treatment difference specified in \code{delta0}.
+
+Sample size with \code{scale="Difference"} produces an error if
+\code{p1-p2=delta0}.  Normally, the alternative hypothesis under
+consideration would be \code{p1-p2-delta0}$>0$. However, the alternative can
+have \code{p1-p2-delta0}$<0$.
+ 
+ARGUMENTS: x1 Number of \dQuote{successes} in the control group
+x2 Number of \dQuote{successes} in the experimental group
+n1 Number of observations in the control group
+n2 Number of observations in the experimental group
+alpha type I error; see \code{sided} below to distinguish between 1-
+and 2-sided tests
+adj With \code{adj=1}, the standard variance with a continuity
+correction is used for a Miettinen and Nurminen test statistic This includes
+a factor of \eqn{n / (n - 1)} where \eqn{n} is the total sample size. If
+\code{adj} is not 1, this factor is not applied. The default is \code{adj=0}
+since nominal Type I error is generally conservative with \code{adj=1}
+(Gordon and Watson, 1996).
+scale \dQuote{Difference}, \dQuote{RR}, \dQuote{OR}; see the
+\code{scale} parameter documentation above and Details.  This is a scalar
+argument.
+p1 event rate in group 1 under the alternative hypothesis
+p2 event rate in group 2 under the alternative hypothesis
+beta type II error
+delta0 A value of 0 (the default) always represents no difference
+between treatment groups under the null hypothesis. \code{delta0} is
+interpreted differently depending on the value of the parameter
+\code{scale}.  If \code{scale="Difference"} (the default), \code{delta0} is
+the difference in event rates under the null hypothesis (p10 - p20). If
+\code{scale="RR"}, \code{delta0} is the logarithm of the relative risk of
+event rates (p10 / p20) under the null hypothesis. If \code{scale="LNOR"},
+\code{delta0} is the difference in natural logarithm of the odds-ratio under
+the null hypothesis \code{log(p10 / (1 - p10)) - log(p20 / (1 - p20))}.
+ratio sample size ratio for group 2 divided by group 1
+sided 2 for 2-sided test, 1 for 1-sided test
+outtype \code{nBinomial} only; 1 (default) returns total sample size;
+2 returns a data frame with sample size for each group (\code{n1, n2}; if
+\code{n} is not input as \code{NULL}, power is returned in \code{Power}; 3
+returns a data frame with total sample size (\code{n}), sample size in each
+group (\code{n1, n2}), Type I error (\code{alpha}), 1 or 2 (\code{sided}, as
+input), Type II error (\code{beta}), power (\code{Power}), null and
+alternate hypothesis standard deviations (\code{sigma0, sigma1}), input
+event rates (\code{p1, p2}), null hypothesis difference in treatment group
+means (\code{delta0}) and null hypothesis event rates (\code{p10, p20}).
+n If power is to be computed in \code{nBinomial()}, input total trial
+sample size in \code{n}; this may be a vector. This is also the sample size
+in \code{varBinomial}, in which case the argument must be a scalar.
+nsim The number of simulations to be performed in
+\code{simBinomial()}
+chisq An indicator of whether or not a chi-square (as opposed to Z)
+statistic is to be computed. If \code{delta0=0} (default), the difference in
+event rates divided by its standard error under the null hypothesis is used.
+Otherwise, a Miettinen and Nurminen chi-square statistic for a 2 x 2 table
+is used.
+tol Default should probably be used; this is used to deal with a
+rounding issue in interim calculations
+x Number of \dQuote{successes} in the combined control and
+experimental groups. 
+EXAMPLE: 
+
+# Compute z-test test statistic comparing 39/500 to 13/500
+# use continuity correction in variance
+x <- testBinomial(x1 = 39, x2 = 13, n1 = 500, n2 = 500, adj = 1)
+x
+pnorm(x, lower.tail = FALSE)
+
+# Compute with unadjusted variance
+x0 <- testBinomial(x1 = 39, x2 = 23, n1 = 500, n2 = 500)
+x0
+pnorm(x0, lower.tail = FALSE)
+
+# Perform 50k simulations to test validity of the above
+# asymptotic p-values
+# (you may want to perform more to reduce standard error of estimate)
+sum(as.double(x0) <=
+  simBinomial(p1 = .078, p2 = .078, n1 = 500, n2 = 500, nsim = 10000)) / 10000
+sum(as.double(x0) <=
+  simBinomial(p1 = .052, p2 = .052, n1 = 500, n2 = 500, nsim = 10000)) / 10000
+
+# Perform a non-inferiority test to see if p2=400 / 500 is within 5% of
+# p1=410 / 500 use a z-statistic with unadjusted variance
+x <- testBinomial(x1 = 410, x2 = 400, n1 = 500, n2 = 500, delta0 = -.05)
+x
+pnorm(x, lower.tail = FALSE)
+
+# since chi-square tests equivalence (a 2-sided test) rather than
+# non-inferiority (a 1-sided test),
+# the result is quite different
+pchisq(testBinomial(
+  x1 = 410, x2 = 400, n1 = 500, n2 = 500, delta0 = -.05,
+  chisq = 1, adj = 1
+), 1, lower.tail = FALSE)
+
+# now simulate the z-statistic witthout continuity corrected variance
+sum(qnorm(.975) <=
+  simBinomial(p1 = .8, p2 = .8, n1 = 500, n2 = 500, nsim = 100000)) / 100000
+
+# compute a sample size to show non-inferiority
+# with 5% margin, 90% power
+nBinomial(p1 = .2, p2 = .2, delta0 = .05, alpha = .025, sided = 1, beta = .1)
+
+# assuming a slight advantage in the experimental group lowers
+# sample size requirement
+nBinomial(p1 = .2, p2 = .19, delta0 = .05, alpha = .025, sided = 1, beta = .1)
+
+# compute a sample size for comparing 15% vs 10% event rates
+# with 1 to 2 randomization
+nBinomial(p1 = .15, p2 = .1, beta = .2, ratio = 2, alpha = .05)
+
+# now look at total sample size using 1-1 randomization
+n <- nBinomial(p1 = .15, p2 = .1, beta = .2, alpha = .05)
+n
+# check if inputing sample size returns the desired power
+nBinomial(p1 = .15, p2 = .1, beta = .2, alpha = .05, n = n)
+
+# re-do with alternate output types
+nBinomial(p1 = .15, p2 = .1, beta = .2, alpha = .05, outtype = 2)
+nBinomial(p1 = .15, p2 = .1, beta = .2, alpha = .05, outtype = 3)
+
+# look at power plot under different control event rate and
+# relative risk reductions
+library(dplyr)
+library(ggplot2)
+p1 <- seq(.075, .2, .000625)
+len <- length(p1)
+p2 <- c(p1 * .75, p1 * 2/3, p1 * .6, p1 * .5)
+Reduction <- c(rep("25 percent", len), rep("33 percent", len), 
+               rep("40 percent", len), rep("50 percent", len))
+df <- tibble(p1 = rep(p1, 4), p2, Reduction) %>% 
+  mutate(`Sample size` = nBinomial(p1, p2, beta = .2, alpha = .025, sided = 1))
+ggplot(df, aes(x = p1, y = `Sample size`, col = Reduction)) + 
+  geom_line() + 
+  xlab("Control group event rate") +
+  ylim(0,6000) +
+  ggtitle("Binomial sample size computation for 80 pct power")
+
+# compute blinded estimate of treatment effect difference
+x1 <- rbinom(n = 1, size = 100, p = .2)
+x2 <- rbinom(n = 1, size = 200, p = .1)
+# blinded estimate of risk difference variance
+varBinomial(x = x1 + x2, n = 300, ratio = 2, delta0 = 0)
+# blinded estimate of log-risk-ratio variance
+varBinomial(x = x1 + x2, n = 300, ratio = 2, delta0 = 0, scale = "RR")
+# blinded estimate of log-odds-ratio variance
+varBinomial(x = x1 + x2, n = 300, ratio = 2, delta0 = 0, scale = "OR")
+ 
+
+
+FUNCTION: xtable 
+TITLE: xtable 
+DESCRIPTION: 
+xtable
+ 
+ARGUMENTS:  
+EXAMPLE:  
+

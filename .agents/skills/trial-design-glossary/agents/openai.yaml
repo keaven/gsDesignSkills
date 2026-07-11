@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trial Design Glossary"
+  short_description: "Normalize trial-design terminology"
+  default_prompt: "Use $trial-design-glossary to normalize the clinical trial design concepts in this request."

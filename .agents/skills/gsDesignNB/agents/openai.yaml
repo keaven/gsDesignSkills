@@ -1,0 +1,4 @@
+interface:
+  display_name: "gsDesignNB"
+  short_description: "Negative binomial recurrent-event designs"
+  default_prompt: "Use $gsDesignNB to design or simulate a recurrent-event trial."

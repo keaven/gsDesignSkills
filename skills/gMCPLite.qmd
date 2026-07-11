@@ -3,8 +3,8 @@ title: "gMCPLite"
 subtitle: "Graphical MCP (Legacy)"
 ---
 
-{{< include ../.claude/skills/gMCPLite/SKILL.md >}}
+{{< include ../.agents/skills/gMCPLite/SKILL.md >}}
 
 ## Code Patterns
 
-{{< include ../.claude/skills/gMCPLite/references/code_patterns.md >}}
+{{< include ../.agents/skills/gMCPLite/references/code_patterns.md >}}

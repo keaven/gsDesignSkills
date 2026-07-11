@@ -1,0 +1,4 @@
+interface:
+  display_name: "rpact"
+  short_description: "Confirmatory adaptive design workflows"
+  default_prompt: "Use $rpact to plan a confirmatory adaptive trial design."

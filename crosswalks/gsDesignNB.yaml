@@ -1,0 +1,221 @@
+package: gsDesignNB
+role: negative-binomial recurrent-event design provider
+status: seed_crosswalk
+
+semantic_scope:
+  endpoint_families:
+    - recurrent_event
+    - negative_binomial_count
+  estimands:
+    - rate_ratio
+    - log_ratio
+  design_families:
+    - fixed_sample_size
+    - group_sequential
+    - sample_size_reestimation
+    - simulation
+  timing_basis:
+    - calendar_time
+    - event_count
+    - completer_count
+  information_source:
+    - planned
+    - observed
+    - blinded
+    - unblinded
+
+concepts:
+  control_event_rate:
+    description: control-group recurrent-event rate per unit follow-up
+    maps_to:
+      sample_size_nbinom: lambda1
+      nb_sim: fail_rate for control arm
+  experimental_event_rate:
+    description: experimental-group recurrent-event rate per unit follow-up
+    maps_to:
+      sample_size_nbinom: lambda2
+      nb_sim: fail_rate for experimental arm
+  rate_ratio:
+    description: experimental event rate divided by control event rate
+    maps_to:
+      sample_size_nbinom: lambda2 / lambda1
+      mutze_test: treatment rate-ratio estimate
+  dispersion:
+    description: negative-binomial overdispersion; zero approximates Poisson
+    maps_to:
+      sample_size_nbinom: dispersion
+      nb_sim: dispersion
+      calculate_blinded_info: dispersion estimate or planning value
+  event_gap:
+    description: off-risk time after a recurrent event
+    maps_to:
+      sample_size_nbinom: event_gap
+      nb_sim: event_gap
+  calendar_analysis_times:
+    description: planned interim or final calendar analysis times
+    maps_to:
+      gsNBCalendar: analysis_times
+      sim_gs_nbinom: analysis_times
+  allocation_ratio:
+    description: experimental to control allocation ratio
+    maps_to:
+      sample_size_nbinom: ratio
+      nb_sim: arm sizes derived from n and ratio
+  blinded_information:
+    description: information estimated without treatment labels
+    maps_to:
+      calculate_blinded_info: pooled event and exposure data
+      blinded_ssr: blinded nuisance estimates
+  unblinded_information:
+    description: information estimated with treatment labels
+    maps_to:
+      unblinded_ssr: observed group rates
+
+functions:
+  sample_size_nbinom:
+    semantic_role: fixed sample size and power for negative-binomial endpoints
+    primary_fields:
+      - control_event_rate
+      - experimental_event_rate
+      - rate_ratio
+      - dispersion
+      - event_gap
+      - allocation_ratio
+  compute_info_at_time:
+    semantic_role: planned information at a calendar time
+    primary_fields:
+      - calendar_analysis_times
+      - accrual_model
+      - follow_up
+      - dropout
+  gsNBCalendar:
+    semantic_role: group sequential design with calendar-time analyses
+    primary_fields:
+      - calendar_analysis_times
+      - information_fraction
+      - alpha_spending
+      - futility
+  nb_sim:
+    semantic_role: simulate recurrent events under a Gamma-Poisson mixture
+    primary_fields:
+      - control_event_rate
+      - experimental_event_rate
+      - dispersion
+      - event_gap
+  nb_sim_seasonal:
+    semantic_role: simulate recurrent events with seasonal event rates
+    primary_fields:
+      - seasonal_event_rate
+      - dispersion
+      - event_gap
+  sim_gs_nbinom:
+    semantic_role: simulate group sequential recurrent-event trials
+    primary_fields:
+      - calendar_analysis_times
+      - efficacy_boundary
+      - futility_boundary
+      - operating_characteristics
+  sim_ssr_nbinom:
+    semantic_role: simulate sample size re-estimation workflows
+    primary_fields:
+      - blinded_ssr
+      - unblinded_ssr
+      - maximum_sample_size
+      - operating_characteristics
+  blinded_ssr:
+    semantic_role: blinded sample size re-estimation calculation
+    primary_fields:
+      - blinded_information
+      - nuisance_parameter_estimation
+  unblinded_ssr:
+    semantic_role: unblinded sample size re-estimation calculation
+    primary_fields:
+      - unblinded_information
+      - observed_rate_ratio
+  calculate_blinded_info:
+    semantic_role: blinded information and dispersion estimation
+    primary_fields:
+      - blinded_information
+      - pooled_rate
+      - dispersion
+  mutze_test:
+    semantic_role: Wald test and rate-ratio estimate for count data
+    primary_fields:
+      - rate_ratio
+      - exposure
+      - dispersion
+  summarize_gs_sim:
+    semantic_role: summarize group sequential simulation operating characteristics
+  summarize_ssr_sim:
+    semantic_role: summarize SSR simulation operating characteristics
+
+canonical_workflows:
+  fixed_negative_binomial_design:
+    intent:
+      endpoint_family: negative_binomial_count
+      design_family: fixed_sample_size
+      estimand: rate_ratio
+    functions:
+      - sample_size_nbinom
+  calendar_group_sequential_design:
+    intent:
+      endpoint_family: recurrent_event
+      design_family: group_sequential
+      timing_basis: calendar_time
+    functions:
+      - sample_size_nbinom
+      - gsNBCalendar
+  group_sequential_operating_characteristics:
+    intent:
+      endpoint_family: recurrent_event
+      design_family: group_sequential
+      simulation: operating_characteristics
+    functions:
+      - sample_size_nbinom
+      - gsNBCalendar
+      - sim_gs_nbinom
+      - summarize_gs_sim
+  recurrent_event_data_simulation:
+    intent:
+      endpoint_family: recurrent_event
+      design_family: simulation
+    functions:
+      - nb_sim
+      - mutze_test
+  seasonal_recurrent_event_simulation:
+    intent:
+      endpoint_family: recurrent_event
+      design_family: simulation
+      seasonal: true
+    functions:
+      - nb_sim_seasonal
+      - mutze_test
+  blinded_sample_size_reestimation:
+    intent:
+      endpoint_family: recurrent_event
+      adaptation: blinded_ssr
+      information_source: blinded
+    functions:
+      - calculate_blinded_info
+      - blinded_ssr
+  unblinded_sample_size_reestimation:
+    intent:
+      endpoint_family: recurrent_event
+      adaptation: unblinded_ssr
+      information_source: unblinded
+    functions:
+      - unblinded_ssr
+  ssr_operating_characteristics:
+    intent:
+      endpoint_family: recurrent_event
+      adaptation: sample_size_reestimation
+      simulation: operating_characteristics
+    functions:
+      - sample_size_nbinom
+      - sim_ssr_nbinom
+      - summarize_ssr_sim
+
+unsupported_or_external:
+  - time_to_event_survival_designs: use gsDesign, gsDesign2, or simtrial
+  - graphical_multiplicity: use graphicalMCP or graphicalMCP-gsDesign2
+  - combination_test_adaptive_designs: use rpact

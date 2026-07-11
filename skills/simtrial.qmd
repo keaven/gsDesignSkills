@@ -3,8 +3,8 @@ title: "simtrial"
 subtitle: "Clinical Trial Simulation"
 ---
 
-{{< include ../.claude/skills/simtrial/SKILL.md >}}
+{{< include ../.agents/skills/simtrial/SKILL.md >}}
 
 ## Code Patterns
 
-{{< include ../.claude/skills/simtrial/references/code_patterns.md >}}
+{{< include ../.agents/skills/simtrial/references/code_patterns.md >}}

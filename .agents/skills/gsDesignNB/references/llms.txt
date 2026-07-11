@@ -1,0 +1,687 @@
+# gsDesignNB API Reference
+
+Package for group sequential designs with negative binomial (recurrent event) outcomes. Implements sample size calculation, simulation, data cutting, statistical testing, and sample size re-estimation following Mutze et al. (2019), Friede & Schmidli (2010), and Zhu & Lakkis (2014).
+
+---
+
+## 1. Sample Size Calculation
+
+### sample_size_nbinom
+
+**Title:** Sample size calculation for negative binomial distribution
+
+**Description:** Computes the sample size for comparing two treatment groups assuming a negative binomial distribution for the outcome.
+
+**Usage:**
+```r
+sample_size_nbinom(
+  lambda1, lambda2, dispersion,
+  power = NULL, alpha = 0.025, sided = 1, ratio = 1, rr0 = 1,
+  accrual_rate, accrual_duration, trial_duration,
+  dropout_rate = 0, max_followup = NULL, event_gap = NULL
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| lambda1 | numeric | Rate in group 1 (control) |
+| lambda2 | numeric | Rate in group 2 (treatment) |
+| dispersion | numeric | Dispersion parameter k such that Var(Y) = mu + k*mu^2. Equivalent to 1/size in R's rnbinom() |
+| power | numeric | Power of the test (1 - beta). Default 0.9 |
+| alpha | numeric | Significance level. Default 0.025 |
+| sided | integer | 1 for one-sided, 2 for two-sided. Default 1 |
+| ratio | numeric | Allocation ratio n2/n1. Default 1 |
+| rr0 | numeric | Rate ratio under null (lambda2/lambda1). Default 1 (superiority). Use >1 for non-inferiority |
+| accrual_rate | numeric vector | Accrual rates (patients per unit time) |
+| accrual_duration | numeric vector | Durations for each accrual rate (same length as accrual_rate) |
+| trial_duration | numeric | Total planned duration of the trial |
+| dropout_rate | numeric | Dropout rate (hazard rate). Default 0. Can be vector of length 2 |
+| max_followup | numeric | Maximum follow-up time per patient. Default NULL (infinite) |
+| event_gap | numeric | Gap duration after each event during which no new events are counted. Default NULL |
+
+**Returns:** Object of class `sample_size_nbinom_result` (list) containing: `inputs`, `n1`, `n2`, `n_total`, `alpha`, `sided`, `power`, `exposure` (vector of length 2), `exposure_at_risk_n1`, `exposure_at_risk_n2`, `events_n1`, `events_n2`, `total_events`, `variance`, `accrual_rate`, `accrual_duration`.
+
+**Example:**
+```r
+x <- sample_size_nbinom(
+  lambda1 = 0.5, lambda2 = 0.3, dispersion = 0.1, power = 0.8,
+  accrual_rate = 10, accrual_duration = 20, trial_duration = 24
+)
+summary(x)
+```
+
+### print.sample_size_nbinom_result
+
+**Title:** Print method for sample_size_nbinom_result objects
+
+**Usage:** `print(x, ...)`
+
+**Parameters:** `x` - object of class `sample_size_nbinom_result`
+
+**Returns:** Invisibly returns the input object.
+
+### summary.sample_size_nbinom_result
+
+**Title:** Summary for sample_size_nbinom_result objects
+
+**Usage:** `summary(object, ...)`
+
+**Parameters:** `object` - object of class `sample_size_nbinom_result`
+
+**Returns:** A character string summarizing the design (invisibly), also printed to console.
+
+### print.sample_size_nbinom_summary
+
+**Title:** Print method for sample_size_nbinom_summary objects
+
+**Usage:** `print(x, ...)`
+
+**Parameters:** `x` - object of class `sample_size_nbinom_summary`
+
+**Returns:** Invisibly returns the input object.
+
+---
+
+## 2. Group Sequential Design
+
+### gsNBCalendar
+
+**Title:** Group sequential design for negative binomial outcomes
+
+**Description:** Creates a group sequential design for negative binomial outcomes based on sample size calculations from `sample_size_nbinom()`.
+
+**Usage:**
+```r
+gsNBCalendar(
+  x, k = 3, test.type = 4,
+  alpha = 0.025, beta = 0.1, astar = 0, delta = 0,
+  sfu = gsDesign::sfHSD, sfupar = -4,
+  sfl = gsDesign::sfHSD, sflpar = -2,
+  tol = 1e-06, r = 18,
+  usTime = NULL, lsTime = NULL,
+  analysis_times = NULL
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| x | sample_size_nbinom_result | Object from `sample_size_nbinom()` |
+| k | integer | Number of analyses (interim + final). Default 3 |
+| test.type | integer | Test type as in `gsDesign::gsDesign()`: 1=one-sided, 2=two-sided symmetric, 3=asymmetric binding futility, 4=asymmetric non-binding futility (default), 5=binding lower spending, 6=non-binding lower spending |
+| alpha | numeric | Type I error (one-sided). Default 0.025 |
+| beta | numeric | Type II error (1 - power). Default 0.1 |
+| astar | numeric | Allocated Type I error for lower bound (test.type 5 or 6). Default 0 |
+| delta | numeric | Standardized effect size. Default 0 (computed from design) |
+| sfu | function | Spending function for upper bound. Default `gsDesign::sfHSD` |
+| sfupar | numeric | Parameter for upper spending function. Default -4 |
+| sfl | function | Spending function for lower bound. Default `gsDesign::sfHSD` |
+| sflpar | numeric | Parameter for lower spending function. Default -2 |
+| tol | numeric | Tolerance for convergence. Default 1e-06 |
+| r | integer | Grid size for numerical integration. Default 18 |
+| usTime | numeric vector | Spending time for upper bound (optional) |
+| lsTime | numeric vector | Spending time for lower bound (optional) |
+| analysis_times | numeric vector | Calendar times for each analysis (length k) |
+
+**Returns:** Object of class `gsNB` (inherits from `gsDesign` and `sample_size_nbinom_result`). Contains all `gsDesign` elements plus: `nb_design`, `n1`, `n2`, `n_total`, `events`, `events1`, `events2`, `exposure`, `exposure_at_risk1`, `exposure_at_risk2`, `variance`, `T` (calendar times). Note: `n.I` represents statistical information at each analysis.
+
+**Example:**
+```r
+nb_ss <- sample_size_nbinom(
+  lambda1 = 0.5, lambda2 = 0.3, dispersion = 0.1, power = 0.9,
+  accrual_rate = 10, accrual_duration = 20, trial_duration = 24
+)
+gs_design <- gsNBCalendar(nb_ss, k = 3, test.type = 4,
+  analysis_times = c(10, 18, 24))
+```
+
+### compute_info_at_time
+
+**Title:** Compute statistical information at analysis time
+
+**Description:** Computes the statistical information for the log rate ratio at a given analysis time, accounting for staggered enrollment and varying exposure times.
+
+**Usage:**
+```r
+compute_info_at_time(
+  analysis_time, accrual_rate, accrual_duration,
+  lambda1, lambda2, dispersion,
+  ratio = 1, dropout_rate = 0, event_gap = 0, max_followup = Inf
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| analysis_time | numeric | Calendar time of the analysis |
+| accrual_rate | numeric | Enrollment rate (subjects per time unit) |
+| accrual_duration | numeric | Duration of enrollment period |
+| lambda1 | numeric | Event rate for group 1 (control) |
+| lambda2 | numeric | Event rate for group 2 (treatment) |
+| dispersion | numeric | Negative binomial dispersion parameter |
+| ratio | numeric | Allocation ratio (n2/n1). Default 1 |
+| dropout_rate | numeric | Dropout rate (hazard rate). Default 0 |
+| event_gap | numeric | Gap duration after events. Default 0 |
+| max_followup | numeric | Maximum follow-up time per subject. Default Inf |
+
+**Returns:** Numeric. The statistical information (inverse of variance) at the analysis time.
+
+### toInteger
+
+**Title:** Convert group sequential design to integer sample sizes
+
+**Description:** Rounds sample sizes in a group sequential design to integers while maintaining the randomization ratio and ensuring monotonically increasing sample sizes. Works with both `gsDesign` and `gsNB` objects.
+
+**Usage:**
+```r
+toInteger(x, ...)
+# S3 method for gsDesign:
+toInteger(x, ratio = x$ratio, roundUpFinal = TRUE, ...)
+# S3 method for gsNB:
+toInteger(x, ratio = x$nb_design$inputs$ratio, roundUpFinal = TRUE, ...)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| x | gsNB or gsDesign | Group sequential design object |
+| ratio | numeric | Randomization ratio (n2/n1). If integer, rounds to multiple of ratio+1 |
+| roundUpFinal | logical | If TRUE (default), round up final sample size |
+
+**Returns:** Object of the same class with integer sample sizes.
+
+### check_gs_bound
+
+**Title:** Check group sequential bounds
+
+**Description:** Updates the group sequential design boundaries based on observed information and checks if boundaries have been crossed.
+
+**Usage:**
+```r
+check_gs_bound(sim_results, design, info_scale = c("blinded", "unblinded"))
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| sim_results | data.frame | Simulation results from `sim_gs_nbinom()` |
+| design | gsNB | The planning design object |
+| info_scale | character | "blinded" (default) or "unblinded" information for bounds |
+
+**Returns:** Data frame with added columns: `cross_upper` (logical, efficacy), `cross_lower` (logical, futility).
+
+### summarize_gs_sim
+
+**Title:** Summarize group sequential simulation results
+
+**Description:** Provides operating characteristics of the group sequential design based on simulation results.
+
+**Usage:**
+```r
+summarize_gs_sim(x)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| x | data.frame | Data frame from `check_gs_bound()`. Must contain `cross_upper`, `cross_lower` columns |
+
+**Returns:** List containing: `n_sim` (number of simulations), `power` (overall power), `futility` (overall futility rate), `analysis_summary` (data frame with per-analysis statistics).
+
+### summary.gsNB
+
+**Title:** Summary for gsNB objects
+
+**Usage:** `summary(object, ...)`
+
+**Description:** Provides a textual summary of a group sequential design for negative binomial outcomes. For tabular output, use `gsDesign::gsBoundSummary()` directly on the gsNB object.
+
+**Returns:** Character string summarizing the design (invisibly), also printed to console.
+
+### print.gsNBsummary
+
+**Title:** Print method for gsNBsummary objects
+
+**Usage:** `print(x, ...)`
+
+**Returns:** Invisibly returns the input object.
+
+---
+
+## 3. Simulation
+
+### nb_sim
+
+**Title:** Simulate recurrent events with fixed follow-up
+
+**Description:** Simulates recurrent events for a clinical trial with piecewise constant enrollment, exponential failure rates (Poisson process), and piecewise exponential dropout. Uses a Gamma-Poisson mixture model where each subject has a Gamma-distributed frailty multiplier on their event rate.
+
+**Usage:**
+```r
+nb_sim(
+  enroll_rate, fail_rate,
+  dropout_rate = NULL, max_followup = NULL,
+  n = NULL,
+  block = c(rep("Control", 2), rep("Experimental", 2)),
+  event_gap = 0
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| enroll_rate | data.frame | Columns: `rate`, `duration` (piecewise constant enrollment) |
+| fail_rate | data.frame | Columns: `treatment`, `rate`. Optional: `dispersion` column for NB data |
+| dropout_rate | data.frame | Columns: `treatment`, `rate`, `duration` (piecewise constant dropout) |
+| max_followup | numeric | Maximum follow-up duration per individual |
+| n | integer | Total sample size. If NULL, estimated from enroll_rate |
+| block | character vector | Block structure for treatment allocation. NULL for simple randomization |
+| event_gap | numeric | Gap duration after each event. Default 0 |
+
+**Returns:** Data frame (tibble) with columns: `id`, `treatment`, `enroll_time`, `tte`, `calendar_time`, `event`. Multiple rows per subject (one per event + final censoring).
+
+**Example:**
+```r
+enroll_rate <- data.frame(rate = 20 / (5 / 12), duration = 5 / 12)
+fail_rate <- data.frame(treatment = c("Control", "Experimental"), rate = c(0.5, 0.3))
+dropout_rate <- data.frame(
+  treatment = c("Control", "Experimental"),
+  rate = c(0.1, 0.05), duration = c(100, 100)
+)
+sim <- nb_sim(enroll_rate, fail_rate, dropout_rate, max_followup = 2, n = 20)
+```
+
+### nb_sim_seasonal
+
+**Title:** Simulate recurrent events with seasonal rates
+
+**Description:** Simulates recurrent events where event rates depend on the season.
+
+**Usage:**
+```r
+nb_sim_seasonal(
+  enroll_rate, fail_rate,
+  dropout_rate = NULL, max_followup = NULL,
+  randomization_start_date = NULL, n = NULL,
+  block = c(rep("Control", 2), rep("Experimental", 2))
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| enroll_rate | data.frame | Columns: `rate`, `duration` |
+| fail_rate | data.frame | Columns: `treatment`, `season`, `rate`, optional `dispersion`. Seasons: "Spring", "Summer", "Fall", "Winter" |
+| dropout_rate | data.frame | Columns: `treatment`, `rate`, `duration` |
+| max_followup | numeric | Max follow-up duration (years) |
+| randomization_start_date | Date | Start of randomization |
+| n | integer | Total sample size |
+| block | character vector | Block randomization vector |
+
+**Returns:** Data frame of class `nb_sim_seasonal` with columns: `id`, `treatment`, `season`, `enroll_time`, `start`, `end`, `event`, `calendar_start`, `calendar_end`. Rows represent intervals of risk or events.
+
+### sim_gs_nbinom
+
+**Title:** Simulate group sequential clinical trial for negative binomial outcomes
+
+**Description:** Simulates multiple replicates of a group sequential clinical trial with negative binomial outcomes, performing interim analyses at specified calendar times.
+
+**Usage:**
+```r
+sim_gs_nbinom(
+  n_sims, enroll_rate, fail_rate,
+  dropout_rate = NULL, max_followup, event_gap = 0,
+  analysis_times = NULL, n_target = NULL,
+  design = NULL, data_cut = cut_data_by_date, cuts = NULL
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| n_sims | integer | Number of simulations to run |
+| enroll_rate | data.frame | Enrollment rates (columns: `rate`, `duration`) |
+| fail_rate | data.frame | Failure rates (columns: `treatment`, `rate`, `dispersion`) |
+| dropout_rate | data.frame | Dropout rates (columns: `treatment`, `rate`, `duration`) |
+| max_followup | numeric | Maximum follow-up time |
+| event_gap | numeric | Event gap duration. Default 0 |
+| analysis_times | numeric vector | Calendar times for interim and final analyses. Optional if `cuts` provided |
+| n_target | integer | Total sample size to enroll |
+| design | gsNB or sample_size_nbinom_result | Planning design for extracting lambda1, lambda2, ratio |
+| data_cut | function | Function to cut data for analysis. Default `cut_data_by_date()` |
+| cuts | list | List of cutting criteria for each analysis (lists of args for `get_cut_date()`: `planned_calendar`, `target_events`, `target_info`). If provided, `analysis_times` is ignored |
+
+**Returns:** Data frame with columns: `sim`, `analysis`, `analysis_time`, `n_enrolled`, `n_ctrl`, `n_exp`, `events_total`, `events_ctrl`, `events_exp`, `exposure_at_risk_ctrl`, `exposure_at_risk_exp`, `exposure_total_ctrl`, `exposure_total_exp`, `z_stat`, `estimate`, `se`, `method_used`, `dispersion`, `blinded_info`, `unblinded_info`, `info_unblinded_ml`, `info_blinded_ml`, `info_unblinded_mom`, `info_blinded_mom`.
+
+**Example:**
+```r
+set.seed(123)
+enroll_rate <- data.frame(rate = 10, duration = 3)
+fail_rate <- data.frame(
+  treatment = c("Control", "Experimental"),
+  rate = c(0.6, 0.4), dispersion = 0.2
+)
+design <- sample_size_nbinom(
+  lambda1 = 0.6, lambda2 = 0.4, dispersion = 0.2, power = 0.8,
+  accrual_rate = 10, accrual_duration = 3, trial_duration = 6
+)
+cuts <- list(list(planned_calendar = 2), list(planned_calendar = 4))
+sim_results <- sim_gs_nbinom(
+  n_sims = 2, enroll_rate = enroll_rate, fail_rate = fail_rate,
+  max_followup = 4, n_target = 30, design = design, cuts = cuts
+)
+```
+
+---
+
+## 4. Data Cutting and Analysis Timing
+
+### cut_data_by_date
+
+**Title:** Cut simulated trial data at a calendar date
+
+**Description:** Censors follow-up at a specified calendar time and aggregates events per subject. Returns one row per subject randomized before the cut date. Has methods for `nb_sim_data` and `nb_sim_seasonal` classes.
+
+**Usage:**
+```r
+cut_data_by_date(data, cut_date, event_gap = 0, ...)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| data | data.frame | Data from `nb_sim()` or `nb_sim_seasonal()` |
+| cut_date | numeric | Calendar time (relative to trial start) at which to censor |
+| event_gap | numeric or function | Gap duration after each event. Default 0 |
+
+**Returns:** Data frame with one row per subject containing: `id`, `treatment`, `enroll_time`, `tte` (time at risk, adjusted for gaps), `tte_total` (total calendar follow-up), `events`.
+
+### get_analysis_date
+
+**Title:** Find calendar date for target event count
+
+**Description:** Finds the calendar time at which a specified total number of events is reached in the simulated dataset.
+
+**Usage:**
+```r
+get_analysis_date(data, planned_events, event_gap = 5/365.25)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| data | data.frame | Simulated data from `nb_sim()` |
+| planned_events | integer | Target number of events |
+| event_gap | numeric or function | Gap duration. Default 5/365.25 |
+
+**Returns:** Numeric. Calendar date when `planned_events` is achieved.
+
+### get_cut_date
+
+**Title:** Determine analysis date based on criteria
+
+**Description:** Finds the earliest calendar date at which ALL specified criteria are met. Criteria can include calendar date, target events, target completers, or target blinded information.
+
+**Usage:**
+```r
+get_cut_date(
+  data, planned_calendar = NULL, target_events = NULL,
+  target_completers = NULL, target_info = NULL,
+  event_gap = 0, ratio = 1,
+  lambda1 = NULL, lambda2 = NULL,
+  min_date = 0, max_date = Inf
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| data | data.frame | Simulated data from `nb_sim()` |
+| planned_calendar | numeric | Target calendar time |
+| target_events | integer | Target number of observed events |
+| target_completers | integer | Target number of subjects with complete follow-up |
+| target_info | numeric | Target blinded information |
+| event_gap | numeric | Gap duration for event counting and info calculation |
+| ratio | numeric | Randomization ratio (experimental/control) for info calculation |
+| lambda1 | numeric | Planned control rate for info calculation |
+| lambda2 | numeric | Planned experimental rate for info calculation |
+| min_date | numeric | Minimum possible date |
+| max_date | numeric | Maximum possible date |
+
+**Returns:** Numeric. Calendar date satisfying all criteria. Returns `max_date` if criteria cannot be met.
+
+### cut_date_for_completers
+
+**Title:** Find calendar date for target completer count
+
+**Description:** Finds the calendar time at which a specified number of subjects have completed their follow-up.
+
+**Usage:**
+```r
+cut_date_for_completers(data, target_completers)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| data | data.frame | Simulated data from `nb_sim()` or `nb_sim_seasonal()` |
+| target_completers | integer | Target number of completers |
+
+**Returns:** Numeric. Calendar date when `target_completers` is achieved.
+
+### cut_completers
+
+**Title:** Cut data for completers analysis
+
+**Description:** Subsets data to all subjects randomized by the specified date and prepares data for analysis. Wrapper for `cut_data_by_date()` typically used with a date from `cut_date_for_completers()`.
+
+**Usage:**
+```r
+cut_completers(data, cut_date, event_gap = 0)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| data | data.frame | Data from `nb_sim()` |
+| cut_date | numeric | Calendar time at which to cut |
+| event_gap | numeric or function | Gap duration. Default 0 |
+
+**Returns:** Data frame with one row per subject, containing truncated follow-up time (`tte`) and total observed events (`events`).
+
+---
+
+## 5. Statistical Testing and Estimation
+
+### mutze_test
+
+**Title:** Wald test for treatment effect using negative binomial model (Mutze et al.)
+
+**Description:** Fits a negative binomial (or Poisson) log-rate model to aggregated subject-level data. Matches the Wald test described by Mutze et al. (2019) for comparing treatment arms with recurrent event outcomes.
+
+**Usage:**
+```r
+mutze_test(
+  data,
+  method = c("nb", "poisson"),
+  conf_level = 0.95,
+  sided = 1,
+  poisson_threshold = 1000
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| data | data.frame | Columns: `treatment`, `events`, `tte`. Typically from `cut_data_by_date()` |
+| method | character | "nb" (default, uses `MASS::glm.nb()`) or "poisson" |
+| conf_level | numeric | Confidence level for rate ratio interval. Default 0.95 |
+| sided | integer | 1 (default) or 2 for test sidedness |
+| poisson_threshold | numeric | When method="nb", falls back to Poisson if theta outside [1/threshold, threshold]. Default 1000 |
+
+**Returns:** Object of class `mutze_test` containing: `method`, `estimate` (log rate ratio), `se`, `z` (Wald statistic), `p_value`, `rate_ratio` (with CI), `dispersion`, `group_summary`.
+
+**Example:**
+```r
+sim <- nb_sim(enroll_rate, fail_rate, dropout_rate, max_followup = 2, n = 40)
+cut <- cut_data_by_date(sim, cut_date = 1.5)
+mutze_test(cut)
+```
+
+### estimate_nb_mom
+
+**Title:** Method of Moments Estimation for Negative Binomial Parameters
+
+**Description:** Estimates event rate(s) and common dispersion parameter (k) using method of moments. Robust alternative to MLE, especially when MLE fails to converge.
+
+**Usage:**
+```r
+estimate_nb_mom(data, group = NULL)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| data | data.frame | Columns: `events`, `tte` |
+| group | character | Optional grouping column name (e.g., "treatment"). If provided, rates estimated per group with common dispersion. If NULL, single blinded estimate |
+
+**Returns:** List containing: `lambda` (single numeric or named vector), `dispersion` (estimated common k).
+
+**Example:**
+```r
+# Blinded
+estimate_nb_mom(data.frame(events = c(1, 2, 0, 3), tte = c(1, 1.2, 0.5, 1.5)))
+
+# Unblinded (two groups)
+df <- data.frame(events = c(1, 2, 1, 3), tte = c(1, 1.2, 0.5, 1.5), group = c("A","A","B","B"))
+estimate_nb_mom(df, group = "group")
+```
+
+### calculate_blinded_info
+
+**Title:** Calculate blinded statistical information
+
+**Description:** Estimates blinded dispersion and event rate from aggregated interim data and calculates observed statistical information for the log rate ratio, assuming planned allocation ratio and treatment effect.
+
+**Usage:**
+```r
+calculate_blinded_info(
+  data, ratio = 1,
+  lambda1_planning, lambda2_planning,
+  event_gap = NULL
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| data | data.frame | Blinded interim data with columns: `events`, `tte` |
+| ratio | numeric | Planned allocation ratio (experimental/control). Default 1 |
+| lambda1_planning | numeric | Planned control rate |
+| lambda2_planning | numeric | Planned experimental rate |
+| event_gap | numeric | Gap duration to adjust planning rates. If provided, rates adjusted as lambda / (1 + lambda * gap) |
+
+**Returns:** List containing: `blinded_info`, `dispersion_blinded`, `lambda_blinded`, `lambda1_adjusted`, `lambda2_adjusted`.
+
+---
+
+## 6. Sample Size Re-estimation
+
+### blinded_ssr
+
+**Title:** Blinded sample size re-estimation for recurrent events
+
+**Description:** Estimates blinded dispersion and event rate from aggregated interim data and calculates required sample size to maintain power, assuming the planned treatment effect holds. Supports constant rates (Friede & Schmidli 2010).
+
+**Usage:**
+```r
+blinded_ssr(
+  data, ratio = 1,
+  lambda1_planning, lambda2_planning,
+  rr0 = 1, power = 0.8, alpha = 0.025,
+  method = "friede",
+  accrual_rate, accrual_duration, trial_duration,
+  dropout_rate = 0, max_followup = NULL, event_gap = NULL
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| data | data.frame | Blinded interim data with columns: `events`, `tte`. Typically from `cut_data_by_date()` |
+| ratio | numeric | Allocation ratio (experimental/control). Default 1 |
+| lambda1_planning | numeric | Planned control rate |
+| lambda2_planning | numeric | Planned experimental rate |
+| rr0 | numeric | Rate ratio under null. Default 1 |
+| power | numeric | Target power. Default 0.8 |
+| alpha | numeric | One-sided significance level. Default 0.025 |
+| method | character | Currently "friede" |
+| accrual_rate | numeric vector | Accrual rates |
+| accrual_duration | numeric vector | Durations for each accrual rate |
+| trial_duration | numeric | Total planned trial duration |
+| dropout_rate | numeric | Dropout rate. Default 0 |
+| max_followup | numeric | Max follow-up. Default NULL |
+| event_gap | numeric | Event gap. Default NULL |
+
+**Returns:** List containing: `n_total_blinded`, `dispersion_blinded`, `lambda_blinded`, `info_fraction`, `blinded_info`, `target_info`.
+
+### unblinded_ssr
+
+**Title:** Unblinded sample size re-estimation for recurrent events
+
+**Description:** Estimates event rates and dispersion from unblinded interim data and calculates required sample size to maintain power.
+
+**Usage:**
+```r
+unblinded_ssr(
+  data, ratio = 1,
+  lambda1_planning, lambda2_planning,
+  rr0 = 1, power = 0.8, alpha = 0.025,
+  accrual_rate, accrual_duration, trial_duration,
+  dropout_rate = 0, max_followup = NULL, event_gap = NULL
+)
+```
+
+**Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| data | data.frame | Unblinded interim data with columns: `events`, `tte`, `treatment`. Typically from `cut_data_by_date()` |
+| ratio | numeric | Allocation ratio (experimental/control). Default 1 |
+| lambda1_planning | numeric | Planned control rate |
+| lambda2_planning | numeric | Planned experimental rate |
+| rr0 | numeric | Rate ratio under null. Default 1 |
+| power | numeric | Target power. Default 0.8 |
+| alpha | numeric | One-sided significance level. Default 0.025 |
+| accrual_rate | numeric vector | Accrual rates |
+| accrual_duration | numeric vector | Durations for each accrual rate |
+| trial_duration | numeric | Total planned trial duration |
+| dropout_rate | numeric | Dropout rate. Default 0 |
+| max_followup | numeric | Max follow-up. Default NULL |
+| event_gap | numeric | Event gap. Default NULL |
+
+**Returns:** List containing: `n_total_unblinded`, `dispersion_unblinded`, `lambda1_unblinded`, `lambda2_unblinded`, `info_fraction`, `unblinded_info`, `target_info`.
+
+---
+
+## 7. Utilities
+
+(No standalone utility functions beyond the S3 methods listed above. The `toInteger()` generic is documented under Group Sequential Design.)
+
+---
+
+## Typical Workflow
+
+1. **Design:** `sample_size_nbinom()` -> `gsNBCalendar()` -> `toInteger()` -> `summary()`
+2. **Simulate:** `nb_sim()` or `nb_sim_seasonal()` to generate trial data
+3. **Cut data:** `get_cut_date()` or `get_analysis_date()` to find analysis timing, then `cut_data_by_date()` to prepare analysis dataset
+4. **Analyze:** `mutze_test()` for treatment comparison, `estimate_nb_mom()` or `calculate_blinded_info()` for parameter estimation
+5. **GSD simulation:** `sim_gs_nbinom()` -> `check_gs_bound()` -> `summarize_gs_sim()` for operating characteristics
+6. **SSR:** `blinded_ssr()` or `unblinded_ssr()` at interim for sample size re-estimation
+
+## Key References
+
+- Mutze, T., Glimm, E., Schmidli, H., & Friede, T. (2019). Group sequential designs for negative binomial outcomes. *Statistical Methods in Medical Research*, 28(8), 2326-2347.
+- Friede, T., & Schmidli, H. (2010). Blinded sample size reestimation with count data. *Statistics in Medicine*, 29(10), 1145-1156.
+- Zhu, H., & Lakkis, H. (2014). Sample size calculation for comparing two negative binomial rates. *Statistics in Medicine*, 33(3), 376-387.
+- Jennison, C. & Turnbull, B.W. (2000). *Group Sequential Methods with Applications to Clinical Trials*. Chapman and Hall.
