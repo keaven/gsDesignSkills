@@ -112,6 +112,35 @@ expertise in a specific domain:
 :::
 :::
 
+## Package Version Basis
+
+::: {.columns}
+::: {.column width="64%"}
+
+| Package skill | Version basis |
+|---|---|
+| `gsDesign` | CRAN `3.10.0` |
+| `gsDesign2` | CRAN `1.1.9` |
+| `rpact` | CRAN `4.4.0` |
+| `graphicalMCP` | CRAN `0.2.9` |
+| `simtrial` | CRAN `1.0.2` |
+| `gMCPLite` | CRAN `0.1.7` |
+| `gsDesignNB` | CRAN `0.3.2` |
+| `wpgsd` | GitHub `Merck/wpgsd` `0.3.0` |
+
+:::
+::: {.column width="36%"}
+
+### Notes
+
+- Package skills target current CRAN versions except `wpgsd`
+- `wpgsd` was not in the CRAN package index checked for this deck
+- Cross-package skills are workflow skills, not R packages
+- Semantic skills provide routing and shared vocabulary
+
+:::
+:::
+
 ## Anatomy of a Skill: gsDesign
 
 ```yaml
