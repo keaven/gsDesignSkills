@@ -1,6 +1,6 @@
 ---
 title: "AI Skills for Group Sequential Design"
-subtitle: "Teaching Claude Code to Design Clinical Trials"
+subtitle: "Teaching AI to Design Clinical Trials"
 author: "Keaven M. Anderson"
 date: "2026"
 format:
@@ -59,18 +59,19 @@ Skills are structured knowledge files that give an AI assistant
 expertise in a specific domain:
 
 ```
-.claude/skills/<skill-name>/
+.agents/skills/<skill-name>/
 ├── SKILL.md              # Triggers, workflow, key concepts
+├── agents/
+│   └── openai.yaml       # Assistant-specific metadata
 └── references/
     ├── code_patterns.md  # Verified code templates
-    └── llms.txt          # API documentation
+    └── llms.txt          # Vendored API documentation
 ```
 
 - **SKILL.md** --- When to activate, what the package does,
   critical gotchas
 - **Code patterns** --- Tested, working code templates for common tasks
-- **llms.txt** --- Machine-readable API reference from
-  [gsDesign.ai](https://gsDesign.ai)
+- **llms.txt** --- Vendored machine-readable API references where available
 
 ## The gsDesignSkills Repository
 
@@ -101,10 +102,12 @@ expertise in a specific domain:
 | `illness-death` | Multi-state oncology |
 | `multi-endpoint-sim` | GSD + simulation + multiplicity |
 
-### API Documentation
+### API References
 
-- `llms.txt` files from [gsDesign.ai](https://gsDesign.ai)
-- Machine-readable format optimized for AI consumption
+- `references/llms.txt` files are bundled in this repository
+- Some were imported from external documentation sources; others are built
+  from local package man pages
+- The skills site does not require `gsDesign.ai` at runtime
 
 :::
 :::
@@ -317,7 +320,7 @@ not just produce code that calls the right function.
 **1. Copy skills** into your project:
 
 ```bash
-cp -r gsDesignSkills/.claude/skills/* my-project/.claude/skills/
+cp -r gsDesignSkills/.agents/skills/* my-project/.claude/skills/
 ```
 
 **2. Reference** skills for your AI assistant:
@@ -345,7 +348,7 @@ In `.github/copilot-instructions.md`:
 ```markdown
 For group sequential designs,
 follow instructions in
-`.claude/skills/gsDesign/SKILL.md`.
+`.agents/skills/gsDesign/SKILL.md`.
 ```
 
 :::
@@ -358,7 +361,7 @@ In `.clinerules`:
 ```markdown
 When working on group sequential
 designs, read
-`.claude/skills/gsDesign/SKILL.md`.
+`.agents/skills/gsDesign/SKILL.md`.
 ```
 
 :::
@@ -400,10 +403,9 @@ applies code patterns as verified starting points, and consults
 :::
 :::
 
-## AI-Readable Documentation: llms.txt
+## AI-Readable Documentation: Vendored References
 
-[gsDesign.ai](https://gsDesign.ai) provides machine-optimized
-documentation:
+gsDesignSkills includes local machine-readable references:
 
 - Function signatures with all parameters
 - Return value structures
@@ -412,8 +414,10 @@ documentation:
 
 . . .
 
-Included in skills for: gsDesign, gsDesign2, graphicalMCP,
-rpact, simtrial, wpgsd, gsDesignNB
+These files may originate from package documentation sites, local Rd files,
+or earlier gsDesign.ai exports, but they are vendored into `gsDesignSkills`.
+For exact current-CRAN behavior, use the installed package help as the final
+source of truth.
 
 ## Practical Impact
 
@@ -456,16 +460,16 @@ AI into a reliable statistical programming assistant.
 |---|---|
 | **What** | Curated knowledge files for AI coding assistants |
 | **Why** | Clinical trial design requires domain expertise that general AI lacks |
-| **How** | SKILL.md + code patterns + llms.txt API references |
+| **How** | SKILL.md + code patterns + vendored API references |
 | **Where** | [github.com/keaven/gsDesignSkills](https://github.com/keaven/gsDesignSkills) |
-| **Coverage** | 11 skills across 8+ R packages for GSD, multiplicity, simulation |
+| **Coverage** | 13 skills across 8+ R packages plus semantic routing |
 | **Impact** | Reliable code generation, fewer errors, faster workflows |
 
 . . .
 
 **Repository:** [github.com/keaven/gsDesignSkills](https://github.com/keaven/gsDesignSkills)
 
-**API docs:** [gsDesign.ai](https://gsDesign.ai)
+**Source of truth:** `gsDesignSkills`
 
 ## References
 
@@ -495,4 +499,4 @@ AI into a reliable statistical programming assistant.
 
 **Technical manual:** [keaven.github.io/gsd-tech-manual](https://keaven.github.io/gsd-tech-manual/)
 
-**API documentation:** [gsDesign.ai](https://gsDesign.ai)
+**Skills source:** [github.com/keaven/gsDesignSkills](https://github.com/keaven/gsDesignSkills)

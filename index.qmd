@@ -10,20 +10,21 @@ domain expertise in clinical trial design. Each skill encodes package-specific
 knowledge, verified code patterns, and statistical conventions for R packages
 used in group sequential design, multiplicity control, and trial simulation.
 
-Skills are structured knowledge files designed for
-[Claude Code](https://docs.anthropic.com/en/docs/claude-code) and other
-AI coding assistants that support the `.claude/skills/` convention.
+Skills are portable Markdown assets stored in `.agents/skills/`. Assistant-
+specific locations, such as `.claude/skills/`, are compatibility or export
+targets rather than the source of truth.
 
 ## Quick Start
 
-Copy the skills you need into your project:
+Use the portable skill source directly, or copy selected skills into the
+assistant-specific location your project expects:
 
 ```bash
-# Copy all skills
-cp -r gsDesignSkills/.claude/skills/* my-project/.claude/skills/
+# Copy all portable skills for a Claude Code project
+cp -r gsDesignSkills/.agents/skills/* my-project/.claude/skills/
 
 # Or copy a single skill
-cp -r gsDesignSkills/.claude/skills/gsDesign my-project/.claude/skills/
+cp -r gsDesignSkills/.agents/skills/gsDesign my-project/.claude/skills/
 ```
 
 Then reference in your project's `CLAUDE.md`:
@@ -36,7 +37,7 @@ read `.claude/skills/gsDesign/SKILL.md`.
 
 ## What's Included
 
-### 11 Skills Across 8+ R Packages
+### 13 Skills Across 8+ R Packages
 
 | Category | Skills |
 |----------|--------|
@@ -44,16 +45,17 @@ read `.claude/skills/gsDesign/SKILL.md`.
 | **Multiplicity Control** | [graphicalMCP](skills/graphicalMCP.qmd), [gMCPLite](skills/gMCPLite.qmd), [wpgsd](skills/wpgsd.qmd) |
 | **Trial Simulation** | [simtrial](skills/simtrial.qmd), [gsDesignNB](skills/gsDesignNB.qmd) |
 | **Cross-Package** | [graphicalMCP-gsDesign2](skills/graphicalMCP-gsDesign2.qmd), [illness-death](skills/illness-death.qmd), [multi-endpoint-sim](skills/multi-endpoint-sim.qmd) |
+| **Semantic Layer** | [semantic-router](skills/semantic-layer.qmd), [trial-design-glossary](skills/semantic-layer.qmd) |
 
 ### Each Skill Contains
 
 - **SKILL.md** — Trigger patterns, workflow, key concepts, and gotchas
 - **Code patterns** — Tested, working code templates for common tasks
-- **llms.txt** — Machine-readable API documentation from [gsDesign.ai](https://gsDesign.ai)
+- **llms.txt** — Vendored machine-readable API documentation where available
 
 ## Resources
 
 - [Presentation](ai-skills-gsd.qmd) — Overview of the skills approach
 - [Simulation Example](multi-endpoint-sim.qmd) — Multi-endpoint trial simulation using 5 skills together
-- [gsDesign.ai](https://gsDesign.ai) — AI-friendly API documentation for clinical trial design packages
+- [Semantic Layer](skills/semantic-layer.qmd) — Routing, glossary, and crosswalk assets
 - [GitHub Repository](https://github.com/keaven/gsDesignSkills) — Source code and contributions

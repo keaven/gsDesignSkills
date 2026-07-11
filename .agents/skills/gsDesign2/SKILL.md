@@ -10,12 +10,12 @@ description: >
 
 # Group Sequential Design with gsDesign2
 
-**Note**: This skill targets gsDesign2 >= 1.1.9 (main branch at github.com/Merck/gsDesign2).
-The `llms.txt` from gsDesign.ai may lag behind; local API docs are in `llms_local.txt`.
+**Note**: This skill targets gsDesign2 >= 1.1.9.
+The vendored `llms.txt` may lag behind; local API docs are in `llms_local.txt`.
 
 ## API reference
 
-- Full function docs (CRAN): `references/llms.txt` (source: https://gsDesign.ai)
+- Vendored function docs: `references/llms.txt`
 - Full function docs (local v1.1.9+): `references/llms_local.txt`
 - Workflow patterns: `references/code_patterns.md`
 

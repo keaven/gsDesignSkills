@@ -60,7 +60,10 @@ read the skill at `.claude/skills/graphicalMCP-gsDesign2/SKILL.md`.
 
 ## API documentation
 
-The gsDesign, gsDesign2, and simtrial skills include `llms.txt` API references from [gsDesign.ai](https://gsDesign.ai), a site providing AI-friendly documentation for clinical trial design R packages.
+Several skills include vendored `references/llms.txt` API references, plus
+local `llms_local.txt` files where package docs have been regenerated. Some
+older `llms.txt` files originated from gsDesign.ai, but gsDesignSkills is the
+source of truth for the skills and does not require that external site.
 
 ## Contributing
 

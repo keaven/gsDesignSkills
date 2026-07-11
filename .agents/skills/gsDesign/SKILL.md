@@ -10,12 +10,11 @@ description: >
 
 # Group Sequential Design with gsDesign
 
-**Note**: This skill targets gsDesign >= 3.10.0 (main branch at github.com/keaven/gsDesign).
-Features marked **(dev)** are on the main branch but may not be on CRAN yet.
+**Note**: This skill targets gsDesign >= 3.10.0.
 
 ## API reference
 
-- Full function docs (CRAN 3.6.9): `references/llms.txt` (source: https://gsDesign.ai)
+- Vendored function docs: `references/llms.txt` (may lag current CRAN for newer functions)
 - Workflow patterns (dev 3.9.0+): `references/code_patterns.md`
 
 ## Key functions
